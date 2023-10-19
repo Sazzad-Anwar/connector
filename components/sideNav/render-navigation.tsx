@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import useApiStore from "@/store/store"
-import { ChevronRight, FolderClosed, MoreVertical } from "lucide-react"
+import { ChevronRight, FolderClosed, MoreVertical, Upload } from "lucide-react"
 import QueryString from "qs"
 import { SubmitHandler } from "react-hook-form"
 import { v4 as uuid } from "uuid"
@@ -42,7 +42,6 @@ export default function RenderNavigation({
 }: RenderNavigationProps): JSX.Element {
   let router = useRouter()
   let params = useParams()
-  let [mounted, setMounted] = useState<boolean>(false)
   let { InputFile } = useImportJSON()
   let [apiDetails, setApiDetails] = useState<ApiType>()
   let buttonRef = useRef<HTMLButtonElement>(null)
@@ -58,10 +57,6 @@ export default function RenderNavigation({
     updateApi,
     deleteApi,
   } = useApiStore()
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   // Rename collection
   const renameCollectionName: SubmitHandler<
@@ -125,11 +120,6 @@ export default function RenderNavigation({
       variant: "success",
       title: "Api is updated",
     })
-    // if (params.api[0] === collection.id && params.api[1] === data.id) {
-    //   router.push("/")
-    // } else {
-    //   router.push(`/api/${collection.id}/${data.id}`)
-    // }
     router.push(`/api/${collection.id}/${data.id}`)
 
     setApiDetails({} as ApiType)
@@ -230,7 +220,7 @@ export default function RenderNavigation({
       },
     ]
 
-  return mounted ? (
+  return (
     <>
       <div
         className={cn(
@@ -446,7 +436,5 @@ export default function RenderNavigation({
         </AlertDialogContent>
       </AlertDialog>
     </>
-  ) : (
-    <></>
   )
 }

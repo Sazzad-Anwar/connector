@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react"
 import { SideNav } from "./navigations"
 import RenderNavigation from "./render-navigation"
 import { Button } from "../ui/button"
-import { Braces, Plus } from "lucide-react"
+import { Braces, Plus, Upload } from "lucide-react"
 import * as z from 'zod';
 import { useForm, SubmitHandler } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -56,7 +56,7 @@ export default function SideNav(): JSX.Element {
         <MainNav />
         <div className="mb-3 flex items-center px-4 pb-0 pt-2">
           <AddCollectionDialog type="collection" onSubmit={onSubmit}>
-            <Button size="xs" className="px-2 py-1">
+            <Button variant="outline" size="xs" className="px-2 py-1">
               <Plus size={16} />
             </Button>
           </AddCollectionDialog>
@@ -69,10 +69,13 @@ export default function SideNav(): JSX.Element {
               findOneFolder(e.target.value)
             }}
           />
-          <InputFile>
+          <InputFile variant="outline" size="xs">
             <Braces size={16} />
           </InputFile>
         </div>
+        {!collections.length && <div className="flex h-96 w-full items-center justify-center">
+          <h1 className="opacity-40">No Collection Found</h1>
+        </div>}
         {collections?.map(collection => <RenderNavigation key={collection.id} collection={collection} />)}
       </div>
     </aside>

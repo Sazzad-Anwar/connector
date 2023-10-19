@@ -11,6 +11,8 @@ export type InputFileType = {
   children: React.ReactNode
   className?: string
   collectionId?: string
+  variant?: "ghost" | "secondary" | "link" | "outline" | "success"
+  size?: "lg" | "sm" | "xs" | "icon"
 }
 
 export default function useImportJSON() {
@@ -42,7 +44,13 @@ export default function useImportJSON() {
     }
   }
 
-  const InputFile = ({ children, className, collectionId }: InputFileType) => {
+  const InputFile = ({
+    children,
+    className,
+    collectionId,
+    variant,
+    size,
+  }: InputFileType) => {
     const [id, setId] = useState<string>(collectionId ?? "")
 
     useEffect(() => {
@@ -54,7 +62,10 @@ export default function useImportJSON() {
     return (
       <label
         className={cn(
-          buttonVariants({ size: "xs" }),
+          buttonVariants({
+            variant: variant ?? "default",
+            size: size ?? "default",
+          }),
           "cursor-pointer px-2 py-1",
           className
         )}

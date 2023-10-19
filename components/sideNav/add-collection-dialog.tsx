@@ -88,7 +88,7 @@ export default function AddCollectionDialog({
               >
                 Cancel
               </AlertDialogCancel>
-              <Button type="submit" variant="success" size="xs">
+              <Button type="submit" size="xs">
                 Save
               </Button>
             </AlertDialogFooter>
