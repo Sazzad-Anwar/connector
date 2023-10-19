@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios"
 import copy from "copy-to-clipboard"
 import { Clipboard, MoveRight } from "lucide-react"
+import { useTheme } from "next-themes"
 import qs from "qs"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { v4 as uuid } from "uuid"
@@ -22,7 +23,7 @@ import {
 import Loading from "@/app/loading"
 
 import Loader from "./loader"
-import MultipleInput from "./MultipleInput"
+import MultipleInput from "./multiple-input"
 import ResultRender from "./result-render"
 import Breadcrumbs from "./sideNav/breadcrumb"
 import { Button } from "./ui/button"
@@ -71,7 +72,7 @@ export default function Api() {
     } else {
       router.push("/")
     }
-  }, [apiId, folderId, getApi])
+  }, [apiId, folderId, getApi, router])
 
   useEffect(() => {
     form.setValue("id", api?.id ?? "")
@@ -181,7 +182,8 @@ export default function Api() {
     apiId === "undefined" ||
     apiId === "null" ||
     folderId === "undefined" ||
-    folderId === "null"
+    folderId === "null" ||
+    !collections?.length
   ) {
     notFound()
   }
@@ -246,7 +248,7 @@ export default function Api() {
           </Button>
         </div>
       </div>
-      <div className="flex items-center p-5 pb-0">
+      <div className="min-h-[275px] p-5 pb-0">
         <Tabs defaultValue="params" className="w-full">
           <TabsList>
             <TabsTrigger value="params">Params</TabsTrigger>
@@ -255,13 +257,13 @@ export default function Api() {
           </TabsList>
           <TabsContent
             value="params"
-            className="animate__animated animate__fadeIn"
+            className="animate__animated animate__fadeIn h-52 overflow-auto"
           >
             <MultipleInput propertyName="params" form={form} />
           </TabsContent>
           <TabsContent
             value="headers"
-            className="animate__animated animate__fadeIn"
+            className="animate__animated animate__fadeIn h-52 overflow-auto"
           >
             <MultipleInput propertyName="headers" form={form} />
           </TabsContent>
@@ -280,7 +282,7 @@ export default function Api() {
               </TabsList>
               <TabsContent
                 value="raw"
-                className="animate__animated animate__fadeIn"
+                className="animate__animated animate__fadeIn h-52 overflow-auto"
               >
                 {jsonError?.isError ? (
                   <div className="h-4 text-xs font-bold text-red-500">
@@ -291,14 +293,14 @@ export default function Api() {
                 )}
                 <ResultRender
                   result={jsonBodyData}
-                  height={150}
+                  height={197}
                   readOnly={false}
                   setData={setJsonBody}
                 />
               </TabsContent>
               <TabsContent
                 value="x-www-form-urlencoded"
-                className="animate__animated animate__fadeIn relative"
+                className="animate__animated animate__fadeIn relative h-52 overflow-auto"
               >
                 <MultipleInput propertyName="body" form={form} />
               </TabsContent>
@@ -308,7 +310,7 @@ export default function Api() {
       </div>
       <button ref={buttonRef} className="hidden" type="submit" />
 
-      <section className=" h-[560px] overflow-hidden border-t py-1">
+      <section className=" h-[520px] overflow-hidden border-t py-1">
         {isLoading && <Loader />}
         {!isLoading && result && (
           <>
@@ -339,7 +341,7 @@ export default function Api() {
                 </p>
               </div>
             </div>
-            <ResultRender height={560} result={result && result} />
+            <ResultRender height={520} result={result && result} />
           </>
         )}
       </section>

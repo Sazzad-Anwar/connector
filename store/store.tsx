@@ -135,6 +135,9 @@ function deleteApi(arr: FolderType[], apiId: string) {
 }
 
 function getApiDetailsById(arr: FolderType[], apiId: string): ApiType | null {
+  if (!arr?.length) {
+    return null
+  }
   for (let i = 0; i < arr.length; i++) {
     const current = arr[i]
 

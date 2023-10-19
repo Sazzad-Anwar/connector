@@ -40,9 +40,9 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
   }, [fields, append])
 
   return (
-    <Table className="relative block h-52 w-full overflow-auto border">
-      <TableHeader className="sticky -top-1 bg-background">
-        <TableRow>
+    <Table>
+      <TableHeader>
+        <TableRow className="border">
           <TableHead className="h-[35px] w-[30%] resize-x border pl-2 text-accent-foreground">
             Key
           </TableHead>
@@ -60,7 +60,7 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
 
       <TableBody>
         {fields.map((field, index) => (
-          <TableRow key={field.id} className="group">
+          <TableRow key={field.id} className="group border">
             <TableCell className="border p-0">
               <input
                 type="text"
@@ -76,7 +76,7 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
                 placeholder="Value"
               />
             </TableCell>
-            <TableCell className="border-b p-0">
+            <TableCell className="border border-r-0 p-0">
               <input
                 {...form.register(
                   `${propertyName}.${index}.description` as const
@@ -85,7 +85,7 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
                 placeholder="Description"
               />
             </TableCell>
-            <TableCell className="flex h-[30px] w-full items-center justify-center border-b py-1 ">
+            <TableCell className="flex h-[30px] w-full items-center justify-end py-1">
               <Button
                 onClick={() =>
                   insert(index + 1, {
@@ -98,7 +98,7 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
                 variant="ghost"
                 size="xs"
                 type="button"
-                className="mr-1 px-1"
+                className="mr-1 px-1 opacity-20 transition-all duration-300 ease-linear group-hover:opacity-100"
               >
                 <Plus size={16} />
               </Button>
@@ -107,7 +107,7 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
                 variant="ghost"
                 size="xs"
                 type="button"
-                className="mr-1 px-1"
+                className="mr-1 px-1 opacity-20 transition-all duration-300 ease-linear group-hover:opacity-100"
               >
                 <Trash2 size={16} />
               </Button>

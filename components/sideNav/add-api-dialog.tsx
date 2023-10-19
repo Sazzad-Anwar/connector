@@ -10,7 +10,7 @@ import { ApiSchema, ApiType, ParamsType } from "@/types/api"
 import { getBreadcrumbsForNthChildren } from "@/lib/utils"
 
 import { JSONErrorType } from "../api"
-import MultipleInput from "../MultipleInput"
+import MultipleInput from "../multiple-input"
 import ResultRender from "../result-render"
 import {
   AlertDialog,

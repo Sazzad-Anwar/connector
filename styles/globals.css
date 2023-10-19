@@ -64,6 +64,6 @@
   }
   .dark tr:last-child td:last-child,
   tr:last-child td:last-child {
-    @apply border-b;
+    @apply border-b border-r;
   }
 }

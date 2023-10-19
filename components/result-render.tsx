@@ -21,7 +21,7 @@ export default function ResultRender({
   setData,
   defaultLanguage,
 }: PropsType) {
-  const { theme } = useTheme()
+  const { theme, systemTheme } = useTheme()
 
   function setEditorTheme(monaco: any) {
     monaco.editor.defineTheme("onedark", {
@@ -70,7 +70,13 @@ export default function ResultRender({
           enabled: false,
         },
       }}
-      theme={theme === "dark" ? "onedark" : "light"}
+      theme={
+        theme === "dark"
+          ? "onedark"
+          : systemTheme === "dark"
+          ? "onedark"
+          : "light"
+      }
       loading={<Loader />}
       height={height ?? 600}
       width="100%"
