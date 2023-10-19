@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
-import { notFound, useParams, useSearchParams } from "next/navigation"
+import { notFound, useParams, useRouter } from "next/navigation"
 import useApiStore from "@/store/store"
 import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios"
@@ -29,7 +29,7 @@ import { Button } from "./ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { toast } from "./ui/use-toast"
 
-type JSONErrorType = {
+export type JSONErrorType = {
   isError: boolean
   error: string
 }
@@ -43,6 +43,7 @@ type ResponseStatus = {
 export default function Api() {
   const { api, getApi, collections } = useApiStore()
   let params = useParams()
+  let router = useRouter()
   let [result, setResult] = useState<any>()
   let [jsonBodyData, setJsonBodyData] = useState<any>({})
   let [responseStatus, setResponseStatus] = useState<ResponseStatus>({
@@ -65,7 +66,11 @@ export default function Api() {
   const folderId = params.api[0]
 
   useEffect(() => {
-    getApi(apiId!)
+    if (apiId && folderId) {
+      getApi(apiId!)
+    } else {
+      router.push("/")
+    }
   }, [apiId, folderId, getApi])
 
   useEffect(() => {
@@ -172,11 +177,15 @@ export default function Api() {
     buttonRef.current?.click()
   }
 
-  if (!apiId || !folderId) {
+  if (
+    apiId === "undefined" ||
+    apiId === "null" ||
+    folderId === "undefined" ||
+    folderId === "null"
+  ) {
     notFound()
   }
-
-  if (!api.id) {
+  if (apiId && folderId && !api.id) {
     return <Loading />
   }
 
@@ -196,14 +205,14 @@ export default function Api() {
               (api.method === "GET"
                 ? "text-green-500"
                 : api.method === "POST"
-                  ? "text-yellow-500"
-                  : api.method === "PUT"
-                    ? "text-blue-500"
-                    : api.method === "PATCH"
-                      ? "text-purple-500"
-                      : api.method === "DELETE"
-                        ? "text-destructive"
-                        : "text-foreground") + " font-bold px-2 border-r"
+                ? "text-yellow-500"
+                : api.method === "PUT"
+                ? "text-blue-500"
+                : api.method === "PATCH"
+                ? "text-purple-500"
+                : api.method === "DELETE"
+                ? "text-destructive"
+                : "text-foreground") + " font-bold px-2 border-r"
             }
           >
             {api.method}

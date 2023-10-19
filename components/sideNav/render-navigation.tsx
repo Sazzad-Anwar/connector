@@ -121,7 +121,6 @@ export default function RenderNavigation({
       title: "Api is updated",
     })
     router.push(`/api/${collection.id}/${data.id}`)
-
     setApiDetails({} as ApiType)
   }
 
@@ -166,59 +165,59 @@ export default function RenderNavigation({
     name: React.ReactNode | string
     onClick: (e: any) => void
   }[] = [
-      {
-        name: "Env Variables",
-        onClick: (e) => { },
+    {
+      name: "Env Variables",
+      onClick: (e) => {},
+    },
+    {
+      name: "Add Request",
+      onClick: (e) => {
+        e?.stopPropagation()
+        addApiButtonRef.current?.click()
       },
-      {
-        name: "Add Request",
-        onClick: (e) => {
-          e?.stopPropagation()
-          addApiButtonRef.current?.click()
-        },
+    },
+    {
+      name: "Add Folder",
+      onClick: (e) => {
+        e?.stopPropagation()
+        addFolderButtonRef.current?.click()
       },
-      {
-        name: "Add Folder",
-        onClick: (e) => {
-          e?.stopPropagation()
-          addFolderButtonRef.current?.click()
-        },
+    },
+    {
+      name: "Rename",
+      onClick: (e) => {
+        e?.stopPropagation()
+        buttonRef.current?.click()
       },
-      {
-        name: "Rename",
-        onClick: (e) => {
-          e?.stopPropagation()
-          buttonRef.current?.click()
-        },
-      },
+    },
 
-      {
-        name: "Export",
-        onClick: (e) => {
-          e?.stopPropagation()
-        },
+    {
+      name: "Export",
+      onClick: (e) => {
+        e?.stopPropagation()
       },
-      {
-        name: (
-          <InputFile
-            collectionId={collection.id !== "undefined" ? collection.id : ""}
-            className="w-full justify-start border-0 bg-transparent py-0 pl-0 text-left hover:bg-secondary"
-          >
-            Import
-          </InputFile>
-        ),
-        onClick: (e) => {
-          e?.stopPropagation()
-        },
+    },
+    {
+      name: (
+        <InputFile
+          collectionId={collection.id !== "undefined" ? collection.id : ""}
+          className="w-full justify-start border-0 bg-transparent py-0 pl-0 text-left hover:bg-secondary"
+        >
+          Import
+        </InputFile>
+      ),
+      onClick: (e) => {
+        e?.stopPropagation()
       },
-      {
-        name: "Delete",
-        onClick: (e) => {
-          e?.stopPropagation()
-          deleteButtonRef.current?.click()
-        },
+    },
+    {
+      name: "Delete",
+      onClick: (e) => {
+        e?.stopPropagation()
+        deleteButtonRef.current?.click()
       },
-    ]
+    },
+  ]
 
   return (
     <>
@@ -316,12 +315,12 @@ export default function RenderNavigation({
                     (api.method === "GET"
                       ? "text-green-500"
                       : api.method === "POST"
-                        ? "text-yellow-500"
-                        : api.method === "PUT"
-                          ? "text-blue-500"
-                          : api.method === "PATCH"
-                            ? "text-purple-500"
-                            : "text-destructive") + " font-bold mr-2 text-xs"
+                      ? "text-yellow-500"
+                      : api.method === "PUT"
+                      ? "text-blue-500"
+                      : api.method === "PATCH"
+                      ? "text-purple-500"
+                      : "text-destructive") + " font-bold mr-2 text-xs"
                   }
                 >
                   {api.method}

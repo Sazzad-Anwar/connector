@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import useApiStore from "@/store/store"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -6,10 +6,12 @@ import { MoveRight } from "lucide-react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { v4 as uuid } from "uuid"
 
-import { ApiSchema, ApiType } from "@/types/api"
+import { ApiSchema, ApiType, ParamsType } from "@/types/api"
 import { getBreadcrumbsForNthChildren } from "@/lib/utils"
 
+import { JSONErrorType } from "../api"
 import MultipleInput from "../MultipleInput"
+import ResultRender from "../result-render"
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -47,6 +49,8 @@ export default function AddApiDialog({
 }: PropsType) {
   const router = useRouter()
   const { collections } = useApiStore()
+  let [jsonBodyData, setJsonBodyData] = useState<any>({})
+  let [jsonError, setJsonError] = useState<JSONErrorType>()
   const buttonRef = useRef<HTMLButtonElement>(null)
   const form = useForm<ApiType>({
     mode: "onSubmit",
@@ -61,6 +65,31 @@ export default function AddApiDialog({
     buttonRef.current?.click()
     onCreateApi(data)
     form.reset()
+  }
+
+  const setJsonBody = (data: string) => {
+    try {
+      setJsonBodyData(JSON.parse(data))
+      let jsonData = JSON.parse(data)
+      let jsonArray = [] as ParamsType[]
+
+      Object.keys(jsonData).map((item) => {
+        let data = { key: item, value: jsonData[item] as any, id: uuid() }
+        jsonArray.push(data)
+      })
+
+      form.setValue("body", jsonArray)
+
+      setJsonError({
+        isError: false,
+        error: "",
+      })
+    } catch (error: any) {
+      setJsonError({
+        isError: true,
+        error: error.message,
+      })
+    }
   }
 
   useEffect(() => {
@@ -142,14 +171,14 @@ export default function AddApiDialog({
                             (field.value === "GET"
                               ? "text-green-500"
                               : field.value === "POST"
-                                ? "text-yellow-500"
-                                : field.value === "PUT"
-                                  ? "text-blue-500"
-                                  : field.value === "PATCH"
-                                    ? "text-purple-500"
-                                    : field.value === "DELETE"
-                                      ? "text-destructive"
-                                      : "text-foreground") +
+                              ? "text-yellow-500"
+                              : field.value === "PUT"
+                              ? "text-blue-500"
+                              : field.value === "PATCH"
+                              ? "text-purple-500"
+                              : field.value === "DELETE"
+                              ? "text-destructive"
+                              : "text-foreground") +
                             " font-bold w-24 " +
                             setBorderColor(!!form.formState.errors.method)
                           }
@@ -165,12 +194,12 @@ export default function AddApiDialog({
                                 (item === "GET"
                                   ? "text-green-500"
                                   : item === "POST"
-                                    ? "text-yellow-500"
-                                    : item === "PUT"
-                                      ? "text-blue-500"
-                                      : item === "PATCH"
-                                        ? "text-purple-500"
-                                        : "text-destructive") + " font-bold"
+                                  ? "text-yellow-500"
+                                  : item === "PUT"
+                                  ? "text-blue-500"
+                                  : item === "PATCH"
+                                  ? "text-purple-500"
+                                  : "text-destructive") + " font-bold"
                               }
                               key={item}
                               value={item}
@@ -205,30 +234,76 @@ export default function AddApiDialog({
             </div>
             <div className="my-3 flex items-center">
               <Tabs defaultValue="params" className="w-full">
-                <TabsList className="">
+                <TabsList>
                   <TabsTrigger value="params">Params</TabsTrigger>
-                  <TabsTrigger value="headers">Headers</TabsTrigger>
+                  <TabsTrigger value="headers">Headers </TabsTrigger>
                   <TabsTrigger value="body">Body</TabsTrigger>
                 </TabsList>
-                {["params", "headers", "body"].map((tab) => (
-                  <TabsContent
-                    key={tab}
-                    value={tab}
-                    className="animate__animated animate__fadeIn relative max-h-96 overflow-auto border-y"
-                  >
-                    <MultipleInput propertyName={tab as any} form={form} />
-                  </TabsContent>
-                ))}
+                <TabsContent
+                  value="params"
+                  className="animate__animated animate__fadeIn"
+                >
+                  <MultipleInput propertyName="params" form={form} />
+                </TabsContent>
+                <TabsContent
+                  value="headers"
+                  className="animate__animated animate__fadeIn"
+                >
+                  <MultipleInput propertyName="headers" form={form} />
+                </TabsContent>
+                <TabsContent
+                  value="body"
+                  className="animate__animated animate__fadeIn"
+                >
+                  <Tabs defaultValue="x-www-form-urlencoded" className="w-full">
+                    <TabsList className="px-.5 h-9">
+                      <TabsTrigger
+                        value="x-www-form-urlencoded"
+                        className="h-7"
+                      >
+                        x-www-form-urlencoded
+                      </TabsTrigger>
+                      <TabsTrigger value="raw" className="h-7">
+                        Raw JSON
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent
+                      value="raw"
+                      className="animate__animated animate__fadeIn"
+                    >
+                      {jsonError?.isError ? (
+                        <div className="h-4 text-xs font-bold text-red-500">
+                          {jsonError.error}
+                        </div>
+                      ) : (
+                        <div className="h-4"></div>
+                      )}
+                      <ResultRender
+                        result={jsonBodyData}
+                        height={150}
+                        readOnly={false}
+                        setData={setJsonBody}
+                      />
+                    </TabsContent>
+                    <TabsContent
+                      value="x-www-form-urlencoded"
+                      className="animate__animated animate__fadeIn relative"
+                    >
+                      <MultipleInput propertyName="body" form={form} />
+                    </TabsContent>
+                  </Tabs>
+                </TabsContent>
               </Tabs>
             </div>
             <AlertDialogFooter className="mt-4">
               <AlertDialogCancel
                 ref={buttonRef}
-                onClick={() =>
+                onClick={() => {
                   folderId
                     ? router.push(`/api/${folderId}/${details?.id}`)
                     : null
-                }
+                  form.reset()
+                }}
               >
                 Cancel
               </AlertDialogCancel>
