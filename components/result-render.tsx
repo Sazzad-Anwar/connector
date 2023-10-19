@@ -71,9 +71,9 @@ export default function ResultRender({
         },
       }}
       theme={
-        theme === "dark"
+        theme === "system" && systemTheme === "dark"
           ? "onedark"
-          : systemTheme === "dark"
+          : theme === "dark"
           ? "onedark"
           : "light"
       }
