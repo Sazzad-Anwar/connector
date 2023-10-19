@@ -172,7 +172,7 @@ const useApiStore = create<Store>()((set) => ({
     if (id) {
       collections = actionsInNestedFolder(collections, id, "create", data)
     } else {
-      collections = [...collections, data]
+      collections = collections?.length ? [...collections, data] : [data]
     }
     set(() => ({
       collections,
@@ -189,8 +189,8 @@ const useApiStore = create<Store>()((set) => ({
     collections =
       name !== ""
         ? collections.filter((item) =>
-          item.name.toLowerCase().includes(name.toLowerCase())
-        )
+            item.name.toLowerCase().includes(name.toLowerCase())
+          )
         : collections
     set(() => ({
       collections,
@@ -211,10 +211,11 @@ const useApiStore = create<Store>()((set) => ({
     let collections = JSON.parse(
       isLocalStorageAvailable() ? localStorage.getItem("collections")! : "[]"
     )
+    console.log(collections)
     if (id) {
       collections = addApi(collections, id, data)
     } else {
-      collections = [...collections, data]
+      collections = collections?.length ? [...collections, data] : [data]
     }
     set(() => ({
       collections,
@@ -224,7 +225,7 @@ const useApiStore = create<Store>()((set) => ({
       localStorage.setItem("collections", JSON.stringify(collections))
   },
 
-  createEnv: (data) => { },
+  createEnv: (data) => {},
 
   updateFolder: (data, id) => {
     let collections = JSON.parse(
@@ -256,7 +257,7 @@ const useApiStore = create<Store>()((set) => ({
       localStorage.setItem("collections", JSON.stringify(collections))
   },
 
-  updateEnv: (data, id) => { },
+  updateEnv: (data, id) => {},
 
   deleteFolder: (id) => {
     let collections = JSON.parse(
@@ -285,7 +286,7 @@ const useApiStore = create<Store>()((set) => ({
       localStorage.setItem("collections", JSON.stringify(collections))
   },
 
-  deleteEnv: (id) => { },
+  deleteEnv: (id) => {},
 }))
 
 export default useApiStore

@@ -73,7 +73,7 @@ export default function SideNav(): JSX.Element {
             <Braces size={16} />
           </InputFile>
         </div>
-        {!collections.length && <div className="flex h-96 w-full items-center justify-center">
+        {!collections?.length && <div className="flex h-96 w-full items-center justify-center">
           <h1 className="opacity-40">No Collection Found</h1>
         </div>}
         {collections?.map(collection => <RenderNavigation key={collection.id} collection={collection} />)}
