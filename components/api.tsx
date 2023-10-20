@@ -2,12 +2,18 @@
 
 import React, { useEffect, useRef, useState } from "react"
 import { notFound, useParams, useRouter } from "next/navigation"
+import useSidepanelToggleStore from "@/store/sidePanelToggle"
 import useApiStore from "@/store/store"
 import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios"
 import copy from "copy-to-clipboard"
-import { Clipboard, MoveRight } from "lucide-react"
-import { useTheme } from "next-themes"
+import {
+  ChevronRight,
+  Clipboard,
+  Maximize,
+  Menu,
+  MoveRight,
+} from "lucide-react"
 import qs from "qs"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { v4 as uuid } from "uuid"
@@ -26,7 +32,9 @@ import Loader from "./loader"
 import MultipleInput from "./multiple-input"
 import ResultRender from "./result-render"
 import Breadcrumbs from "./sideNav/breadcrumb"
-import { Button } from "./ui/button"
+import SideNav from "./sideNav/page"
+import { Button, buttonVariants } from "./ui/button"
+import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { toast } from "./ui/use-toast"
 
@@ -45,6 +53,13 @@ export default function Api() {
   const { api, getApi, collections } = useApiStore()
   let params = useParams()
   let router = useRouter()
+  let { toggle, isOpen } = useSidepanelToggleStore()
+  let resultDivRef = useRef<HTMLDivElement>(null)
+  let jsonBodyDivRef = useRef<HTMLDivElement>(null)
+  let resultContainerRef = useRef<HTMLDivElement>(null)
+  let [isJSONInputFullScreen, setIsJSONInputFullScreen] =
+    useState<boolean>(false)
+  let [isResultFullScreen, setIsResultFullScreen] = useState<boolean>(false)
   let [result, setResult] = useState<any>()
   let [jsonBodyData, setJsonBodyData] = useState<any>({})
   let [responseStatus, setResponseStatus] = useState<ResponseStatus>({
@@ -73,6 +88,18 @@ export default function Api() {
       router.push("/")
     }
   }, [apiId, folderId, getApi, router])
+
+  useEffect(() => {
+    function onFullscreenChange() {
+      setIsJSONInputFullScreen(Boolean(document.fullscreenElement))
+      setIsResultFullScreen(Boolean(document.fullscreenElement))
+    }
+
+    document.addEventListener("fullscreenchange", onFullscreenChange)
+
+    return () =>
+      document.removeEventListener("fullscreenchange", onFullscreenChange)
+  }, [])
 
   useEffect(() => {
     form.setValue("id", api?.id ?? "")
@@ -192,159 +219,234 @@ export default function Api() {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      <div className="flex items-center p-5">
-        <Breadcrumbs
-          breadcrumbs={getBreadcrumbsForNthChildren(collections, folderId!)}
-        />
-        <MoveRight size={13} className="mx-2" />
-        {api.name}
-      </div>
-      <div className="mx-auto flex w-[calc(100%-40px)] items-center justify-between rounded border p-1">
-        <div className="flex items-center">
-          <span
-            className={
-              (api.method === "GET"
-                ? "text-green-500"
-                : api.method === "POST"
-                ? "text-yellow-500"
-                : api.method === "PUT"
-                ? "text-blue-500"
-                : api.method === "PATCH"
-                ? "text-purple-500"
-                : api.method === "DELETE"
-                ? "text-destructive"
-                : "text-foreground") + " font-bold px-2 border-r"
-            }
+    <>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden">
+        <div className="flex items-center p-5">
+          <Button
+            variant="ghost"
+            size="xs"
+            className="hidden h-8 w-8 rounded border p-0 lg:flex"
+            type="button"
+            onClick={() => toggle()}
           >
-            {api.method}
-          </span>
-          <div className="max-w-screen-xl overflow-hidden truncate px-2">
-            {url}
+            {isOpen ? <ChevronRight size={20} /> : <Menu size={20} />}
+          </Button>
+          <Sheet>
+            <SheetTrigger
+              asChild
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "xs" }),
+                "h-6 w-6 rounded border p-0 lg:hidden"
+              )}
+            >
+              <Menu size={12} />
+            </SheetTrigger>
+            <SheetContent side="left" className="w-full p-0 sm:w-[300px]">
+              <SideNav isLoadingInSheet={true} />
+            </SheetContent>
+          </Sheet>
+          <Breadcrumbs
+            breadcrumbs={getBreadcrumbsForNthChildren(collections, folderId!)}
+          />
+          <MoveRight size={13} className="mx-2" />
+          {api.name}
+        </div>
+        <div className="mx-auto flex w-[calc(100%-40px)] items-center justify-between rounded border p-1">
+          <div className="flex items-center">
+            <span
+              className={
+                (api.method === "GET"
+                  ? "text-green-500"
+                  : api.method === "POST"
+                  ? "text-yellow-500"
+                  : api.method === "PUT"
+                  ? "text-blue-500"
+                  : api.method === "PATCH"
+                  ? "text-purple-500"
+                  : api.method === "DELETE"
+                  ? "text-destructive"
+                  : "text-foreground") + " font-bold px-2 border-r"
+              }
+            >
+              {api.method}
+            </span>
+            <div className=" max-w-[12rem] overflow-hidden truncate px-2 md:max-w-md lg:max-w-lg xl:max-w-4xl 2xl:max-w-7xl">
+              {url}
+            </div>
+          </div>
+          <div className="flex items-center justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              className="mr-2 flex h-8 w-8 justify-self-end p-1"
+              size="sm"
+              onClick={() => {
+                copy(url)
+                toast({
+                  variant: "success",
+                  title: "Url is copied",
+                })
+              }}
+            >
+              <Clipboard size={18} />
+            </Button>
+            <Button
+              onClick={() => callApi()}
+              className="rounded text-white"
+              size="sm"
+            >
+              Connect
+            </Button>
           </div>
         </div>
-        <div className="flex items-center justify-end">
-          <Button
-            type="button"
-            variant="ghost"
-            className="mr-2 flex justify-self-end p-1"
-            size="sm"
-            onClick={() => {
-              copy(url)
-              toast({
-                variant: "success",
-                title: "Url is copied",
-              })
-            }}
-          >
-            <Clipboard />
-          </Button>
-          <Button
-            onClick={() => callApi()}
-            className="rounded text-white"
-            size="sm"
-          >
-            Connect
-          </Button>
-        </div>
-      </div>
-      <div className="min-h-[275px] p-5 pb-0">
-        <Tabs defaultValue="params" className="w-full">
-          <TabsList>
-            <TabsTrigger value="params">Params</TabsTrigger>
-            <TabsTrigger value="headers">Headers </TabsTrigger>
-            <TabsTrigger value="body">Body</TabsTrigger>
-          </TabsList>
-          <TabsContent
-            value="params"
-            className="animate__animated animate__fadeIn h-52 overflow-auto"
-          >
-            <MultipleInput propertyName="params" form={form} />
-          </TabsContent>
-          <TabsContent
-            value="headers"
-            className="animate__animated animate__fadeIn h-52 overflow-auto"
-          >
-            <MultipleInput propertyName="headers" form={form} />
-          </TabsContent>
-          <TabsContent
-            value="body"
-            className="animate__animated animate__fadeIn"
-          >
-            <Tabs defaultValue="x-www-form-urlencoded" className="w-full">
-              <TabsList className="px-.5 h-9">
-                <TabsTrigger value="x-www-form-urlencoded" className="h-7">
-                  x-www-form-urlencoded
-                </TabsTrigger>
-                <TabsTrigger value="raw" className="h-7">
-                  Raw JSON
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent
-                value="raw"
-                className="animate__animated animate__fadeIn h-52 overflow-auto"
-              >
-                {jsonError?.isError ? (
-                  <div className="h-4 text-xs font-bold text-red-500">
-                    {jsonError.error}
-                  </div>
-                ) : (
-                  <div className="h-4"></div>
-                )}
-                <ResultRender
-                  result={jsonBodyData}
-                  height={197}
-                  readOnly={false}
-                  setData={setJsonBody}
-                />
-              </TabsContent>
-              <TabsContent
-                value="x-www-form-urlencoded"
-                className="animate__animated animate__fadeIn relative h-52 overflow-auto"
-              >
-                <MultipleInput propertyName="body" form={form} />
-              </TabsContent>
-            </Tabs>
-          </TabsContent>
-        </Tabs>
-      </div>
-      <button ref={buttonRef} className="hidden" type="submit" />
-
-      <section className=" h-[520px] overflow-hidden border-t py-1">
-        {isLoading && <Loader />}
-        {!isLoading && result && (
-          <>
-            <div className="flex items-center justify-between pb-1 pl-10 pr-5 text-sm">
-              <h1 className="text-base">Response</h1>
-              <div className="flex items-center">
-                <p
-                  className={cn(
-                    responseStatus.status?.toString().startsWith("2", 0)
-                      ? "ml-1 font-medium text-green-600 dark:font-normal dark:text-green-400"
-                      : "ml-1 font-medium text-red-500 dark:font-normal",
-                    "mr-2"
-                  )}
+        <div className="min-h-[275px] p-5 pb-0 pr-0">
+          <Tabs defaultValue="params" className="w-full">
+            <TabsList>
+              <TabsTrigger value="params">Params</TabsTrigger>
+              <TabsTrigger value="headers">Headers </TabsTrigger>
+              <TabsTrigger value="body">Body</TabsTrigger>
+            </TabsList>
+            <TabsContent
+              value="params"
+              className="animate__animated animate__fadeIn h-52 overflow-auto"
+            >
+              <MultipleInput propertyName="params" form={form} />
+            </TabsContent>
+            <TabsContent
+              value="headers"
+              className="animate__animated animate__fadeIn h-52 overflow-auto"
+            >
+              <MultipleInput propertyName="headers" form={form} />
+            </TabsContent>
+            <TabsContent
+              value="body"
+              className="animate__animated animate__fadeIn"
+            >
+              <Tabs defaultValue="x-www-form-urlencoded" className="w-full">
+                <TabsList className="px-.5 h-9">
+                  <TabsTrigger value="x-www-form-urlencoded" className="h-7">
+                    x-www-form-urlencoded
+                  </TabsTrigger>
+                  <TabsTrigger value="raw" className="h-7">
+                    Raw JSON
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent
+                  value="raw"
+                  className="animate__animated animate__fadeIn"
                 >
-                  {responseStatus.status} {responseStatus.statusText}
-                </p>
-                <p className="mr-4">
-                  Time:
-                  <span className={"pl-1 text-green-500"}>
-                    {responseStatus.time}
-                  </span>
-                </p>
-                <p className="mr-2">
-                  Size:
-                  <span className={"ml-1 text-green-500"}>
-                    {payloadSize(result)}
-                  </span>
-                </p>
+                  <div className="flex items-center justify-between">
+                    {jsonError?.isError ? (
+                      <div className="h-4 text-xs font-bold text-red-500">
+                        {jsonError.error}
+                      </div>
+                    ) : (
+                      <div className="h-4"></div>
+                    )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="xs"
+                      className="h-5 w-5 p-0"
+                    >
+                      <Maximize
+                        onClick={() => {
+                          jsonBodyDivRef.current?.requestFullscreen()
+                          setIsJSONInputFullScreen(true)
+                        }}
+                        size={13}
+                      />
+                    </Button>
+                  </div>
+                  <ResultRender
+                    ref={jsonBodyDivRef}
+                    result={jsonBodyData}
+                    height={
+                      isJSONInputFullScreen
+                        ? typeof window !== "undefined"
+                          ? window.outerHeight
+                          : 197
+                        : 197
+                    }
+                    readOnly={false}
+                    setData={setJsonBody}
+                    className="border-t pt-3"
+                  />
+                </TabsContent>
+                <TabsContent
+                  value="x-www-form-urlencoded"
+                  className="animate__animated animate__fadeIn relative h-52 overflow-auto"
+                >
+                  <MultipleInput propertyName="body" form={form} />
+                </TabsContent>
+              </Tabs>
+            </TabsContent>
+          </Tabs>
+        </div>
+        <button ref={buttonRef} className="hidden" type="submit" />
+
+        <section ref={resultDivRef} className="border-t py-1">
+          {isLoading && <Loader />}
+          {!isLoading && result && (
+            <>
+              <div className="flex items-center justify-between py-3 pl-5 pr-0 text-sm">
+                <h1 className="text-base">
+                  Response{" "}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    className="h-5 w-5 p-0"
+                  >
+                    <Maximize
+                      onClick={() => {
+                        resultContainerRef.current?.requestFullscreen()
+                        setIsResultFullScreen(true)
+                      }}
+                      size={13}
+                    />
+                  </Button>
+                </h1>
+                <div className="flex items-center">
+                  <p
+                    className={cn(
+                      responseStatus.status?.toString().startsWith("2", 0)
+                        ? "ml-1 font-medium text-green-600 dark:font-normal dark:text-green-400"
+                        : "ml-1 font-medium text-red-500 dark:font-normal",
+                      "mr-2"
+                    )}
+                  >
+                    {responseStatus.status} {responseStatus.statusText}
+                  </p>
+                  <p className="mr-4">
+                    Time:
+                    <span className={"pl-1 text-green-500"}>
+                      {responseStatus.time}
+                    </span>
+                  </p>
+                  <p className="mr-2">
+                    Size:
+                    <span className={"ml-1 text-green-500"}>
+                      {payloadSize(result)}
+                    </span>
+                  </p>
+                </div>
               </div>
-            </div>
-            <ResultRender height={520} result={result && result} />
-          </>
-        )}
-      </section>
-    </form>
+              <ResultRender
+                ref={resultContainerRef}
+                height={
+                  typeof window !== "undefined"
+                    ? isResultFullScreen
+                      ? window.outerHeight
+                      : window.innerHeight - 504
+                    : resultDivRef.current?.offsetHeight! - 57
+                }
+                result={result && result}
+              />
+            </>
+          )}
+        </section>
+      </form>
+    </>
   )
 }

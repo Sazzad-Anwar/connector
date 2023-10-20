@@ -66,4 +66,8 @@
   tr:last-child td:last-child {
     @apply border-b border-r;
   }
+  :not(:root):fullscreen::backdrop {
+    background: transparent;
+    backdrop-filter: blur(30px);
+  }
 }

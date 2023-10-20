@@ -7,7 +7,7 @@ export default function Loader({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex min-h-[500px] min-w-[500px] items-center justify-center",
+        "flex min-h-[500px] min-w-[450px] items-center justify-center",
         className
       )}
     >

@@ -4,6 +4,7 @@ import { Metadata } from "next"
 
 import { siteConfig } from "@/config/site"
 import { cn } from "@/lib/utils"
+import Layout from "@/components/layout"
 import SideNav from "@/components/sideNav/page"
 import { SiteHeader } from "@/components/site-header"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
@@ -42,7 +43,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             <div className="relative flex min-h-screen flex-col">
               <div className="flex">
                 <SideNav />
-                <div className="flex-1">{children}</div>
+                <Layout>{children}</Layout>
               </div>
             </div>
             <TailwindIndicator />

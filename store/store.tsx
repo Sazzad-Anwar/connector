@@ -18,7 +18,7 @@ type Store = {
   deleteEnv: (id: string) => void
 }
 
-function isLocalStorageAvailable() {
+export function isLocalStorageAvailable() {
   return typeof window !== "undefined" && window.localStorage
 }
 
