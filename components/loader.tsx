@@ -3,13 +3,22 @@ import { Loader as LoaderSpinner } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-export default function Loader({ className }: { className?: string }) {
+export default function Loader({
+  className,
+  height,
+}: {
+  className?: string
+  height?: number
+}) {
   return (
     <div
       className={cn(
-        "flex min-h-[500px] min-w-[450px] items-center justify-center",
+        "flex min-w-[450px] items-center justify-center",
         className
       )}
+      style={{
+        height: height ?? 500,
+      }}
     >
       <div className="flex flex-col items-center justify-center">
         <LoaderSpinner size={25} className="animate-spin" />

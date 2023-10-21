@@ -9,7 +9,7 @@ import { v4 as uuid } from "uuid"
 import { ApiSchema, ApiType, ParamsType } from "@/types/api"
 import { getBreadcrumbsForNthChildren } from "@/lib/utils"
 
-import { JSONErrorType } from "../api"
+import { JSONErrorType } from "../api/api"
 import MultipleInput from "../multiple-input"
 import ResultRender from "../result-render"
 import {
@@ -171,14 +171,14 @@ export default function AddApiDialog({
                             (field.value === "GET"
                               ? "text-green-500"
                               : field.value === "POST"
-                              ? "text-yellow-500"
-                              : field.value === "PUT"
-                              ? "text-blue-500"
-                              : field.value === "PATCH"
-                              ? "text-purple-500"
-                              : field.value === "DELETE"
-                              ? "text-destructive"
-                              : "text-foreground") +
+                                ? "text-yellow-500"
+                                : field.value === "PUT"
+                                  ? "text-blue-500"
+                                  : field.value === "PATCH"
+                                    ? "text-purple-500"
+                                    : field.value === "DELETE"
+                                      ? "text-destructive"
+                                      : "text-foreground") +
                             " font-bold w-24 " +
                             setBorderColor(!!form.formState.errors.method)
                           }
@@ -194,12 +194,12 @@ export default function AddApiDialog({
                                 (item === "GET"
                                   ? "text-green-500"
                                   : item === "POST"
-                                  ? "text-yellow-500"
-                                  : item === "PUT"
-                                  ? "text-blue-500"
-                                  : item === "PATCH"
-                                  ? "text-purple-500"
-                                  : "text-destructive") + " font-bold"
+                                    ? "text-yellow-500"
+                                    : item === "PUT"
+                                      ? "text-blue-500"
+                                      : item === "PATCH"
+                                        ? "text-purple-500"
+                                        : "text-destructive") + " font-bold"
                               }
                               key={item}
                               value={item}
