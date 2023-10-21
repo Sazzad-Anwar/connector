@@ -1,18 +1,20 @@
 import { create } from "zustand"
 
-import { ApiType, EnvVariableType, FolderType } from "@/types/api"
+import { ApiType, FolderType, ParamsType } from "@/types/api"
 
 type Store = {
   collections: FolderType[]
   api: ApiType
+  env: ParamsType[]
   findOneFolder: (id: string) => void
   createFolder: (data: FolderType, id?: string) => void
   createApi: (data: ApiType, id: string) => void
-  createEnv: (data: EnvVariableType) => void
+  createEnv: (data: ParamsType) => void
   updateFolder: (data: FolderType, id: string) => void
   getApi: (id: string) => void
+  getEnv: (apiId: string) => void
   updateApi: (data: ApiType, id: string) => void
-  updateEnv: (data: EnvVariableType, id: string) => void
+  updateEnv: (data: ParamsType, id: string) => void
   deleteFolder: (id: string) => void
   deleteApi: (id: string) => void
   deleteEnv: (id: string) => void
@@ -163,11 +165,41 @@ function getApiDetailsById(arr: FolderType[], apiId: string): ApiType | null {
   return null // Return null if the API is not found
 }
 
+//find Variables list from parent
+function findParentEnvInArray(
+  dataArray: FolderType[],
+  targetApiId: string
+): ParamsType[] | null {
+  for (const data of dataArray) {
+    // Check if any of the parent APIs match the target API ID
+    for (const api of data?.apis!) {
+      if (api.id === targetApiId) {
+        if (data.env) {
+          return data.env
+        } else {
+          return null // If env property is missing in the parent
+        }
+      }
+    }
+
+    // Recursively search in nested children
+    if (data.children && data.children.length > 0) {
+      const result = findParentEnvInArray(data.children, targetApiId)
+      if (result) {
+        return result // Return the result if found in a child
+      }
+    }
+  }
+
+  return null // API ID not found in the data array
+}
+
 const useApiStore = create<Store>()((set) => ({
   collections: JSON.parse(
     isLocalStorageAvailable() ? localStorage.getItem("collections")! : "[]"
   ),
   api: {} as ApiType,
+  env: [],
   createFolder: (data, id) => {
     let collections = JSON.parse(
       isLocalStorageAvailable() ? localStorage.getItem("collections")! : "[]"
@@ -183,6 +215,16 @@ const useApiStore = create<Store>()((set) => ({
 
     isLocalStorageAvailable() &&
       localStorage.setItem("collections", JSON.stringify(collections))
+  },
+
+  getEnv: (apiId) => {
+    let collections: FolderType[] = JSON.parse(
+      isLocalStorageAvailable() ? localStorage.getItem("collections")! : "[]"
+    )
+    let variables = findParentEnvInArray(collections, apiId)
+    set(() => ({
+      env: variables ?? [],
+    }))
   },
 
   findOneFolder: (name) => {

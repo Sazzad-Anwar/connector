@@ -7,7 +7,7 @@ import useApiStore from "@/store/store"
 import { zodResolver } from "@hookform/resolvers/zod"
 import axios from "axios"
 import copy from "copy-to-clipboard"
-import { ChevronRight, Clipboard, Menu, MoveRight } from "lucide-react"
+import { Clipboard, MoveRight } from "lucide-react"
 import qs from "qs"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { v4 as uuid } from "uuid"
@@ -16,16 +16,18 @@ import { ApiSchema, ApiType } from "@/types/api"
 import {
   arrayToObjectConversion,
   cn,
+  containsDynamicVariable,
+  extractVariable,
   getBreadcrumbsForNthChildren,
   getQueryString,
   isEmpty,
+  replaceVariables,
 } from "@/lib/utils"
 import Loading from "@/app/loading"
 
+import SidenavToggler from "../sidenav-toggler"
 import Breadcrumbs from "../sideNav/breadcrumb"
-import SideNav from "../sideNav/page"
-import { Button, buttonVariants } from "../ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet"
+import { Button } from "../ui/button"
 import { toast } from "../ui/use-toast"
 import ApiResult from "./api-result"
 import InputTabs from "./input-tabs"
@@ -42,10 +44,9 @@ export type ResponseStatus = {
 }
 
 export default function Api() {
-  const { api, getApi, collections } = useApiStore()
+  const { api, getApi, collections, env, getEnv } = useApiStore()
   let params = useParams()
   let router = useRouter()
-  let { toggle, isOpen } = useSidepanelToggleStore()
   let [result, setResult] = useState<any>()
   let [responseStatus, setResponseStatus] = useState<ResponseStatus>({
     status: 0,
@@ -68,10 +69,11 @@ export default function Api() {
   useEffect(() => {
     if (apiId && folderId) {
       getApi(apiId!)
+      getEnv(apiId!)
     } else {
       router.push("/")
     }
-  }, [apiId, folderId, getApi, router])
+  }, [apiId, folderId, getApi, router, getEnv])
 
   useEffect(() => {
     form.setValue("id", api?.id ?? "")
@@ -106,7 +108,10 @@ export default function Api() {
         ? getQueryString(arrayToObjectConversion(api.params!))
         : getQueryString(arrayToObjectConversion(submitData.params!))
 
-      let url = api.url + (params ? "?" + params : "")
+      let url =
+        (containsDynamicVariable(api.url)
+          ? replaceVariables(api.url, env)
+          : api.url) + (params ? "?" + params : "")
 
       let requestBody = arrayToObjectConversion(submitData.body!)
       let headers = arrayToObjectConversion(submitData.headers!)
@@ -155,29 +160,7 @@ export default function Api() {
     <>
       <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden">
         <div className="flex items-center p-5">
-          <Button
-            variant="ghost"
-            size="xs"
-            className="hidden h-8 w-8 rounded border p-0 lg:flex"
-            type="button"
-            onClick={() => toggle()}
-          >
-            {isOpen ? <ChevronRight size={20} /> : <Menu size={20} />}
-          </Button>
-          <Sheet>
-            <SheetTrigger
-              asChild
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "xs" }),
-                "h-6 w-6 rounded border p-0 lg:hidden"
-              )}
-            >
-              <Menu size={12} />
-            </SheetTrigger>
-            <SheetContent side="left" className="w-full p-0 sm:w-[300px]">
-              <SideNav isLoadingInSheet={true} />
-            </SheetContent>
-          </Sheet>
+          <SidenavToggler />
           <Breadcrumbs
             breadcrumbs={getBreadcrumbsForNthChildren(collections, folderId!)}
           />
@@ -191,20 +174,23 @@ export default function Api() {
                 (api.method === "GET"
                   ? "text-green-500"
                   : api.method === "POST"
-                    ? "text-yellow-500"
-                    : api.method === "PUT"
-                      ? "text-blue-500"
-                      : api.method === "PATCH"
-                        ? "text-purple-500"
-                        : api.method === "DELETE"
-                          ? "text-destructive"
-                          : "text-foreground") + " font-bold px-2 border-r"
+                  ? "text-yellow-500"
+                  : api.method === "PUT"
+                  ? "text-blue-500"
+                  : api.method === "PATCH"
+                  ? "text-purple-500"
+                  : api.method === "DELETE"
+                  ? "text-destructive"
+                  : "text-foreground") + " font-bold px-2 border-r"
               }
             >
               {api.method}
             </span>
             <div className=" max-w-[12rem] overflow-hidden truncate px-2 md:max-w-md lg:max-w-lg xl:max-w-4xl 2xl:max-w-7xl">
-              {url}
+              <span className="text-cyan-500">{`{{${extractVariable(
+                url
+              )}}}`}</span>
+              {url.split("}}")[1]}
             </div>
           </div>
           <div className="flex items-center justify-end">

@@ -59,7 +59,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
       <MainNav />
       <div className="mb-3 flex items-center px-4 pb-0 pt-2">
         <AddCollectionDialog type="collection" onSubmit={onSubmit}>
-          <Button variant="outline" size="xs" className="px-2 py-1">
+          <Button variant="outline" size="xs" className="p-1">
             <Plus size={16} />
           </Button>
         </AddCollectionDialog>
@@ -72,7 +72,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
             findOneFolder(e.target.value)
           }}
         />
-        <InputFile variant="outline" size="xs">
+        <InputFile variant="outline" size="xs" className="p-1">
           <Braces size={16} />
         </InputFile>
       </div>

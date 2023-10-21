@@ -2,12 +2,18 @@ import React, { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import useApiStore from "@/store/store"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { MoveRight } from "lucide-react"
+import { Info, MoveRight } from "lucide-react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { v4 as uuid } from "uuid"
 
 import { ApiSchema, ApiType, ParamsType } from "@/types/api"
-import { getBreadcrumbsForNthChildren } from "@/lib/utils"
+import {
+  containsDynamicVariable,
+  containsVariable,
+  extractVariable,
+  getBreadcrumbsForNthChildren,
+  getRootParentIdForNthChildren,
+} from "@/lib/utils"
 
 import { JSONErrorType } from "../api/api"
 import MultipleInput from "../multiple-input"
@@ -32,6 +38,12 @@ import {
   SelectValue,
 } from "../ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip"
 import Breadcrumbs from "./breadcrumb"
 
 type PropsType = {
@@ -54,8 +66,12 @@ export default function AddApiDialog({
   const buttonRef = useRef<HTMLButtonElement>(null)
   const form = useForm<ApiType>({
     mode: "onSubmit",
+    criteriaMode: "all",
     resolver: zodResolver(ApiSchema),
   })
+  let url = form.watch("url")
+  const rootParentId = getRootParentIdForNthChildren(collections, folderId)
+  const rootParent = collections.find((item) => item.id === rootParentId)
 
   const onSubmit: SubmitHandler<ApiType> = (data) => {
     if (details?.id) {
@@ -117,6 +133,22 @@ export default function AddApiDialog({
     )
   }, [form, details])
 
+  useEffect(() => {
+    if (
+      containsDynamicVariable(url) &&
+      !containsVariable(url, rootParent?.env ?? [])
+    ) {
+      form.setError("url", {
+        type: "pattern",
+        message: `${extractVariable(url)} is not a saved variable`,
+      })
+    } else {
+      form.clearErrors()
+    }
+  }, [form, url, rootParent])
+
+  console.log(form.formState.errors)
+
   const setBorderColor = (isError: boolean) =>
     isError ? "border-destructive" : ""
 
@@ -171,14 +203,14 @@ export default function AddApiDialog({
                             (field.value === "GET"
                               ? "text-green-500"
                               : field.value === "POST"
-                                ? "text-yellow-500"
-                                : field.value === "PUT"
-                                  ? "text-blue-500"
-                                  : field.value === "PATCH"
-                                    ? "text-purple-500"
-                                    : field.value === "DELETE"
-                                      ? "text-destructive"
-                                      : "text-foreground") +
+                              ? "text-yellow-500"
+                              : field.value === "PUT"
+                              ? "text-blue-500"
+                              : field.value === "PATCH"
+                              ? "text-purple-500"
+                              : field.value === "DELETE"
+                              ? "text-destructive"
+                              : "text-foreground") +
                             " font-bold w-24 " +
                             setBorderColor(!!form.formState.errors.method)
                           }
@@ -194,12 +226,12 @@ export default function AddApiDialog({
                                 (item === "GET"
                                   ? "text-green-500"
                                   : item === "POST"
-                                    ? "text-yellow-500"
-                                    : item === "PUT"
-                                      ? "text-blue-500"
-                                      : item === "PATCH"
-                                        ? "text-purple-500"
-                                        : "text-destructive") + " font-bold"
+                                  ? "text-yellow-500"
+                                  : item === "PUT"
+                                  ? "text-blue-500"
+                                  : item === "PATCH"
+                                  ? "text-purple-500"
+                                  : "text-destructive") + " font-bold"
                               }
                               key={item}
                               value={item}
@@ -217,10 +249,9 @@ export default function AddApiDialog({
                 control={form.control}
                 name="url"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex items-center">
                     <FormControl>
                       <Input
-                        type="url"
                         placeholder="Url"
                         {...field}
                         size={200}
@@ -228,6 +259,18 @@ export default function AddApiDialog({
                         className={setBorderColor(!!form.formState.errors.url)}
                       />
                     </FormControl>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          {form.formState.errors.url && (
+                            <Info className="mb-2 ml-2 text-destructive" />
+                          )}
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>It is not a saved variable</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </FormItem>
                 )}
               />
@@ -299,7 +342,7 @@ export default function AddApiDialog({
               <AlertDialogCancel
                 ref={buttonRef}
                 onClick={() => {
-                  folderId
+                  folderId && details?.id
                     ? router.push(`/api/${folderId}/${details?.id}`)
                     : null
                   form.reset()
@@ -307,7 +350,12 @@ export default function AddApiDialog({
               >
                 Cancel
               </AlertDialogCancel>
-              <Button type="submit" variant="outline" className="bg-postman">
+              <Button
+                disabled={!!form.formState.errors.url?.message}
+                type="submit"
+                variant="outline"
+                className="bg-postman"
+              >
                 Save
               </Button>
             </AlertDialogFooter>

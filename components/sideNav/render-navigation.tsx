@@ -9,7 +9,7 @@ import { SubmitHandler } from "react-hook-form"
 import { v4 as uuid } from "uuid"
 import * as z from "zod"
 
-import { ApiType, FolderType } from "@/types/api"
+import { ApiType, FolderType, ParamsType } from "@/types/api"
 import { cn, isEmpty } from "@/lib/utils"
 import useImportJSON from "@/hooks/useImportJSON"
 
@@ -167,7 +167,10 @@ export default function RenderNavigation({
   }[] = [
     {
       name: "Env Variables",
-      onClick: (e) => {},
+      onClick: (e) => {
+        e.stopPropagation()
+        router.push(`/api/variables/${collection.id}`)
+      },
     },
     {
       name: "Add Request",
@@ -309,7 +312,7 @@ export default function RenderNavigation({
                 "group relative w-full cursor-pointer items-center justify-between rounded-none"
               )}
             >
-              <div className="flex items-center">
+              <div className="flex items-center ">
                 <span
                   className={
                     (api.method === "GET"
@@ -325,7 +328,9 @@ export default function RenderNavigation({
                 >
                   {api.method}
                 </span>
-                {api.name}
+                <span className="line-clamp-1 w-full md:max-w-[160px] lg:max-w-[130px] xl:max-w-[180px]">
+                  {api.name}
+                </span>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
