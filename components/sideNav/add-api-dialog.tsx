@@ -241,13 +241,13 @@ export default function AddApiDialog({
                 </TabsList>
                 <TabsContent
                   value="params"
-                  className="animate__animated animate__fadeIn"
+                  className="animate__animated animate__fadeIn h-52 overflow-auto"
                 >
                   <MultipleInput propertyName="params" form={form} />
                 </TabsContent>
                 <TabsContent
                   value="headers"
-                  className="animate__animated animate__fadeIn"
+                  className="animate__animated animate__fadeIn h-52 overflow-auto"
                 >
                   <MultipleInput propertyName="headers" form={form} />
                 </TabsContent>
@@ -269,7 +269,7 @@ export default function AddApiDialog({
                     </TabsList>
                     <TabsContent
                       value="raw"
-                      className="animate__animated animate__fadeIn"
+                      className="animate__animated animate__fadeIn h-52 overflow-auto"
                     >
                       {jsonError?.isError ? (
                         <div className="h-4 text-xs font-bold text-red-500">
@@ -287,7 +287,7 @@ export default function AddApiDialog({
                     </TabsContent>
                     <TabsContent
                       value="x-www-form-urlencoded"
-                      className="animate__animated animate__fadeIn relative"
+                      className="animate__animated animate__fadeIn relative h-52 overflow-auto"
                     >
                       <MultipleInput propertyName="body" form={form} />
                     </TabsContent>
