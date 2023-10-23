@@ -95,35 +95,6 @@ export default function RenderNavigation({
     }
   }
 
-  // Create API
-  const createApiHandler: SubmitHandler<ApiType> = (data) => {
-    data.id = uuid()
-    data.params = isEmpty(data.params!) ? [] : data.params
-    data.headers = isEmpty(data.headers!) ? [] : data.headers
-    data.body = isEmpty(data.body!) ? [] : data.body
-
-    createApi(data, collection.id)
-    toast({
-      variant: "success",
-      title: "Api is created",
-    })
-    router.push(`/api/${collection.id}/${data.id}`)
-  }
-
-  // Update Api
-  const updateApiHandler: SubmitHandler<ApiType> = (data) => {
-    data.params = isEmpty(data.params!) ? [] : data.params
-    data.headers = isEmpty(data.headers!) ? [] : data.headers
-    data.body = isEmpty(data.body!) ? [] : data.body
-    updateApi(data, data.id)
-    toast({
-      variant: "success",
-      title: "Api is updated",
-    })
-    router.push(`/api/${collection.id}/${data.id}`)
-    setApiDetails({} as ApiType)
-  }
-
   // Delete Collection
   const deleteApiHandler = (id: string) => {
     deleteApi(id)
@@ -131,7 +102,7 @@ export default function RenderNavigation({
       variant: "success",
       title: `Api is deleted`,
     })
-    if (params.api[1] === id) {
+    if (params.apiId === id) {
       router.push("/")
     }
   }
@@ -165,62 +136,63 @@ export default function RenderNavigation({
     name: React.ReactNode | string
     onClick: (e: any) => void
   }[] = [
-    {
-      name: "Env Variables",
-      onClick: (e) => {
-        e.stopPropagation()
-        router.push(`/api/variables/${collection.id}`)
+      {
+        name: "Env Variables",
+        onClick: (e) => {
+          e.stopPropagation()
+          router.push(`/api/variables/${collection.id}`)
+        },
       },
-    },
-    {
-      name: "Add Request",
-      onClick: (e) => {
-        e?.stopPropagation()
-        addApiButtonRef.current?.click()
+      {
+        name: "Add Request",
+        onClick: (e) => {
+          e?.stopPropagation()
+          // addApiButtonRef.current?.click()
+          router.push(`/api/${collection.id}/add`)
+        },
       },
-    },
-    {
-      name: "Add Folder",
-      onClick: (e) => {
-        e?.stopPropagation()
-        addFolderButtonRef.current?.click()
+      {
+        name: "Add Folder",
+        onClick: (e) => {
+          e?.stopPropagation()
+          addFolderButtonRef.current?.click()
+        },
       },
-    },
-    {
-      name: "Rename",
-      onClick: (e) => {
-        e?.stopPropagation()
-        buttonRef.current?.click()
+      {
+        name: "Rename",
+        onClick: (e) => {
+          e?.stopPropagation()
+          buttonRef.current?.click()
+        },
       },
-    },
 
-    {
-      name: "Export",
-      onClick: (e) => {
-        e?.stopPropagation()
+      {
+        name: "Export",
+        onClick: (e) => {
+          e?.stopPropagation()
+        },
       },
-    },
-    {
-      name: (
-        <InputFile
-          collectionId={collection.id !== "undefined" ? collection.id : ""}
-          className="w-full justify-start border-0 bg-transparent py-0 pl-0 text-left hover:bg-secondary"
-        >
-          Import
-        </InputFile>
-      ),
-      onClick: (e) => {
-        e?.stopPropagation()
+      {
+        name: (
+          <InputFile
+            collectionId={collection.id !== "undefined" ? collection.id : ""}
+            className="w-full justify-start border-0 bg-transparent py-0 pl-0 text-left hover:bg-secondary"
+          >
+            Import
+          </InputFile>
+        ),
+        onClick: (e) => {
+          e?.stopPropagation()
+        },
       },
-    },
-    {
-      name: "Delete",
-      onClick: (e) => {
-        e?.stopPropagation()
-        deleteButtonRef.current?.click()
+      {
+        name: "Delete",
+        onClick: (e) => {
+          e?.stopPropagation()
+          deleteButtonRef.current?.click()
+        },
       },
-    },
-  ]
+    ]
 
   return (
     <>
@@ -309,7 +281,10 @@ export default function RenderNavigation({
               onClick={() => router.push(`/api/${collection.id}/${api.id}`)}
               className={cn(
                 buttonVariants({ variant: "ghost", size: "xs" }),
-                "group relative w-full cursor-pointer items-center justify-between rounded-none"
+                "group relative w-full cursor-pointer items-center justify-between rounded-none",
+                params.apiId && params.apiId === api.id
+                  ? "border-l-2 border-primary bg-secondary"
+                  : ""
               )}
             >
               <div className="flex items-center ">
@@ -318,12 +293,12 @@ export default function RenderNavigation({
                     (api.method === "GET"
                       ? "text-green-500"
                       : api.method === "POST"
-                      ? "text-yellow-500"
-                      : api.method === "PUT"
-                      ? "text-blue-500"
-                      : api.method === "PATCH"
-                      ? "text-purple-500"
-                      : "text-destructive") + " font-bold mr-2 text-xs"
+                        ? "text-yellow-500"
+                        : api.method === "PUT"
+                          ? "text-blue-500"
+                          : api.method === "PATCH"
+                            ? "text-purple-500"
+                            : "text-destructive") + " font-bold mr-2 text-xs"
                   }
                 >
                   {api.method}
@@ -344,8 +319,8 @@ export default function RenderNavigation({
                     onClick={(e) => {
                       setApiDetails(api)
                       e.stopPropagation()
-                      router.push("/")
-                      updateApiButtonRef.current?.click()
+                      router.push(`/api/${collection.id}/${api.id}/update`)
+                      // updateApiButtonRef.current?.click()
                     }}
                   >
                     Update
@@ -384,24 +359,6 @@ export default function RenderNavigation({
         <AddCollectionDialog type={collection.type} onSubmit={addFolder}>
           <button ref={addFolderButtonRef}>click</button>
         </AddCollectionDialog>
-      </div>
-
-      {/* Updated API request Dialog */}
-      <div className="hidden">
-        <AddApiDialog
-          details={apiDetails}
-          folderId={collection.id}
-          onCreateApi={updateApiHandler}
-        >
-          <button ref={updateApiButtonRef}>click</button>
-        </AddApiDialog>
-      </div>
-
-      {/* Add API request Dialog */}
-      <div className="hidden">
-        <AddApiDialog folderId={collection.id} onCreateApi={createApiHandler}>
-          <button ref={addApiButtonRef}>click</button>
-        </AddApiDialog>
       </div>
 
       {/* Delete Dialog */}

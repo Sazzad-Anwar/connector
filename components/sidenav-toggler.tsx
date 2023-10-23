@@ -27,10 +27,10 @@ export default function SidenavToggler() {
           asChild
           className={cn(
             buttonVariants({ variant: "outline", size: "xs" }),
-            "p-1 lg:hidden"
+            "flex h-6 w-6 p-1 lg:hidden"
           )}
         >
-          <Menu size={12} />
+          <Menu size={20} />
         </SheetTrigger>
         <SheetContent side="left" className="w-full p-0 sm:w-[300px]">
           <SideNav isLoadingInSheet={true} />

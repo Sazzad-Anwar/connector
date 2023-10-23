@@ -1,13 +1,13 @@
 "use client"
 
-import React, { forwardRef, RefAttributes } from "react"
+import React, { forwardRef, useEffect, useRef, useState } from "react"
 import MonacoEditor from "@monaco-editor/react"
 import { useTheme } from "next-themes"
 
 import Loader from "./loader"
 
 type PropsType = {
-  result?: object
+  result?: object | string | any[]
   height?: number
   readOnly?: boolean
   defaultLanguage?: "json" | "javascript"
@@ -17,17 +17,15 @@ type PropsType = {
 
 const ResultRender = forwardRef<HTMLDivElement, PropsType>(
   function ResultRender(
-    {
-      result,
-      height,
-      readOnly,
-      setData,
-      defaultLanguage,
-      className,
-    }: PropsType,
+    { result, height, readOnly, setData, className }: PropsType,
     ref
   ) {
     const { theme, systemTheme } = useTheme()
+    const editorRef = useRef<any>(null)
+    const [isErrorResult, setIsErrorResult] = useState<boolean>(false)
+    const [editorValue, setEditorValue] = useState<string>(
+      JSON.stringify(result, null, "\t") ?? "{}"
+    )
 
     function setEditorTheme(monaco: any) {
       monaco.editor.defineTheme("onedark", {
@@ -49,22 +47,53 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
 
     const handleEditorChange = (value: any) => {
       setData && setData(value)
+      setEditorValue(value)
     }
+
+    useEffect(() => {
+      try {
+        if (typeof result === "string") {
+          JSON.parse(result as string)
+          setIsErrorResult(false)
+        }
+      } catch (error: any) {
+        setIsErrorResult(true)
+        setEditorValue(result as string)
+      }
+    }, [result])
+
+    useEffect(() => {
+      if (editorRef.current) {
+        // Store the current cursor position and selection
+        const currentPosition = editorRef.current.getPosition()
+        const currentSelection = editorRef.current.getSelection()
+
+        // Update the editor value
+        editorRef.current.setValue(editorValue)
+
+        // Set the cursor position and selection back
+        editorRef.current.setPosition(currentPosition)
+        editorRef.current.setSelection(currentSelection)
+      }
+    }, [editorValue])
 
     return (
       <div ref={ref}>
         <MonacoEditor
           beforeMount={setEditorTheme}
           language="json"
-          value={JSON.stringify(result, null, "\t")}
+          value={editorValue}
           options={{
+            automaticLayout: true,
+            formatOnType: true,
+            formatOnPaste: true,
             editor: {
               setTheme: {},
             },
             autoIndent: "brackets",
             copyWithSyntaxHighlighting: true,
             fontLigatures: true,
-            fontSize: 14,
+            fontSize: 15,
             wordWrap: "on",
             wrappingIndent: "deepIndent",
             wrappingStrategy: "advanced",
@@ -81,13 +110,13 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
             theme === "system" && systemTheme === "dark"
               ? "onedark"
               : theme === "dark"
-              ? "onedark"
-              : "light"
+                ? "onedark"
+                : "light"
           }
           loading={<Loader />}
           height={height}
           width="100%"
-          defaultLanguage={defaultLanguage ?? "json"}
+          defaultLanguage={isErrorResult ? "html" : "json"}
           onChange={handleEditorChange}
           className={className}
         />

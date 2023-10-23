@@ -48,7 +48,26 @@ export function isEmpty(arr: ParamsType[]) {
   return arr?.find((item) => item.key === "")
 }
 
-export function getQueryString(params: { [key: string]: string }) {
+export function getQueryString(
+  params: { [key: string]: string },
+  env?: ParamsType[]
+) {
+  if (env && env.length) {
+    Object.keys(params).map((item) => {
+      if (
+        containsDynamicVariable(params[item]) &&
+        containsVariable(params[item], env)
+      ) {
+        params[item] = replaceVariables(params[item], env)
+      } else if (
+        containsDynamicVariable(params[item]) &&
+        containsVariable(params[item], env)
+      ) {
+        delete params[item]
+      }
+    })
+  }
+
   return QueryString.stringify(params, { encodeValuesOnly: true })
 }
 

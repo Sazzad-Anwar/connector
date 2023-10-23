@@ -147,8 +147,6 @@ export default function AddApiDialog({
     }
   }, [form, url, rootParent])
 
-  console.log(form.formState.errors)
-
   const setBorderColor = (isError: boolean) =>
     isError ? "border-destructive" : ""
 
@@ -203,14 +201,14 @@ export default function AddApiDialog({
                             (field.value === "GET"
                               ? "text-green-500"
                               : field.value === "POST"
-                              ? "text-yellow-500"
-                              : field.value === "PUT"
-                              ? "text-blue-500"
-                              : field.value === "PATCH"
-                              ? "text-purple-500"
-                              : field.value === "DELETE"
-                              ? "text-destructive"
-                              : "text-foreground") +
+                                ? "text-yellow-500"
+                                : field.value === "PUT"
+                                  ? "text-blue-500"
+                                  : field.value === "PATCH"
+                                    ? "text-purple-500"
+                                    : field.value === "DELETE"
+                                      ? "text-destructive"
+                                      : "text-foreground") +
                             " font-bold w-24 " +
                             setBorderColor(!!form.formState.errors.method)
                           }
@@ -226,12 +224,12 @@ export default function AddApiDialog({
                                 (item === "GET"
                                   ? "text-green-500"
                                   : item === "POST"
-                                  ? "text-yellow-500"
-                                  : item === "PUT"
-                                  ? "text-blue-500"
-                                  : item === "PATCH"
-                                  ? "text-purple-500"
-                                  : "text-destructive") + " font-bold"
+                                    ? "text-yellow-500"
+                                    : item === "PUT"
+                                      ? "text-blue-500"
+                                      : item === "PATCH"
+                                        ? "text-purple-500"
+                                        : "text-destructive") + " font-bold"
                               }
                               key={item}
                               value={item}
@@ -267,7 +265,7 @@ export default function AddApiDialog({
                           )}
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>It is not a saved variable</p>
+                          <p>It is not a valid variable</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>

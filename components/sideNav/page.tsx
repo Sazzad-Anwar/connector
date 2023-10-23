@@ -1,5 +1,5 @@
 "use client"
-import React, { useRef, useState } from "react"
+import React, { useCallback, useRef, useState } from "react"
 
 import { SideNav } from "./navigations"
 import RenderNavigation from "./render-navigation"
@@ -54,40 +54,36 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
     })
   }
 
-  const Navigation = () => {
-    return <div className="h-full overflow-auto">
-      <MainNav />
-      <div className="mb-3 flex items-center px-4 pb-0 pt-2">
-        <AddCollectionDialog type="collection" onSubmit={onSubmit}>
-          <Button variant="outline" size="xs" className="p-1">
-            <Plus size={16} />
-          </Button>
-        </AddCollectionDialog>
-        <Input
-          className="mx-2 h-7 rounded"
-          value={search}
-          placeholder="Search"
-          onChange={e => {
-            setSearch(e.target.value);
-            findOneFolder(e.target.value)
-          }}
-        />
-        <InputFile variant="outline" size="xs" className="p-1">
-          <Braces size={16} />
-        </InputFile>
-      </div>
-      {!collections?.length && <div className="flex h-96 w-full items-center justify-center">
-        <h1 className="opacity-40">No Collection Found</h1>
-      </div>}
-      {collections?.map(collection => <RenderNavigation key={collection.id} collection={collection} />)}
-    </div>
-  }
-
   return (
     <aside
       className={cn("relative h-screen overflow-hidden border-r bg-background ", isLoadingInSheet ? "w-full" : "w-0", isOpen ? "lg:w-[250px] xl:w-[300px]" : "hidden")}
     >
-      <Navigation />
+      <div className="h-full overflow-auto">
+        <MainNav />
+        <div className="mb-3 flex items-center px-4 pb-0 pt-2">
+          <AddCollectionDialog type="collection" onSubmit={onSubmit}>
+            <Button variant="outline" size="xs" className="p-1">
+              <Plus size={16} />
+            </Button>
+          </AddCollectionDialog>
+          <Input
+            className="mx-2 h-7 rounded"
+            value={search}
+            placeholder="Search"
+            onChange={e => {
+              setSearch(e.target.value);
+              findOneFolder(e.target.value)
+            }}
+          />
+          <InputFile variant="outline" size="xs" className="p-1">
+            <Braces size={16} />
+          </InputFile>
+        </div>
+        {!collections?.length && <div className="flex h-96 w-full items-center justify-center">
+          <h1 className="opacity-40">No Collection Found</h1>
+        </div>}
+        {collections?.map(collection => <RenderNavigation key={collection.id} collection={collection} />)}
+      </div>
     </aside>
   )
 }

@@ -37,13 +37,13 @@ export default function EnvVariables() {
         collection?.id && collection?.env?.length
           ? collection?.env
           : [
-              {
-                id: uuid(),
-                key: "",
-                value: "",
-                description: "",
-              },
-            ],
+            {
+              id: uuid(),
+              key: "",
+              value: "",
+              description: "",
+            },
+          ],
     },
   })
   const { fields, insert, remove } = useFieldArray({
@@ -63,8 +63,6 @@ export default function EnvVariables() {
       title: "Variables are saved",
     })
   }
-
-  console.log(form.formState.errors)
 
   return (
     <section className="p-5">

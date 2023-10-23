@@ -1,11 +1,14 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
+import useApiStore from "@/store/store"
 import { Plus, Trash2 } from "lucide-react"
 import { useFieldArray, UseFormReturn } from "react-hook-form"
 import { v4 as uuid } from "uuid"
 
 import { ApiType } from "@/types/api"
+import { cn, containsDynamicVariable, containsVariable } from "@/lib/utils"
 
 import { Button } from "./ui/button"
 import {
@@ -23,10 +26,21 @@ export type PropsType = {
 }
 
 export default function MultipleInput({ form, propertyName }: PropsType) {
+  const { env, getEnv } = useApiStore()
+  const routeParams = useParams()
   const { fields, insert, append, remove } = useFieldArray({
     control: form.control,
     name: propertyName,
   })
+  let folderId = routeParams?.api && routeParams.api[0]
+
+  let params = form.watch(propertyName)
+
+  useEffect(() => {
+    if (folderId) {
+      getEnv(folderId)
+    }
+  }, [getEnv, folderId])
 
   useEffect(() => {
     if (fields.length < 1) {
@@ -38,6 +52,48 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
       })
     }
   }, [fields, append])
+
+  const isErrorIndex = (index: number) => {
+    let items = params?.filter(
+      (item) =>
+        item.value !== "" &&
+        containsDynamicVariable(item.value) &&
+        !containsVariable(item.value, env)
+    )
+
+    let indexArr: number[] = []
+
+    items?.map((item) => {
+      indexArr.push(params?.indexOf(item)!)
+    })
+
+    if (indexArr.includes(index)) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  const isCorrectVar = (index: number) => {
+    let items = params?.filter(
+      (item) =>
+        item.value !== "" &&
+        containsDynamicVariable(item.value) &&
+        containsVariable(item.value, env)
+    )
+
+    let indexArr: number[] = []
+
+    items?.map((item) => {
+      indexArr.push(params?.indexOf(item)!)
+    })
+
+    if (indexArr.includes(index)) {
+      return true
+    } else {
+      return false
+    }
+  }
 
   return (
     <Table>
@@ -72,7 +128,14 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
             <TableCell className="border p-0">
               <input
                 {...form.register(`${propertyName}.${index}.value` as const)}
-                className="h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none"
+                className={cn(
+                  "h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none",
+                  isErrorIndex(index)
+                    ? "text-red-500"
+                    : isCorrectVar(index)
+                      ? "text-cyan-500"
+                      : "text-white"
+                )}
                 placeholder="Value"
               />
             </TableCell>

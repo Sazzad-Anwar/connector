@@ -12,7 +12,7 @@ type Store = {
   createEnv: (data: ParamsType) => void
   updateFolder: (data: FolderType, id: string) => void
   getApi: (id: string) => void
-  getEnv: (apiId: string) => void
+  getEnv: (folderId: string) => void
   updateApi: (data: ApiType, id: string) => void
   updateEnv: (data: ParamsType, id: string) => void
   deleteFolder: (id: string) => void
@@ -167,31 +167,34 @@ function getApiDetailsById(arr: FolderType[], apiId: string): ApiType | null {
 
 //find Variables list from parent
 function findParentEnvInArray(
-  dataArray: FolderType[],
-  targetApiId: string
+  folder: FolderType[],
+  childId: string
 ): ParamsType[] | null {
-  for (const data of dataArray) {
-    // Check if any of the parent APIs match the target API ID
-    for (const api of data?.apis!) {
-      if (api.id === targetApiId) {
-        if (data.env) {
-          return data.env
-        } else {
-          return null // If env property is missing in the parent
-        }
-      }
+  let result: FolderType | undefined = undefined
+
+  function findParentAndCollect(child: FolderType, path: FolderType[]) {
+    path.push(child)
+
+    if (child.id === childId) {
+      result = path[0] // The first element in the path is the root parent
+      return
     }
 
-    // Recursively search in nested children
-    if (data.children && data.children.length > 0) {
-      const result = findParentEnvInArray(data.children, targetApiId)
-      if (result) {
-        return result // Return the result if found in a child
+    if (child.children) {
+      for (const subChild of child.children) {
+        findParentAndCollect(subChild, path.slice()) // Create a new path for each child
       }
     }
   }
 
-  return null // API ID not found in the data array
+  for (const item of folder) {
+    findParentAndCollect(item, [])
+    if (result) {
+      break // If the root parent is found, exit the loop
+    }
+  }
+
+  return result!.env!
 }
 
 const useApiStore = create<Store>()((set) => ({
@@ -217,11 +220,11 @@ const useApiStore = create<Store>()((set) => ({
       localStorage.setItem("collections", JSON.stringify(collections))
   },
 
-  getEnv: (apiId) => {
+  getEnv: (folderId) => {
     let collections: FolderType[] = JSON.parse(
       isLocalStorageAvailable() ? localStorage.getItem("collections")! : "[]"
     )
-    let variables = findParentEnvInArray(collections, apiId)
+    let variables = findParentEnvInArray(collections, folderId)
     set(() => ({
       env: variables ?? [],
     }))
@@ -234,8 +237,8 @@ const useApiStore = create<Store>()((set) => ({
     collections =
       name !== ""
         ? collections.filter((item) =>
-            item.name.toLowerCase().includes(name.toLowerCase())
-          )
+          item.name.toLowerCase().includes(name.toLowerCase())
+        )
         : collections
     set(() => ({
       collections,
@@ -256,7 +259,6 @@ const useApiStore = create<Store>()((set) => ({
     let collections = JSON.parse(
       isLocalStorageAvailable() ? localStorage.getItem("collections")! : "[]"
     )
-    console.log(collections)
     if (id) {
       collections = addApi(collections, id, data)
     } else {
@@ -270,7 +272,7 @@ const useApiStore = create<Store>()((set) => ({
       localStorage.setItem("collections", JSON.stringify(collections))
   },
 
-  createEnv: (data) => {},
+  createEnv: (data) => { },
 
   updateFolder: (data, id) => {
     let collections = JSON.parse(
@@ -302,7 +304,7 @@ const useApiStore = create<Store>()((set) => ({
       localStorage.setItem("collections", JSON.stringify(collections))
   },
 
-  updateEnv: (data, id) => {},
+  updateEnv: (data, id) => { },
 
   deleteFolder: (id) => {
     let collections = JSON.parse(
@@ -331,7 +333,7 @@ const useApiStore = create<Store>()((set) => ({
       localStorage.setItem("collections", JSON.stringify(collections))
   },
 
-  deleteEnv: (id) => {},
+  deleteEnv: (id) => { },
 }))
 
 export default useApiStore

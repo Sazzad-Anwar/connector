@@ -54,9 +54,13 @@ export default function AddCollectionDialog({
   const handleSubmit: SubmitHandler<z.infer<typeof CollectionSchema>> = (
     data
   ) => {
+    let updatedData = {
+      ...data,
+      env: [],
+    }
     buttonRef.current?.click()
     form.reset()
-    onSubmit(data)
+    onSubmit(updatedData)
   }
 
   return (

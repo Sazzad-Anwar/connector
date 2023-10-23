@@ -14,7 +14,7 @@ import { JSONErrorType } from "./api"
 
 type PropsType = {
   form: UseFormReturn<ApiType, any, undefined>
-  api: ApiType
+  api?: ApiType
 }
 
 export default function InputTabs({ form, api }: PropsType) {
@@ -60,16 +60,33 @@ export default function InputTabs({ form, api }: PropsType) {
   }, [])
 
   useEffect(() => {
-    setJsonBodyData(arrayToObjectConversion(api.body!))
+    if (api?.id) {
+      setJsonBodyData(arrayToObjectConversion(api?.body!))
+    }
   }, [api])
 
   return (
     <div className="min-h-[275px] p-5 pb-0 pr-0">
       <Tabs defaultValue="params" className="w-full">
         <TabsList>
-          <TabsTrigger value="params">Params</TabsTrigger>
-          <TabsTrigger value="headers">Headers </TabsTrigger>
-          <TabsTrigger value="body">Body</TabsTrigger>
+          <TabsTrigger value="params">
+            Params{" "}
+            {api?.params?.length ? (
+              <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+            ) : null}
+          </TabsTrigger>
+          <TabsTrigger value="headers">
+            Headers{" "}
+            {api?.headers?.length ? (
+              <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+            ) : null}{" "}
+          </TabsTrigger>
+          <TabsTrigger value="body">
+            Body{" "}
+            {api?.body?.length ? (
+              <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+            ) : null}
+          </TabsTrigger>
         </TabsList>
         <TabsContent
           value="params"
