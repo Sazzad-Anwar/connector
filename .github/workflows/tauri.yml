@@ -5,7 +5,7 @@ on:
       - "*"
       - release
 jobs:
-  test-app:
+  test:
     strategy:
       fail-fast: false
       matrix:
@@ -59,7 +59,7 @@ jobs:
               prerelease: false
             })
             return data.id
-  build-tauri:
+  build:
     if: github.ref == 'refs/heads/release'
     needs: create-release
     permissions:
@@ -89,7 +89,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
-  publish-release:
+  publish:
     if: github.ref == 'refs/heads/release'
     permissions:
       contents: write
