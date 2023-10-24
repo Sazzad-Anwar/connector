@@ -61,7 +61,7 @@ jobs:
             return data.id
   build:
     if: github.ref == 'refs/heads/release'
-    needs: release
+    needs: [test, release]
     permissions:
       contents: write
     strategy:
@@ -94,7 +94,7 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-20.04
-    needs: [release, build]
+    needs: [test, release, build]
     steps:
       - name: publish release
         id: publish-release
