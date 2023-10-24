@@ -5,7 +5,7 @@ on:
       - "*"
       - release
 jobs:
-  test-tauri:
+  test-app:
     strategy:
       fail-fast: false
       matrix:
