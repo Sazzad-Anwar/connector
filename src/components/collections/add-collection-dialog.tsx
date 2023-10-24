@@ -76,7 +76,11 @@ export default function AddCollectionDialog({
                     {type === "collection" ? "Collection" : "Folder"} Name
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="name" {...field} />
+                    <Input
+                      placeholder="name"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

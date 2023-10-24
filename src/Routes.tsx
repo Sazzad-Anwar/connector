@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 const Api = lazy(() => import("./pages/api/page"));
 const Home = lazy(() => import("./pages/page"));
 const AddApi = lazy(() => import("./pages/api/add/page"));
+const UpdateApi = lazy(() => import("./pages/api/update/page"));
 const Variables = lazy(() => import("./pages/variables/page"));
 import Loading from "./components/loading";
 import Layout from "./components/layout";
@@ -29,6 +30,18 @@ const router = createBrowserRouter([
         <Suspense fallback={<Loading />}>
           <ErrorBoundary fallback={<Error />}>
             <Variables />
+          </ErrorBoundary>
+        </Suspense>
+      </Layout>
+    ),
+  },
+  {
+    path: "/api/:folderId/:apiId/update",
+    element: (
+      <Layout>
+        <Suspense fallback={<Loading />}>
+          <ErrorBoundary fallback={<Error />}>
+            <UpdateApi />
           </ErrorBoundary>
         </Suspense>
       </Layout>
