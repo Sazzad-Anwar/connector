@@ -29,7 +29,7 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  release:
+  create-release:
     if: github.ref == 'refs/heads/release'
     permissions:
       contents: write
@@ -61,7 +61,7 @@ jobs:
             return data.id
   build:
     if: github.ref == 'refs/heads/release'
-    needs: [test, release]
+    needs: create-release
     permissions:
       contents: write
     strategy:
@@ -94,7 +94,7 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-20.04
-    needs: [test, release, build]
+    needs: [create-release, build-tauri]
     steps:
       - name: publish release
         id: publish-release
