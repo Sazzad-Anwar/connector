@@ -122,64 +122,66 @@ export default function RenderNavigation({
   const folderDropDownMenu: {
     name: React.ReactNode | string;
     onClick: (e: any) => void;
+    isHidden?: boolean;
   }[] = [
-    {
-      name: "Env Variables",
-      onClick: (e) => {
-        e.stopPropagation();
-        navigate(`/api/variables/${collection.id}`);
+      {
+        name: "Env Variables",
+        onClick: (e) => {
+          e.stopPropagation();
+          navigate(`/api/variables/${collection.id}`);
+        },
+        isHidden: collection.type === "folder",
       },
-    },
-    {
-      name: "Add Request",
-      onClick: (e) => {
-        e?.stopPropagation();
-        // addApiButtonRef.current?.click()
-        navigate(`/api/${collection.id}/add`);
+      {
+        name: "Add Request",
+        onClick: (e) => {
+          e?.stopPropagation();
+          navigate(`/api/${collection.id}/add`);
+        },
       },
-    },
-    {
-      name: "Add Folder",
-      onClick: (e) => {
-        e?.stopPropagation();
-        addFolderButtonRef.current?.click();
+      {
+        name: "Add Folder",
+        onClick: (e) => {
+          e?.stopPropagation();
+          addFolderButtonRef.current?.click();
+        },
       },
-    },
-    {
-      name: "Rename",
-      onClick: (e) => {
-        e?.stopPropagation();
-        buttonRef.current?.click();
+      {
+        name: "Rename",
+        onClick: (e) => {
+          e?.stopPropagation();
+          buttonRef.current?.click();
+        },
       },
-    },
 
-    {
-      name: "Export",
-      onClick: (e) => {
-        e?.stopPropagation();
+      {
+        name: "Export",
+        onClick: (e) => {
+          e?.stopPropagation();
+        },
       },
-    },
-    {
-      name: (
-        <InputFile
-          collectionId={collection.id !== "undefined" ? collection.id : ""}
-          className="w-full h-5 text-secondary-foreground justify-start border-0 bg-transparent py-0 pl-0 text-left hover:bg-secondary"
-        >
-          Import
-        </InputFile>
-      ),
-      onClick: (e) => {
-        e?.stopPropagation();
+      {
+        name: (
+          <InputFile
+            collectionId={collection.id !== "undefined" ? collection.id : ""}
+            className="w-full h-5 text-secondary-foreground justify-start border-0 bg-transparent py-0 pl-0 text-left hover:bg-secondary"
+          >
+            Import
+          </InputFile>
+        ),
+        onClick: (e) => {
+          e?.stopPropagation();
+        },
+        isHidden: collection.type === "folder",
       },
-    },
-    {
-      name: "Delete",
-      onClick: (e) => {
-        e?.stopPropagation();
-        deleteButtonRef.current?.click();
+      {
+        name: "Delete",
+        onClick: (e) => {
+          e?.stopPropagation();
+          deleteButtonRef.current?.click();
+        },
       },
-    },
-  ];
+    ];
 
   return (
     <>
@@ -215,7 +217,7 @@ export default function RenderNavigation({
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {folderDropDownMenu.map((item) => {
-              if (collection.type === "collection") {
+              if (!item.isHidden) {
                 return (
                   <DropdownMenuItem
                     key={uuid()}
@@ -234,23 +236,7 @@ export default function RenderNavigation({
                   </DropdownMenuItem>
                 );
               } else {
-                return (
-                  <DropdownMenuItem
-                    key={uuid()}
-                    onClick={(e) => {
-                      item.onClick(e);
-                      if (item.name === "Export") {
-                        downloadFile({
-                          data: collection,
-                          fileName: collection.name + ".json",
-                          fileType: "text/json",
-                        });
-                      }
-                    }}
-                  >
-                    {item.name}
-                  </DropdownMenuItem>
-                );
+                return null;
               }
             })}
           </DropdownMenuContent>
@@ -280,12 +266,12 @@ export default function RenderNavigation({
                     (api.method === "GET"
                       ? "text-green-500"
                       : api.method === "POST"
-                      ? "text-yellow-500"
-                      : api.method === "PUT"
-                      ? "text-blue-500"
-                      : api.method === "PATCH"
-                      ? "text-purple-500"
-                      : "text-destructive") + " font-bold mr-2 text-xs"
+                        ? "text-yellow-500"
+                        : api.method === "PUT"
+                          ? "text-blue-500"
+                          : api.method === "PATCH"
+                            ? "text-purple-500"
+                            : "text-destructive") + " font-bold mr-2 text-xs"
                   }
                 >
                   {api.method}
@@ -307,7 +293,6 @@ export default function RenderNavigation({
                       setApiDetails(api);
                       e.stopPropagation();
                       navigate(`/api/${collection.id}/${api.id}/update`);
-                      // updateApiButtonRef.current?.click()
                     }}
                   >
                     Update

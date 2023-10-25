@@ -10,28 +10,18 @@ import ResultRender from "../result-renderer";
 type PropsType = {
   isLoading: boolean;
   result: any;
+  height?: number;
   responseStatus: ResponseStatus;
 };
 
 export default function ApiResult({
   isLoading,
   result,
+  height,
   responseStatus,
 }: PropsType) {
   const resultDivRef = useRef<HTMLDivElement>(null);
-  const [isResultFullScreen, setIsResultFullScreen] = useState<boolean>(false);
   const resultContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function onFullscreenChange() {
-      setIsResultFullScreen(Boolean(document.fullscreenElement));
-    }
-
-    document.addEventListener("fullscreenchange", onFullscreenChange);
-
-    return () =>
-      document.removeEventListener("fullscreenchange", onFullscreenChange);
-  }, []);
 
   const payloadSize = (data: any): string => {
     // Convert JSON data to string
@@ -48,37 +38,11 @@ export default function ApiResult({
 
   return (
     <section ref={resultDivRef} className="border-t py-1">
-      {isLoading && (
-        <Loading
-          height={
-            typeof window !== "undefined"
-              ? isResultFullScreen
-                ? window.outerHeight
-                : window.innerHeight - 504
-              : resultDivRef.current!.offsetHeight! - 57
-          }
-        />
-      )}
+      {isLoading && <Loading height={height! - 300} />}
       {!isLoading && result && (
         <>
           <div className="flex items-center justify-between py-3 pl-5 pr-0 text-sm">
-            <h1 className="text-base">
-              Response{" "}
-              <Button
-                type="button"
-                variant="ghost"
-                size="xs"
-                className="h-5 w-5 p-0"
-              >
-                <Maximize
-                  onClick={() => {
-                    resultContainerRef.current?.requestFullscreen();
-                    setIsResultFullScreen(true);
-                  }}
-                  size={13}
-                />
-              </Button>
-            </h1>
+            <h1 className="text-base">Response</h1>
             <div className="flex items-center">
               <p
                 className={cn(
@@ -106,13 +70,7 @@ export default function ApiResult({
           </div>
           <ResultRender
             ref={resultContainerRef}
-            height={
-              typeof window !== "undefined"
-                ? isResultFullScreen
-                  ? window.outerHeight
-                  : window.innerHeight - 504
-                : resultDivRef.current!.offsetHeight! - 57
-            }
+            height={height}
             result={result && result}
           />
         </>

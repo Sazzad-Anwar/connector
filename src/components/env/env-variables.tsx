@@ -1,6 +1,6 @@
 import useApiStore from "@/store/store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MoveRight, Plus, Trash2 } from "lucide-react";
+import { ChevronsRight, Plus, Trash2 } from "lucide-react";
 import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { v4 as uuid } from "uuid";
 
@@ -34,13 +34,13 @@ export default function EnvVariables() {
         collection?.id && collection?.env?.length
           ? collection?.env
           : [
-              {
-                id: uuid(),
-                key: "",
-                value: "",
-                description: "",
-              },
-            ],
+            {
+              id: uuid(),
+              key: "",
+              value: "",
+              description: "",
+            },
+          ],
     },
   });
   const { fields, insert, remove } = useFieldArray({
@@ -68,7 +68,7 @@ export default function EnvVariables() {
         <h1 className="ml-5 text-base lg:text-lg xl:text-xl">
           {collection?.name}
         </h1>
-        <MoveRight size={13} className="mx-2" />
+        <ChevronsRight size={13} className="mx-2" />
         <h1 className="text-base lg:text-lg xl:text-xl">Variables</h1>
       </div>
       <Form {...form}>

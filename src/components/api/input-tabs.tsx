@@ -7,7 +7,6 @@ import { ApiType, ParamsType } from "@/types/api";
 import { arrayToObjectConversion } from "@/lib/utils";
 
 import MultipleInput from "../multiple-input";
-import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { JSONErrorType } from "./api";
 import ResultRender from "../result-renderer";
@@ -15,12 +14,11 @@ import ResultRender from "../result-renderer";
 type PropsType = {
   form: UseFormReturn<ApiType, any, undefined>;
   api?: ApiType;
+  height?: number;
 };
 
-export default function InputTabs({ form, api }: PropsType) {
+export default function InputTabs({ form, api, height }: PropsType) {
   const jsonBodyDivRef = useRef<HTMLDivElement>(null);
-  const [isJSONInputFullScreen, setIsJSONInputFullScreen] =
-    useState<boolean>(false);
   const [jsonBodyData, setJsonBodyData] = useState<any>({});
   const [jsonError, setJsonError] = useState<JSONErrorType>();
 
@@ -50,23 +48,13 @@ export default function InputTabs({ form, api }: PropsType) {
   };
 
   useEffect(() => {
-    function onFullscreenChange() {
-      setIsJSONInputFullScreen(Boolean(document.fullscreenElement));
-    }
-
-    document.addEventListener("fullscreenchange", onFullscreenChange);
-    return () =>
-      document.removeEventListener("fullscreenchange", onFullscreenChange);
-  }, []);
-
-  useEffect(() => {
     if (api?.id) {
       setJsonBodyData(arrayToObjectConversion(api!.body!));
     }
   }, [api]);
 
   return (
-    <div className="min-h-[275px] p-5 pb-0 pr-0">
+    <div className="p-5 pb-0 pr-0">
       <Tabs defaultValue="params" className="w-full">
         <TabsList>
           <TabsTrigger value="params">
@@ -90,13 +78,13 @@ export default function InputTabs({ form, api }: PropsType) {
         </TabsList>
         <TabsContent
           value="params"
-          className="animate__animated animate__fadeIn my-5 h-52 overflow-auto"
+          className="animate__animated animate__fadeIn my-5 h-[calc(100vh-216px)] overflow-auto"
         >
           <MultipleInput propertyName="params" form={form} />
         </TabsContent>
         <TabsContent
           value="headers"
-          className="animate__animated animate__fadeIn h-52 overflow-auto"
+          className="animate__animated animate__fadeIn"
         >
           <MultipleInput propertyName="headers" form={form} />
         </TabsContent>
@@ -122,31 +110,11 @@ export default function InputTabs({ form, api }: PropsType) {
                 ) : (
                   <div className="h-4"></div>
                 )}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="xs"
-                  className="h-5 w-5 p-0"
-                >
-                  <Maximize
-                    onClick={() => {
-                      jsonBodyDivRef.current?.requestFullscreen();
-                      setIsJSONInputFullScreen(true);
-                    }}
-                    size={13}
-                  />
-                </Button>
               </div>
               <ResultRender
                 ref={jsonBodyDivRef}
                 result={jsonBodyData}
-                height={
-                  isJSONInputFullScreen
-                    ? typeof window !== "undefined"
-                      ? window.outerHeight
-                      : 197
-                    : 197
-                }
+                height={height}
                 readOnly={false}
                 setData={setJsonBody}
                 className="border-t pt-3"
@@ -154,7 +122,7 @@ export default function InputTabs({ form, api }: PropsType) {
             </TabsContent>
             <TabsContent
               value="x-www-form-urlencoded"
-              className="animate__animated animate__fadeIn relative h-52 overflow-auto"
+              className="animate__animated animate__fadeIn relative"
             >
               <MultipleInput propertyName="body" form={form} />
             </TabsContent>

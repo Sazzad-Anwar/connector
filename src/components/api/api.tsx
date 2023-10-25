@@ -34,6 +34,7 @@ import NotFound from "../notFound";
 import Loading from "../loading";
 import SidenavToggler from "../nav/sidenav-toggler";
 import Breadcrumbs from "../breadcrumb";
+import SplitPane, { Pane } from "split-pane-react";
 
 export type JSONErrorType = {
   isError: boolean;
@@ -51,6 +52,10 @@ export default function Api() {
   const params = useParams();
   const navigate = useNavigate();
   const [result, setResult] = useState<any>();
+  const [splitPanelHeight, setSplitPanelHeight] = useState<number>();
+  const breadCrumbDivRef = useRef<HTMLDivElement>(null);
+  const urlDivRef = useRef<HTMLDivElement>(null);
+  const [sizes, setSizes] = useState([100, 300]);
   const [responseStatus, setResponseStatus] = useState<ResponseStatus>({
     status: 0,
     statusText: "",
@@ -79,6 +84,25 @@ export default function Api() {
       navigate("/");
     }
   }, [apiId, folderId, getApi, navigate, getEnv]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (breadCrumbDivRef?.current && urlDivRef?.current) {
+        setSplitPanelHeight(
+          window.innerHeight -
+            (breadCrumbDivRef.current?.clientHeight +
+              urlDivRef.current?.clientHeight),
+        );
+        setSizes([
+          100,
+          window.innerHeight -
+            (breadCrumbDivRef.current?.clientHeight +
+              urlDivRef.current?.clientHeight) -
+            600,
+        ]);
+      }
+    }, 100);
+  }, []);
 
   useEffect(() => {
     form.setValue("id", api?.id ?? "");
@@ -182,7 +206,7 @@ export default function Api() {
   return (
     <>
       <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden">
-        <div className="flex items-center p-5">
+        <div ref={breadCrumbDivRef} className="flex items-center p-5">
           <SidenavToggler />
           <Breadcrumbs
             breadcrumbs={getBreadcrumbsForNthChildren(collections, folderId!)}
@@ -190,7 +214,10 @@ export default function Api() {
           <ChevronsRight size={13} className="mx-2" />
           {api.name}
         </div>
-        <div className="mx-auto flex w-[calc(100%-40px)] items-center justify-between rounded border p-1">
+        <div
+          ref={urlDivRef}
+          className="mx-auto flex w-[calc(100%-40px)] items-center justify-between rounded border p-1"
+        >
           <div className="flex items-center">
             <span
               className={
@@ -254,14 +281,30 @@ export default function Api() {
             </Button>
           </div>
         </div>
-        <InputTabs form={form} api={api} />
-        <button ref={buttonRef} className="hidden" type="submit" />
+        <div
+          style={{
+            height: splitPanelHeight - 10,
+          }}
+        >
+          <SplitPane
+            split="horizontal"
+            sizes={sizes}
+            onChange={(sizes) => setSizes(sizes)}
+          >
+            <Pane minSize={70} maxSize="100%">
+              <InputTabs height={sizes[0]} form={form} api={api} />
+            </Pane>
 
-        <ApiResult
-          isLoading={isLoading}
-          result={result}
-          responseStatus={responseStatus}
-        />
+            <Pane minSize={50} maxSize="100%">
+              <ApiResult
+                height={splitPanelHeight! - sizes[0]}
+                isLoading={isLoading}
+                result={result}
+                responseStatus={responseStatus}
+              />
+            </Pane>
+          </SplitPane>
+        </div>
       </form>
     </>
   );

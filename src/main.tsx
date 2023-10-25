@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import { ThemeProvider } from "./components/theme-provider.tsx";
 import { RouterProvider } from "react-router-dom";
+import "split-pane-react/esm/themes/default.css";
 import router from "./Routes.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

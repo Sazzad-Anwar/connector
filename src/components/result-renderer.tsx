@@ -107,10 +107,10 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
             theme === "system"
               ? "onedark"
               : theme === "dark"
-                ? "onedark"
-                : "light"
+              ? "onedark"
+              : "light"
           }
-          loading={<Loading />}
+          loading={<></>}
           height={height}
           width="100%"
           defaultLanguage={isErrorResult ? "html" : "json"}

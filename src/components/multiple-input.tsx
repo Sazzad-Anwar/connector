@@ -130,47 +130,50 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
                   isErrorIndex(index)
                     ? "text-red-500"
                     : isCorrectVar(index)
-                    ? "text-cyan-500"
-                    : "text-white",
+                      ? "text-cyan-500"
+                      : "text-accent-foreground",
                 )}
                 placeholder="Value"
               />
             </TableCell>
             <TableCell className="border border-r-0 p-0">
-              <input
-                {...form.register(
-                  `${propertyName}.${index}.description` as const,
-                )}
-                className="h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none"
-                placeholder="Description"
-              />
-            </TableCell>
-            <TableCell className="flex h-[30px] w-full items-center justify-end py-1">
-              <Button
-                onClick={() =>
-                  insert(index + 1, {
-                    id: uuid(),
-                    key: "",
-                    value: "",
-                    description: "",
-                  })
-                }
-                variant="ghost"
-                size="xs"
-                type="button"
-                className="mr-1 px-1 opacity-20 transition-all duration-300 ease-linear group-hover:opacity-100"
-              >
-                <Plus size={16} />
-              </Button>
-              <Button
-                onClick={() => remove(index)}
-                variant="ghost"
-                size="xs"
-                type="button"
-                className="mr-1 px-1 opacity-20 transition-all duration-300 ease-linear group-hover:opacity-100"
-              >
-                <Trash2 size={16} />
-              </Button>
+              <div className="flex items-center justify-between">
+                <input
+                  {...form.register(
+                    `${propertyName}.${index}.description` as const,
+                  )}
+                  className="h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none"
+                  placeholder="Description"
+                />
+
+                <div className="flex items-center">
+                  <Button
+                    onClick={() =>
+                      insert(index + 1, {
+                        id: uuid(),
+                        key: "",
+                        value: "",
+                        description: "",
+                      })
+                    }
+                    variant="ghost"
+                    size="xs"
+                    type="button"
+                    className="mr-1 px-1 opacity-20 transition-all duration-300 ease-linear group-hover:opacity-100"
+                  >
+                    <Plus size={16} />
+                  </Button>
+                  <Button
+                    onClick={() => remove(index)}
+                    variant="ghost"
+                    size="xs"
+                    type="button"
+                    className="mr-1 px-1 opacity-20 transition-all duration-300 ease-linear group-hover:opacity-100"
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                </div>
+              </div>
             </TableCell>
           </TableRow>
         ))}
