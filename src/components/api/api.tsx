@@ -70,8 +70,8 @@ export default function Api() {
   const customParams = form.watch("params");
   const url = !isEmpty(customParams!)
     ? api.url +
-      "?" +
-      getQueryString(arrayToObjectConversion(customParams!), env)
+    "?" +
+    getQueryString(arrayToObjectConversion(customParams!), env)
     : api.url;
   const apiId = params.apiId as string;
   const folderId = params.folderId as string;
@@ -90,15 +90,15 @@ export default function Api() {
       if (breadCrumbDivRef?.current && urlDivRef?.current) {
         setSplitPanelHeight(
           window.innerHeight -
-            (breadCrumbDivRef.current?.clientHeight +
-              urlDivRef.current?.clientHeight),
+          (breadCrumbDivRef.current?.clientHeight +
+            urlDivRef.current?.clientHeight),
         );
         setSizes([
           100,
           window.innerHeight -
-            (breadCrumbDivRef.current?.clientHeight +
-              urlDivRef.current?.clientHeight) -
-            600,
+          (breadCrumbDivRef.current?.clientHeight +
+            urlDivRef.current?.clientHeight) -
+          600,
         ]);
       }
     }, 100);
@@ -224,14 +224,14 @@ export default function Api() {
                 (api.method === "GET"
                   ? "text-green-500"
                   : api.method === "POST"
-                  ? "text-yellow-500"
-                  : api.method === "PUT"
-                  ? "text-blue-500"
-                  : api.method === "PATCH"
-                  ? "text-purple-500"
-                  : api.method === "DELETE"
-                  ? "text-destructive"
-                  : "text-foreground") + " font-bold px-2 border-r"
+                    ? "text-yellow-500"
+                    : api.method === "PUT"
+                      ? "text-blue-500"
+                      : api.method === "PATCH"
+                        ? "text-purple-500"
+                        : api.method === "DELETE"
+                          ? "text-destructive"
+                          : "text-foreground") + " font-bold px-2 border-r"
               }
             >
               {api.method}
@@ -283,10 +283,11 @@ export default function Api() {
         </div>
         <div
           style={{
-            height: splitPanelHeight - 10,
+            height: splitPanelHeight! - 10,
           }}
         >
           <SplitPane
+            sashRender={() => <></>}
             split="horizontal"
             sizes={sizes}
             onChange={(sizes) => setSizes(sizes)}

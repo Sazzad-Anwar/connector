@@ -26,6 +26,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <main className={cn("min-h-screen bg-background font-sans antialiased")}>
       <div className="relative flex min-h-screen flex-col">
         <SplitPane
+          sashRender={() => <></>}
           split="vertical"
           sizes={sizes}
           onChange={(sizes) => setSizes(sizes)}

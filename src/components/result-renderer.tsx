@@ -1,7 +1,6 @@
 import { forwardRef, useEffect, useRef, useState } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import { useTheme } from "./theme-provider";
-import Loading from "./loading";
 
 type PropsType = {
   result?: object | string | any[];
@@ -107,8 +106,8 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
             theme === "system"
               ? "onedark"
               : theme === "dark"
-              ? "onedark"
-              : "light"
+                ? "onedark"
+                : "light"
           }
           loading={<></>}
           height={height}

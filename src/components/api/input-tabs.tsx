@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { Maximize } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { v4 as uuid } from "uuid";
 
