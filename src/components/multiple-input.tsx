@@ -130,8 +130,8 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
                   isErrorIndex(index)
                     ? "text-red-500"
                     : isCorrectVar(index)
-                      ? "text-cyan-500"
-                      : "text-white",
+                    ? "text-cyan-500"
+                    : "text-white",
                 )}
                 placeholder="Value"
               />

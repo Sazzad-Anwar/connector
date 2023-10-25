@@ -59,12 +59,10 @@ export function getQueryString(
         containsVariable(params[item], env)
       ) {
         params[item] = replaceVariables(params[item], env);
-      }
-      // else if (
-      //   containsDynamicVariable(params[item]) &&
-      //   containsVariable(params[item], env)
-      // )
-      {
+      } else if (
+        containsDynamicVariable(params[item]) &&
+        containsVariable(params[item], env)
+      ) {
         delete params[item];
       }
     });

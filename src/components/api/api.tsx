@@ -124,12 +124,10 @@ export default function Api() {
           containsVariable(headers[item], env)
         ) {
           headers[item] = replaceVariables(headers[item], env);
-        }
-        // else if (
-        //   containsDynamicVariable(headers[item]) &&
-        //   containsVariable(headers[item], env)
-        // )
-        {
+        } else if (
+          containsDynamicVariable(headers[item]) &&
+          containsVariable(headers[item], env)
+        ) {
           delete headers[item];
         }
       });
