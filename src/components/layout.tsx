@@ -22,6 +22,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    const resizeWindow = () => {
+      if (window.innerWidth < 991) {
+        setSizes([0, window.innerWidth]);
+      } else {
+        setSizes([sideNavWidth, window.innerWidth - sideNavWidth]);
+      }
+    };
+
+    window.addEventListener("resize", () => {
+      resizeWindow();
+    });
+    resizeWindow();
+  }, []);
+
   return (
     <main className={cn("min-h-screen bg-background font-sans antialiased")}>
       <div className="relative flex min-h-screen flex-col">

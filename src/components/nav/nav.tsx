@@ -60,7 +60,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
         "relative h-screen overflow-hidden border-r bg-background ",
         isLoadingInSheet ? "w-full" : "w-0",
         // isOpen ? "lg:w-[250px] xl:w-[300px]" : "hidden",
-        isOpen ? "w-full" : "hidden"
+        isOpen ? "w-full " : "hidden",
       )}
     >
       <div className="h-full overflow-auto">
