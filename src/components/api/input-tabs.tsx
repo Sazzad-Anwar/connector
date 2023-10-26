@@ -78,13 +78,25 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
         </TabsList>
         <TabsContent
           value="params"
-          className="animate__animated animate__fadeIn max-h-[calc(100vh-300px)] overflow-auto my-5"
+          className="animate__animated animate__fadeIn overflow-auto my-5"
+          style={{
+            maxHeight:
+              (height as number) >= 300
+                ? (height as number) - 200
+                : (height as number),
+          }}
         >
           <MultipleInput propertyName="params" form={form} />
         </TabsContent>
         <TabsContent
           value="headers"
-          className="animate__animated animate__fadeIn max-h-[calc(100vh-300px)] overflow-auto"
+          className="animate__animated animate__fadeIn overflow-auto"
+          style={{
+            maxHeight:
+              (height as number) >= 300
+                ? (height as number) - 200
+                : (height as number),
+          }}
         >
           <MultipleInput propertyName="headers" form={form} />
         </TabsContent>
@@ -132,7 +144,13 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
             </TabsContent>
             <TabsContent
               value="x-www-form-urlencoded"
-              className="animate__animated animate__fadeIn relative max-h-[calc(100vh-300px)] overflow-auto"
+              className="animate__animated animate__fadeIn relative overflow-auto"
+              style={{
+                maxHeight:
+                  (height as number) >= 300
+                    ? (height as number) - 230
+                    : (height as number),
+              }}
             >
               <MultipleInput propertyName="body" form={form} />
             </TabsContent>
