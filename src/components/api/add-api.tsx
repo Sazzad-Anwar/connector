@@ -35,6 +35,7 @@ import { toast } from "../ui/use-toast";
 import InputTabs from "./input-tabs";
 import { useNavigate, useParams } from "react-router-dom";
 import Breadcrumbs from "../breadcrumb";
+import SidenavToggler from "../nav/sidenav-toggler";
 
 export default function AddApi() {
   const navigate = useNavigate();
@@ -102,12 +103,13 @@ export default function AddApi() {
 
   return (
     <Form {...form}>
-      <form className="m-5" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="m-5 h-full" onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem className="flex items-center">
+              <SidenavToggler />
               <Breadcrumbs
                 breadcrumbs={getBreadcrumbsForNthChildren(
                   collections,
@@ -213,8 +215,9 @@ export default function AddApi() {
           />
         </div>
         <InputTabs
-          className="pt-5 h-auto max-h-[calc(100vh-200px)]"
+          className="pt-5 h-auto"
           form={form}
+        // height={window.innerHeight - 160}
         />
         <div className="flex mt-5 justify-end">
           <Button disabled={isUrlError} type="submit">

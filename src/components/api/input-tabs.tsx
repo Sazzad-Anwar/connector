@@ -133,9 +133,11 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                 ref={jsonBodyDivRef}
                 result={jsonBodyData}
                 height={
-                  (height as number) >= 300
-                    ? (height as number) - 250
-                    : (height as number)
+                  height && (height as number) >= 300
+                    ? (height as number) - 230
+                    : !height
+                      ? window.innerHeight - 320
+                      : (height as number)
                 }
                 readOnly={false}
                 setData={setJsonBody}

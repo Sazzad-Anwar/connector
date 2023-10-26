@@ -84,6 +84,7 @@ export default function Api() {
     } else {
       navigate("/");
     }
+    setResult(null);
   }, [apiId, folderId, getApi, navigate, getEnv]);
 
   useEffect(() => {

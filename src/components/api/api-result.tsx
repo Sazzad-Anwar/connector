@@ -37,7 +37,7 @@ export default function ApiResult({
   return (
     <section ref={resultDivRef} className="border-t py-1">
       {isLoading && <Loading height={height! - 300} />}
-      {!isLoading && result && (
+      {!isLoading && result ? (
         <>
           <div className="flex items-center justify-between py-3 pl-5 pr-0 text-sm">
             <h1 className="text-base">Response</h1>
@@ -71,11 +71,12 @@ export default function ApiResult({
           </div>
           <ResultRender
             ref={resultContainerRef}
+            readOnly={true}
             height={height}
             result={result && result}
           />
         </>
-      )}
+      ) : null}
     </section>
   );
 }

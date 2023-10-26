@@ -74,6 +74,23 @@ export default function UpdateApi() {
   }, [apiId, getApi]);
 
   useEffect(() => {
+    const handleEscapeKeyPress = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        // Handle the "Escape" key press here
+        navigate(`/api/${folderId}/${apiId}`);
+      }
+    };
+
+    // Add the event listener when the component mounts
+    document.addEventListener("keydown", handleEscapeKeyPress);
+
+    // Remove the event listener when the component unmounts
+    return () => {
+      document.removeEventListener("keydown", handleEscapeKeyPress);
+    };
+  }, [folderId, apiId, navigate]);
+
+  useEffect(() => {
     if (api) {
       form.setValue("id", api?.id ?? "");
       form.setValue("name", api?.name ?? "");

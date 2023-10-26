@@ -9,10 +9,12 @@ import Loading from "./components/loading";
 import Layout from "./components/layout";
 import { ErrorBoundary } from "react-error-boundary";
 import Error from "./components/error";
+import NotFound from "./components/notFound";
 
 const router = createBrowserRouter([
   {
     path: "/",
+    errorElement: <NotFound />,
     element: (
       <Layout>
         <Suspense fallback={<Loading />}>
