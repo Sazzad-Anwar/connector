@@ -53,9 +53,10 @@ export default function Api() {
   const navigate = useNavigate();
   const [result, setResult] = useState<any>();
   const [splitPanelHeight, setSplitPanelHeight] = useState<number>();
+  const [heightOfBreadcrumbUrl, setHeightOfBreadcrumbUrl] = useState<number>();
   const breadCrumbDivRef = useRef<HTMLDivElement>(null);
   const urlDivRef = useRef<HTMLDivElement>(null);
-  const [sizes, setSizes] = useState(["100%", 300]);
+  const [sizes, setSizes] = useState([200, 300]);
   const [responseStatus, setResponseStatus] = useState<ResponseStatus>({
     status: 0,
     statusText: "",
@@ -94,12 +95,16 @@ export default function Api() {
             urlDivRef.current?.clientHeight),
         );
         setSizes([
-          100,
+          200,
           window.innerHeight -
           (breadCrumbDivRef.current?.clientHeight +
             urlDivRef.current?.clientHeight) -
           600,
         ]);
+        setHeightOfBreadcrumbUrl(
+          breadCrumbDivRef.current?.clientHeight +
+          urlDivRef.current?.clientHeight,
+        );
       }
     }, 100);
   }, []);
@@ -205,110 +210,114 @@ export default function Api() {
 
   return (
     <>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="overflow-hidden">
-        <div ref={breadCrumbDivRef} className="flex items-center p-5">
-          <SidenavToggler />
-          <Breadcrumbs
-            breadcrumbs={getBreadcrumbsForNthChildren(collections, folderId!)}
-          />
-          <ChevronsRight size={13} className="mx-2" />
-          {api.name}
-        </div>
-        <div
-          ref={urlDivRef}
-          className="mx-auto flex w-[calc(100%-40px)] items-center justify-between rounded border p-1"
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="overflow-hidden"
+        style={{ height: window.innerHeight }}
+      >
+        <SplitPane
+          sashRender={() => <></>}
+          split="horizontal"
+          sizes={sizes}
+          onChange={(sizes) => setSizes(sizes)}
         >
-          <div className="flex items-center">
-            <span
-              className={
-                (api.method === "GET"
-                  ? "text-green-500"
-                  : api.method === "POST"
-                    ? "text-yellow-500"
-                    : api.method === "PUT"
-                      ? "text-blue-500"
-                      : api.method === "PATCH"
-                        ? "text-purple-500"
-                        : api.method === "DELETE"
-                          ? "text-destructive"
-                          : "text-foreground") + " font-bold px-2 border-r"
-              }
-            >
-              {api.method}
-            </span>
-            <div className=" max-w-[12rem] overflow-hidden truncate px-2 md:max-w-md lg:max-w-lg xl:max-w-4xl 2xl:max-w-7xl">
-              {containsDynamicVariable(api.url) ? (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="text-cyan-500">{`{{${extractVariable(
-                        url,
-                      )}}}`}</span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {replaceVariables(`{{${extractVariable(url)}}}`, env)}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ) : (
-                url
-              )}
-              {url.split("}}")[1]}
-            </div>
-          </div>
-          <div className="flex items-center justify-end">
-            <Button
-              type="button"
-              variant="ghost"
-              className="mr-2 flex h-8 w-8 justify-self-end p-1"
-              size="sm"
-              onClick={() => {
-                copy(url);
-                toast({
-                  variant: "success",
-                  title: "Url is copied",
-                });
-              }}
-            >
-              <Clipboard size={18} />
-            </Button>
-            <Button
-              onClick={() => callApi()}
-              className="rounded text-white"
-              size="sm"
-            >
-              Connect
-            </Button>
-          </div>
-        </div>
-        <div
-          style={{
-            height: splitPanelHeight! - 10,
-          }}
-        >
-          <SplitPane
-            sashRender={() => <></>}
-            split="horizontal"
-            sizes={sizes}
-            onChange={(sizes) => setSizes(sizes)}
+          <Pane
+            minSize={120}
+            maxSize="100%"
+            style={{
+              top: heightOfBreadcrumbUrl,
+            }}
           >
-            <Pane minSize={70} maxSize="100%">
-              <InputTabs height={sizes[0]} form={form} api={api} />
-            </Pane>
-
-            <Pane minSize={50} maxSize="100%">
-              <ApiResult
-                height={
-                  splitPanelHeight! -
-                  (typeof sizes[0] !== "string" ? sizes[0] : 100)
-                }
-                isLoading={isLoading}
-                result={result}
-                responseStatus={responseStatus}
+            <div ref={breadCrumbDivRef} className="flex items-center p-5">
+              <SidenavToggler />
+              <Breadcrumbs
+                breadcrumbs={getBreadcrumbsForNthChildren(
+                  collections,
+                  folderId!,
+                )}
               />
-            </Pane>
-          </SplitPane>
-        </div>
+              <ChevronsRight size={13} className="mx-2" />
+              {api.name}
+            </div>
+            <div
+              ref={urlDivRef}
+              className="mx-auto flex w-[calc(100%-40px)] items-center justify-between rounded border p-1"
+            >
+              <div className="flex items-center">
+                <span
+                  className={
+                    (api.method === "GET"
+                      ? "text-green-500"
+                      : api.method === "POST"
+                        ? "text-yellow-500"
+                        : api.method === "PUT"
+                          ? "text-blue-500"
+                          : api.method === "PATCH"
+                            ? "text-purple-500"
+                            : api.method === "DELETE"
+                              ? "text-destructive"
+                              : "text-foreground") + " font-bold px-2 border-r"
+                  }
+                >
+                  {api.method}
+                </span>
+                <div className=" max-w-[12rem] overflow-hidden truncate px-2 md:max-w-md lg:max-w-lg xl:max-w-4xl 2xl:max-w-7xl">
+                  {containsDynamicVariable(api.url) ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-cyan-500">{`{{${extractVariable(
+                            url,
+                          )}}}`}</span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {replaceVariables(`{{${extractVariable(url)}}}`, env)}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    url
+                  )}
+                  {url.split("}}")[1]}
+                </div>
+              </div>
+              <div className="flex items-center justify-end">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="mr-2 flex h-8 w-8 justify-self-end p-1"
+                  size="sm"
+                  onClick={() => {
+                    copy(url);
+                    toast({
+                      variant: "success",
+                      title: "Url is copied",
+                    });
+                  }}
+                >
+                  <Clipboard size={18} />
+                </Button>
+                <Button
+                  onClick={() => callApi()}
+                  className="rounded text-white"
+                  size="sm"
+                >
+                  Connect
+                </Button>
+              </div>
+            </div>
+            <InputTabs height={sizes[0]} form={form} api={api} />
+          </Pane>
+
+          <Pane minSize={50} maxSize="100%">
+            <ApiResult
+              height={splitPanelHeight!}
+              isLoading={isLoading}
+              result={result}
+              responseStatus={responseStatus}
+            />
+          </Pane>
+        </SplitPane>
       </form>
     </>
   );

@@ -42,15 +42,18 @@ export default function ApiResult({
           <div className="flex items-center justify-between py-3 pl-5 pr-0 text-sm">
             <h1 className="text-base">Response</h1>
             <div className="flex items-center">
-              <p
-                className={cn(
-                  responseStatus.status?.toString().startsWith("2", 0)
-                    ? "ml-1 font-medium text-green-600 dark:font-normal dark:text-green-400"
-                    : "ml-1 font-medium text-red-500 dark:font-normal",
-                  "mr-2",
-                )}
-              >
-                {responseStatus.status} {responseStatus.statusText}
+              <p>
+                Status
+                <span
+                  className={cn(
+                    responseStatus.status?.toString().startsWith("2", 0)
+                      ? "ml-1 font-medium text-green-600 dark:font-normal dark:text-green-400"
+                      : "ml-1 font-medium text-red-500 dark:font-normal",
+                    "mr-2",
+                  )}
+                >
+                  {responseStatus.status}
+                </span>
               </p>
               <p className="mr-4">
                 Time:

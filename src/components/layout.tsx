@@ -10,7 +10,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { isOpen } = useSidepanelToggleStore();
   const sideNavWidth = 300;
   const [sizes, setSizes] = useState([
-    sideNavWidth,
+    window.innerWidth >= 991 ? 250 : sideNavWidth,
     window.innerWidth - sideNavWidth,
   ]);
 

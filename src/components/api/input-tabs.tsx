@@ -100,6 +100,12 @@ export default function InputTabs({ form, api, height }: PropsType) {
             <TabsContent
               value="raw"
               className="animate__animated animate__fadeIn"
+              style={{
+                height:
+                  (height as number) >= 300
+                    ? (height as number) - 300
+                    : (height as number),
+              }}
             >
               <div className="flex items-center justify-between">
                 {jsonError?.isError ? (
@@ -113,7 +119,11 @@ export default function InputTabs({ form, api, height }: PropsType) {
               <ResultRender
                 ref={jsonBodyDivRef}
                 result={jsonBodyData}
-                height={typeof height === "string" ? 242 : height}
+                height={
+                  (height as number) >= 300
+                    ? (height as number) - 250
+                    : (height as number)
+                }
                 readOnly={false}
                 setData={setJsonBody}
                 className="border-t pt-3"
