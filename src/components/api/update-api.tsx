@@ -62,7 +62,7 @@ export default function UpdateApi() {
     updateApi(data, api.id);
     toast({
       variant: "success",
-      title: "Api is created",
+      title: "Api is updated",
     });
     navigate(`/api/${folderId}/${data.id}`);
   };

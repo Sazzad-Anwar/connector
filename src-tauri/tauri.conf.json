@@ -2,13 +2,13 @@
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
     "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run preview",
+    "beforeDevCommand": "npm run dev",
     "devPath": "http://localhost:2255",
     "distDir": "../dist"
   },
   "package": {
     "productName": "connector",
-    "version": "1.1.3"
+    "version": "1.1.4"
   },
   "tauri": {
     "allowlist": {

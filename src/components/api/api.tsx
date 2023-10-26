@@ -242,6 +242,7 @@ export default function Api() {
             <div
               ref={urlDivRef}
               className="mx-auto flex w-[calc(100%-40px)] items-center justify-between rounded border p-1"
+              onDoubleClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
             >
               <div className="flex items-center">
                 <span
