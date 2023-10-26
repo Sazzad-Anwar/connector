@@ -306,7 +306,12 @@ export default function Api() {
                 </Button>
               </div>
             </div>
-            <InputTabs height={sizes[0]} form={form} api={api} />
+            <InputTabs
+              className="px-5 pt-5"
+              height={sizes[0]}
+              form={form}
+              api={api}
+            />
           </Pane>
 
           <Pane minSize={50} maxSize="100%">

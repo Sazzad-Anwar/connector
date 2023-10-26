@@ -157,14 +157,14 @@ export default function UpdateApi() {
                         (field.value === "GET"
                           ? "text-green-500"
                           : field.value === "POST"
-                          ? "text-yellow-500"
-                          : field.value === "PUT"
-                          ? "text-blue-500"
-                          : field.value === "PATCH"
-                          ? "text-purple-500"
-                          : field.value === "DELETE"
-                          ? "text-destructive"
-                          : "text-foreground") +
+                            ? "text-yellow-500"
+                            : field.value === "PUT"
+                              ? "text-blue-500"
+                              : field.value === "PATCH"
+                                ? "text-purple-500"
+                                : field.value === "DELETE"
+                                  ? "text-destructive"
+                                  : "text-foreground") +
                         " font-bold w-24 " +
                         setBorderColor(!!form.formState.errors.method)
                       }
@@ -179,12 +179,12 @@ export default function UpdateApi() {
                           (item === "GET"
                             ? "text-green-500"
                             : item === "POST"
-                            ? "text-yellow-500"
-                            : item === "PUT"
-                            ? "text-blue-500"
-                            : item === "PATCH"
-                            ? "text-purple-500"
-                            : "text-destructive") + " font-bold"
+                              ? "text-yellow-500"
+                              : item === "PUT"
+                                ? "text-blue-500"
+                                : item === "PATCH"
+                                  ? "text-purple-500"
+                                  : "text-destructive") + " font-bold"
                         }
                         key={item}
                         value={item}
@@ -230,7 +230,7 @@ export default function UpdateApi() {
             )}
           />
         </div>
-        <InputTabs form={form} api={api} />
+        <InputTabs className="p-5 overflow-auto" form={form} api={api} />
         <div className="mr-5 flex justify-end">
           <Button disabled={isUrlError} type="submit">
             Save

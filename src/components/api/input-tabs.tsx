@@ -13,10 +13,11 @@ import ResultRender from "../result-renderer";
 type PropsType = {
   form: UseFormReturn<ApiType, any, undefined>;
   api?: ApiType;
+  className?: string;
   height?: number | string;
 };
 
-export default function InputTabs({ form, api, height }: PropsType) {
+export default function InputTabs({ form, api, height, className }: PropsType) {
   const jsonBodyDivRef = useRef<HTMLDivElement>(null);
   const [jsonBodyData, setJsonBodyData] = useState<any>({});
   const [jsonError, setJsonError] = useState<JSONErrorType>();
@@ -53,8 +54,8 @@ export default function InputTabs({ form, api, height }: PropsType) {
   }, [api]);
 
   return (
-    <div className="p-5 pb-0 pr-0">
-      <Tabs defaultValue="params" className="w-full">
+    <div className={className}>
+      <Tabs defaultValue="body" className="w-full">
         <TabsList>
           <TabsTrigger value="params">
             Params{" "}
@@ -77,13 +78,13 @@ export default function InputTabs({ form, api, height }: PropsType) {
         </TabsList>
         <TabsContent
           value="params"
-          className="animate__animated animate__fadeIn my-5 h-[calc(100vh-216px)] overflow-auto"
+          className="animate__animated animate__fadeIn max-h-[calc(100vh-300px)] overflow-auto my-5"
         >
           <MultipleInput propertyName="params" form={form} />
         </TabsContent>
         <TabsContent
           value="headers"
-          className="animate__animated animate__fadeIn"
+          className="animate__animated animate__fadeIn max-h-[calc(100vh-300px)] overflow-auto"
         >
           <MultipleInput propertyName="headers" form={form} />
         </TabsContent>
@@ -131,7 +132,7 @@ export default function InputTabs({ form, api, height }: PropsType) {
             </TabsContent>
             <TabsContent
               value="x-www-form-urlencoded"
-              className="animate__animated animate__fadeIn relative"
+              className="animate__animated animate__fadeIn relative max-h-[calc(100vh-300px)] overflow-auto"
             >
               <MultipleInput propertyName="body" form={form} />
             </TabsContent>

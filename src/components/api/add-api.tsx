@@ -139,14 +139,14 @@ export default function AddApi() {
                         (field.value === "GET"
                           ? "text-green-500"
                           : field.value === "POST"
-                          ? "text-yellow-500"
-                          : field.value === "PUT"
-                          ? "text-blue-500"
-                          : field.value === "PATCH"
-                          ? "text-purple-500"
-                          : field.value === "DELETE"
-                          ? "text-destructive"
-                          : "text-foreground") +
+                            ? "text-yellow-500"
+                            : field.value === "PUT"
+                              ? "text-blue-500"
+                              : field.value === "PATCH"
+                                ? "text-purple-500"
+                                : field.value === "DELETE"
+                                  ? "text-destructive"
+                                  : "text-foreground") +
                         " font-bold w-24 " +
                         setBorderColor(!!form.formState.errors.method)
                       }
@@ -161,12 +161,12 @@ export default function AddApi() {
                           (item === "GET"
                             ? "text-green-500"
                             : item === "POST"
-                            ? "text-yellow-500"
-                            : item === "PUT"
-                            ? "text-blue-500"
-                            : item === "PATCH"
-                            ? "text-purple-500"
-                            : "text-destructive") + " font-bold"
+                              ? "text-yellow-500"
+                              : item === "PUT"
+                                ? "text-blue-500"
+                                : item === "PATCH"
+                                  ? "text-purple-500"
+                                  : "text-destructive") + " font-bold"
                         }
                         key={item}
                         value={item}
@@ -212,8 +212,11 @@ export default function AddApi() {
             )}
           />
         </div>
-        <InputTabs form={form} />
-        <div className="mr-5 flex justify-end">
+        <InputTabs
+          className="pt-5 h-auto max-h-[calc(100vh-200px)]"
+          form={form}
+        />
+        <div className="flex mt-5 justify-end">
           <Button disabled={isUrlError} type="submit">
             Save
           </Button>

@@ -72,7 +72,10 @@ export default function EnvVariables() {
         <h1 className="text-base lg:text-lg xl:text-xl">Variables</h1>
       </div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmnt)}>
+        <form
+          onSubmit={form.handleSubmit(onSubmnt)}
+          className="max-h-[calc(100vh-70px)] overflow-auto"
+        >
           <Table className="animate__animated animate__fadeIn mt-5 w-full">
             <TableHeader>
               <TableRow className="border">
@@ -159,7 +162,6 @@ export default function EnvVariables() {
           </Table>
           <Button
             type="submit"
-            variant="outline"
             size="sm"
             className="ml-auto mt-5 flex justify-self-end"
           >
