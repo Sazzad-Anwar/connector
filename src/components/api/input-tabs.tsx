@@ -13,7 +13,7 @@ import ResultRender from "../result-renderer";
 type PropsType = {
   form: UseFormReturn<ApiType, any, undefined>;
   api?: ApiType;
-  height?: number;
+  height?: number | string;
 };
 
 export default function InputTabs({ form, api, height }: PropsType) {
@@ -113,7 +113,7 @@ export default function InputTabs({ form, api, height }: PropsType) {
               <ResultRender
                 ref={jsonBodyDivRef}
                 result={jsonBodyData}
-                height={height}
+                height={typeof height === "string" ? 242 : height}
                 readOnly={false}
                 setData={setJsonBody}
                 className="border-t pt-3"

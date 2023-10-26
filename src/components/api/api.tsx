@@ -55,7 +55,7 @@ export default function Api() {
   const [splitPanelHeight, setSplitPanelHeight] = useState<number>();
   const breadCrumbDivRef = useRef<HTMLDivElement>(null);
   const urlDivRef = useRef<HTMLDivElement>(null);
-  const [sizes, setSizes] = useState([100, 300]);
+  const [sizes, setSizes] = useState(["100%", 300]);
   const [responseStatus, setResponseStatus] = useState<ResponseStatus>({
     status: 0,
     statusText: "",
@@ -298,7 +298,10 @@ export default function Api() {
 
             <Pane minSize={50} maxSize="100%">
               <ApiResult
-                height={splitPanelHeight! - sizes[0]}
+                height={
+                  splitPanelHeight! -
+                  (typeof sizes[0] !== "string" ? sizes[0] : 100)
+                }
                 isLoading={isLoading}
                 result={result}
                 responseStatus={responseStatus}
