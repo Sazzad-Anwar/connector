@@ -28,6 +28,8 @@ import { toast } from "../ui/use-toast";
 import AddCollectionDialog from "../collections/add-collection-dialog";
 import { CollectionSchema } from "./nav";
 import { useNavigate, useParams } from "react-router-dom";
+import { writeTextFile, BaseDirectory } from "@tauri-apps/api/fs";
+import { platform } from "@tauri-apps/api/os";
 
 interface RenderNavigationProps {
   collection: FolderType;
@@ -94,7 +96,7 @@ export default function RenderNavigation({
     }
   };
   // Export as JSON
-  const downloadFile = ({
+  const downloadFile = async ({
     data,
     fileName,
     fileType,
@@ -103,20 +105,41 @@ export default function RenderNavigation({
     fileName: string;
     fileType: string;
   }) => {
-    // Create a blob with the data we want to download as a file
-    const blob = new Blob([JSON.stringify(data)], { type: fileType });
-    // Create an anchor element and dispatch a click event on it
-    // to trigger a download
-    const a = document.createElement("a");
-    a.download = fileName;
-    a.href = window.URL.createObjectURL(blob);
-    const clickEvt = new MouseEvent("click", {
-      view: window,
-      bubbles: true,
-      cancelable: true,
-    });
-    a.dispatchEvent(clickEvt);
-    a.remove();
+    const downloadFromBrowser = () => {
+      // Create a blob with the data we want to download as a file
+      const blob = new Blob([JSON.stringify(data)], { type: fileType });
+      // Create an anchor element and dispatch a click event on it
+      // to trigger a download
+      const a = document.createElement("a");
+      a.download = fileName;
+      a.href = window.URL.createObjectURL(blob);
+      const clickEvt = new MouseEvent("click", {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+      });
+      a.dispatchEvent(clickEvt);
+      a.remove();
+    };
+
+    try {
+      const platformName = await platform();
+      if (platformName) {
+        await writeTextFile(`${fileName}.json`, JSON.stringify(data), {
+          dir: BaseDirectory.Download,
+        });
+        toast({
+          variant: "success",
+          title: `${fileName} is saved to Donwloads`,
+        });
+      }
+    } catch (error: any) {
+      downloadFromBrowser();
+      toast({
+        variant: "success",
+        title: `${fileName} is saved to Downloads`,
+      });
+    }
   };
 
   const folderDropDownMenu: {

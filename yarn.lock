@@ -1333,6 +1333,11 @@
   resolved "https://registry.yarnpkg.com/@remix-run/router/-/router-1.10.0.tgz#e2170dc2049b06e65bbe883adad0e8ddf8291278"
   integrity sha512-Lm+fYpMfZoEucJ7cMxgt4dYt8jLfbpwRCzAjm9UgSLOkmlqo9gupxt6YX3DY0Fk155NT9l17d/ydi+964uS9Lw==
 
+"@tauri-apps/api@^1.5.1":
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-1.5.1.tgz#9074476c4323f71351db624e9711c99277cdfb99"
+  integrity sha512-6unsZDOdlXTmauU3NhWhn+Cx0rODV+rvNvTdvolE5Kls5ybA6cqndQENDt1+FS0tF7ozCP66jwWoH6a5h90BrA==
+
 "@tauri-apps/cli-darwin-arm64@1.5.6":
   version "1.5.6"
   resolved "https://registry.yarnpkg.com/@tauri-apps/cli-darwin-arm64/-/cli-darwin-arm64-1.5.6.tgz#0d68eaf6fa1b35197a9d4991ac5377e6085a569a"

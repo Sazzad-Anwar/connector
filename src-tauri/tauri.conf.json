@@ -8,11 +8,28 @@
   },
   "package": {
     "productName": "connector",
-    "version": "1.1.5"
+    "version": "1.0.0"
   },
   "tauri": {
     "allowlist": {
-      "all": false
+      "os": {
+        "all": true
+      },
+      "fs": {
+        "all": true,
+        "readFile": true,
+        "writeFile": true,
+        "readDir": true,
+        "copyFile": true,
+        "createDir": true,
+        "removeDir": true,
+        "removeFile": true,
+        "renameFile": true,
+        "exists": true,
+        "scope": [
+          "$DOWNLOAD/*"
+        ]
+      }
     },
     "bundle": {
       "active": true,

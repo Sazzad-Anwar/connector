@@ -5,6 +5,12 @@ import SideNav from "./nav/nav";
 import { Toaster } from "./ui/toaster";
 import SplitPane from "split-pane-react/esm/SplitPane";
 import { Pane } from "split-pane-react";
+import {
+  checkUpdate,
+  installUpdate,
+  onUpdaterEvent,
+} from "@tauri-apps/api/updater";
+import { toast } from "./ui/use-toast";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { isOpen } = useSidepanelToggleStore();
@@ -21,6 +27,32 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       setSizes([sideNavWidth, window.innerWidth - sideNavWidth]);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    const checkUpdateHandler = async () => {
+      const update = await checkUpdate();
+      if (update.shouldUpdate) {
+        await installUpdate();
+      }
+    };
+    const unlisten = async () => {
+      await onUpdaterEvent(({ error }) => {
+        if (error) {
+          toast({
+            variant: "error",
+            title: error,
+          });
+        } else {
+          toast({
+            variant: "success",
+            title: "Connection is updated!",
+          });
+        }
+      });
+    };
+    checkUpdateHandler();
+    unlisten();
+  }, []);
 
   useEffect(() => {
     const resizeWindow = () => {

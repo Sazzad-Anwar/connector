@@ -29,17 +29,17 @@ export function Toaster() {
                         : props.variant === "warning"
                           ? "text-orange-500"
                           : "",
-                    "flex items-center text-base",
+                    "flex items-start text-base",
                   )}
                 >
                   {props.variant === "success" ? (
-                    <CheckCircle2 size={22} className="mr-2" />
+                    <CheckCircle2 size={22} className="mr-2 min-w-fit" />
                   ) : props.variant === "error" ? (
                     <Ban size={22} className="mr-2" />
                   ) : props.variant === "warning" ? (
-                    <AlertTriangle size={22} className="mr-2" />
+                    <AlertTriangle size={22} className="mr-2 min-w-fit" />
                   ) : (
-                    <Info size={22} className="mr-2" />
+                    <Info size={22} className="mr-2 min-w-fit" />
                   )}
                   {title}
                 </ToastTitle>
