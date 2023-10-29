@@ -7,7 +7,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "connector",
+    "productName": "Connector",
     "version": "1.0.0"
   },
   "tauri": {
@@ -72,7 +72,7 @@
         "fullscreen": false,
         "height": 780,
         "resizable": true,
-        "title": "connector",
+        "title": "Connector",
         "width": 1024,
         "maximized": true
       }
