@@ -26,9 +26,7 @@
         "removeFile": true,
         "renameFile": true,
         "exists": true,
-        "scope": [
-          "$DOWNLOAD/*"
-        ]
+        "scope": ["$DOWNLOAD/*"]
       }
     },
     "bundle": {
@@ -40,11 +38,10 @@
       },
       "externalBin": [],
       "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
+        "icons/connector.png",
+        "icons/connector128x128.png",
+        "icons/connector256x256.png",
+        "icons/connector.ico"
       ],
       "identifier": "app.vercel.connector-ten",
       "longDescription": "",
