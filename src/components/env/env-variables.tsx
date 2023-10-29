@@ -6,6 +6,7 @@ import { v4 as uuid } from 'uuid'
 
 import { FolderSchema, FolderType } from '@/types/api'
 
+import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import SidenavToggler from '../nav/sidenav-toggler'
 import { Button } from '../ui/button'
@@ -47,6 +48,22 @@ export default function EnvVariables() {
     control: form.control,
     name: 'env',
   })
+
+  useEffect(() => {
+    if (collection.env?.length) {
+      const env = collection.env
+      form.setValue('env', env)
+    } else {
+      form.setValue('env', [
+        {
+          id: uuid(),
+          key: '',
+          value: '',
+          description: '',
+        },
+      ])
+    }
+  }, [form, collection])
 
   const onSubmnt: SubmitHandler<FolderType> = (data) => {
     const folder = {

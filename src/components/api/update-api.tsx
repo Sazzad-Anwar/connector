@@ -51,6 +51,9 @@ export default function UpdateApi() {
     data.id = api.id
     data.params = isEmpty(data.params!) ? [] : data.params
     data.headers = isEmpty(data.headers!) ? [] : data.headers
+    data.dynamicVariables = isEmpty(data.dynamicVariables!)
+      ? []
+      : data.dynamicVariables
     data.body = isEmpty(data.body!) ? [] : data.body
 
     updateApi(data, api.id)
@@ -106,6 +109,12 @@ export default function UpdateApi() {
         'body',
         api?.body?.length
           ? api?.body
+          : [{ id: uuid(), key: '', value: '', description: '' }],
+      )
+      form.setValue(
+        'dynamicVariables',
+        api?.dynamicVariables?.length
+          ? api?.dynamicVariables
           : [{ id: uuid(), key: '', value: '', description: '' }],
       )
     }

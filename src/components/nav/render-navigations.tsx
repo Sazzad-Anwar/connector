@@ -124,7 +124,11 @@ export default function RenderNavigation({
 
     try {
       const platformName = await platform()
-      if (platformName) {
+      if (
+        platformName === 'darwin' ||
+        platformName === 'linux' ||
+        platformName === 'win32'
+      ) {
         await writeTextFile(`${fileName}.json`, JSON.stringify(data), {
           dir: BaseDirectory.Download,
         })

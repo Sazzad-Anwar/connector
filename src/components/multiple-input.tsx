@@ -19,7 +19,12 @@ import {
 } from './ui/table'
 
 export type PropsType = {
-  propertyName: 'params' | 'headers' | 'body' | 'pathVariables'
+  propertyName:
+    | 'params'
+    | 'headers'
+    | 'body'
+    | 'pathVariables'
+    | 'dynamicVariables'
   form: UseFormReturn<ApiType, any, undefined>
 }
 
@@ -50,12 +55,12 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
     }
   }, [fields, append])
 
-  const isErrorIndex = (index: number) => {
+  const isErrorIndex = (index: number, type: 'value' | 'key') => {
     const items = params?.filter(
       (item) =>
-        item.value !== '' &&
-        containsDynamicVariable(item.value) &&
-        !containsVariable(item.value, env),
+        (type === 'value' ? item.value : item.key) !== '' &&
+        containsDynamicVariable(type === 'value' ? item.value : item.key) &&
+        !containsVariable(type === 'value' ? item.value : item.key, env),
     )
 
     const indexArr: number[] = []
@@ -71,12 +76,12 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
     }
   }
 
-  const isCorrectVar = (index: number) => {
+  const isCorrectVar = (index: number, type: 'value' | 'key') => {
     const items = params?.filter(
       (item) =>
-        item.value !== '' &&
-        containsDynamicVariable(item.value) &&
-        containsVariable(item.value, env),
+        (type === 'value' ? item.value : item.key) !== '' &&
+        containsDynamicVariable(type === 'value' ? item.value : item.key) &&
+        containsVariable(type === 'value' ? item.value : item.key, env),
     )
 
     const indexArr: number[] = []
@@ -122,7 +127,14 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
                 autoComplete="off"
                 type="text"
                 {...form.register(`${propertyName}.${index}.key` as const)}
-                className="h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none"
+                className={cn(
+                  'h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none',
+                  isErrorIndex(index, 'key')
+                    ? 'text-red-500'
+                    : isCorrectVar(index, 'key')
+                    ? 'text-cyan-500'
+                    : 'text-accent-foreground',
+                )}
                 placeholder="Key"
               />
             </TableCell>
@@ -132,9 +144,9 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
                 {...form.register(`${propertyName}.${index}.value` as const)}
                 className={cn(
                   'h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none',
-                  isErrorIndex(index)
+                  isErrorIndex(index, 'value')
                     ? 'text-red-500'
-                    : isCorrectVar(index)
+                    : isCorrectVar(index, 'value')
                     ? 'text-cyan-500'
                     : 'text-accent-foreground',
                 )}

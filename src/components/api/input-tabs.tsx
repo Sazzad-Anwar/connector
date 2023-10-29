@@ -21,6 +21,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
   const jsonBodyDivRef = useRef<HTMLDivElement>(null)
   const [jsonBodyData, setJsonBodyData] = useState<any>({})
   const [jsonError, setJsonError] = useState<JSONErrorType>()
+  const [defaultOpen, setDefaultOpen] = useState<string>('params')
 
   const setJsonBody = (data: string) => {
     try {
@@ -53,10 +54,25 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
     }
   }, [api])
 
+  useEffect(() => {
+    setDefaultOpen(
+      api && api?.body?.length
+        ? 'body'
+        : api?.headers?.length
+        ? 'headers'
+        : api?.params?.length
+        ? 'params'
+        : api?.dynamicVariables?.length
+        ? 'dynamicVariable'
+        : 'params',
+    )
+  }, [api])
+
   return (
     <div className={className}>
       <Tabs
-        defaultValue="body"
+        value={defaultOpen}
+        // defaultValue={defaultOpen}
         className="w-full"
       >
         <TabsList>
@@ -75,6 +91,12 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
           <TabsTrigger value="body">
             Body{' '}
             {api?.body?.length ? (
+              <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+            ) : null}
+          </TabsTrigger>
+          <TabsTrigger value="dynamicVariable">
+            Set variables
+            {api?.dynamicVariables?.length ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
           </TabsTrigger>
@@ -181,6 +203,21 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               />
             </TabsContent>
           </Tabs>
+        </TabsContent>
+        <TabsContent
+          value="dynamicVariable"
+          className="animate__animated animate__fadeIn overflow-auto my-5"
+          style={{
+            maxHeight:
+              (height as number) >= 300
+                ? (height as number) - 200
+                : (height as number),
+          }}
+        >
+          <MultipleInput
+            propertyName="dynamicVariables"
+            form={form}
+          />
         </TabsContent>
       </Tabs>
     </div>
