@@ -1,14 +1,18 @@
-import React, { useRef, useState } from "react";
-import useApiStore from "@/store/store";
-import { ChevronRight, FolderClosed, MoreVertical } from "lucide-react";
-import { SubmitHandler } from "react-hook-form";
-import { v4 as uuid } from "uuid";
-import * as z from "zod";
+import useApiStore from '@/store/store'
+import { ChevronRight, FolderClosed, MoreVertical } from 'lucide-react'
+import React, { useRef, useState } from 'react'
+import { SubmitHandler } from 'react-hook-form'
+import { v4 as uuid } from 'uuid'
+import * as z from 'zod'
 
-import { ApiType, FolderType } from "@/types/api";
-import { cn } from "@/lib/utils";
-import useImportJSON from "@/hooks/useImportJSON";
+import useImportJSON from '@/hooks/useImportJSON'
+import { cn } from '@/lib/utils'
+import { ApiType, FolderType } from '@/types/api'
 
+import { BaseDirectory, writeTextFile } from '@tauri-apps/api/fs'
+import { platform } from '@tauri-apps/api/os'
+import { useNavigate, useParams } from 'react-router-dom'
+import AddCollectionDialog from '../collections/add-collection-dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,59 +20,55 @@ import {
   AlertDialogContent,
   AlertDialogFooter,
   AlertDialogTrigger,
-} from "../ui/alert-dialog";
-import { buttonVariants } from "../ui/button";
+} from '../ui/alert-dialog'
+import { buttonVariants } from '../ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { toast } from "../ui/use-toast";
-import AddCollectionDialog from "../collections/add-collection-dialog";
-import { CollectionSchema } from "./nav";
-import { useNavigate, useParams } from "react-router-dom";
-import { writeTextFile, BaseDirectory } from "@tauri-apps/api/fs";
-import { platform } from "@tauri-apps/api/os";
+} from '../ui/dropdown-menu'
+import { toast } from '../ui/use-toast'
+import { CollectionSchema } from './nav'
 
 interface RenderNavigationProps {
-  collection: FolderType;
+  collection: FolderType
 }
 
 export default function RenderNavigation({
   collection,
 }: RenderNavigationProps): JSX.Element {
-  const navigate = useNavigate();
-  const params = useParams();
-  const { InputFile } = useImportJSON();
-  const [apiDetails, setApiDetails] = useState<ApiType>();
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const deleteButtonRef = useRef<HTMLButtonElement>(null);
-  const addFolderButtonRef = useRef<HTMLButtonElement>(null);
-  const { updateFolder, deleteFolder, createFolder, deleteApi } = useApiStore();
+  const navigate = useNavigate()
+  const params = useParams()
+  const { InputFile } = useImportJSON()
+  const [apiDetails, setApiDetails] = useState<ApiType>()
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const deleteButtonRef = useRef<HTMLButtonElement>(null)
+  const addFolderButtonRef = useRef<HTMLButtonElement>(null)
+  const { updateFolder, deleteFolder, createFolder, deleteApi } = useApiStore()
 
   // Rename collection
   const renameCollectionName: SubmitHandler<
     z.infer<typeof CollectionSchema>
   > = (data) => {
-    const updateData = { ...collection, name: data.collectionName };
-    updateFolder(updateData, collection.id);
+    const updateData = { ...collection, name: data.collectionName }
+    updateFolder(updateData, collection.id)
 
     toast({
-      variant: "success",
-      title: "Folder is created",
-    });
-  };
+      variant: 'success',
+      title: 'Folder is created',
+    })
+  }
 
   // Delete Collection
   const deleteCollection = (id: string) => {
-    deleteFolder(id);
+    deleteFolder(id)
     toast({
-      variant: "success",
+      variant: 'success',
       title: `${collection.type} is deleted`,
-    });
-    navigate("/");
-  };
+    })
+    navigate('/')
+  }
 
   // Add folder
   const addFolder: SubmitHandler<z.infer<typeof CollectionSchema>> = (data) => {
@@ -76,159 +76,162 @@ export default function RenderNavigation({
       name: data.collectionName,
       id: uuid(),
       isOpen: true,
-      type: "folder",
-    };
-    createFolder(folder, collection.id);
-    if (params.collectionId === collection.id) {
-      navigate("/");
+      type: 'folder',
     }
-  };
+    createFolder(folder, collection.id)
+    if (params.collectionId === collection.id) {
+      navigate('/')
+    }
+  }
 
   // Delete Collection
   const deleteApiHandler = (id: string) => {
-    deleteApi(id);
+    deleteApi(id)
     toast({
-      variant: "success",
+      variant: 'success',
       title: `Api is deleted`,
-    });
+    })
     if (params.apiId === id) {
-      navigate("/");
+      navigate('/')
     }
-  };
+  }
   // Export as JSON
   const downloadFile = async ({
     data,
     fileName,
     fileType,
   }: {
-    data: FolderType;
-    fileName: string;
-    fileType: string;
+    data: FolderType
+    fileName: string
+    fileType: string
   }) => {
     const downloadFromBrowser = () => {
       // Create a blob with the data we want to download as a file
-      const blob = new Blob([JSON.stringify(data)], { type: fileType });
+      const blob = new Blob([JSON.stringify(data)], { type: fileType })
       // Create an anchor element and dispatch a click event on it
       // to trigger a download
-      const a = document.createElement("a");
-      a.download = fileName;
-      a.href = window.URL.createObjectURL(blob);
-      const clickEvt = new MouseEvent("click", {
+      const a = document.createElement('a')
+      a.download = fileName
+      a.href = window.URL.createObjectURL(blob)
+      const clickEvt = new MouseEvent('click', {
         view: window,
         bubbles: true,
         cancelable: true,
-      });
-      a.dispatchEvent(clickEvt);
-      a.remove();
-    };
+      })
+      a.dispatchEvent(clickEvt)
+      a.remove()
+    }
 
     try {
-      const platformName = await platform();
+      const platformName = await platform()
       if (platformName) {
         await writeTextFile(`${fileName}.json`, JSON.stringify(data), {
           dir: BaseDirectory.Download,
-        });
+        })
         toast({
-          variant: "success",
-          title: `${fileName} is saved to Donwloads`,
-        });
+          variant: 'success',
+          title: `${fileName} is saved to Downloads`,
+        })
       }
     } catch (error: any) {
-      downloadFromBrowser();
+      downloadFromBrowser()
       toast({
-        variant: "success",
+        variant: 'success',
         title: `${fileName} is saved to Downloads`,
-      });
+      })
     }
-  };
+  }
 
   const folderDropDownMenu: {
-    name: React.ReactNode | string;
-    onClick: (e: any) => void;
-    isHidden?: boolean;
+    name: React.ReactNode | string
+    onClick: (e: any) => void
+    isHidden?: boolean
   }[] = [
-      {
-        name: "Env Variables",
-        onClick: (e) => {
-          e.stopPropagation();
-          navigate(`/api/variables/${collection.id}`);
-        },
-        isHidden: collection.type === "folder",
+    {
+      name: 'Env Variables',
+      onClick: (e) => {
+        e.stopPropagation()
+        navigate(`/api/variables/${collection.id}`)
       },
-      {
-        name: "Add Request",
-        onClick: (e) => {
-          e?.stopPropagation();
-          navigate(`/api/${collection.id}/add`);
-        },
+      isHidden: collection.type === 'folder',
+    },
+    {
+      name: 'Add Request',
+      onClick: (e) => {
+        e?.stopPropagation()
+        navigate(`/api/${collection.id}/add`)
       },
-      {
-        name: "Add Folder",
-        onClick: (e) => {
-          e?.stopPropagation();
-          addFolderButtonRef.current?.click();
-        },
+    },
+    {
+      name: 'Add Folder',
+      onClick: (e) => {
+        e?.stopPropagation()
+        addFolderButtonRef.current?.click()
       },
-      {
-        name: "Rename",
-        onClick: (e) => {
-          e?.stopPropagation();
-          buttonRef.current?.click();
-        },
+    },
+    {
+      name: 'Rename',
+      onClick: (e) => {
+        e?.stopPropagation()
+        buttonRef.current?.click()
       },
+    },
 
-      {
-        name: "Export",
-        onClick: (e) => {
-          e?.stopPropagation();
-        },
+    {
+      name: 'Export',
+      onClick: (e) => {
+        e?.stopPropagation()
       },
-      {
-        name: (
-          <InputFile
-            collectionId={collection.id !== "undefined" ? collection.id : ""}
-            className="w-full h-5 text-secondary-foreground justify-start border-0 bg-transparent py-0 pl-0 text-left hover:bg-secondary"
-          >
-            Import
-          </InputFile>
-        ),
-        onClick: (e) => {
-          e?.stopPropagation();
-        },
-        isHidden: collection.type === "folder",
+    },
+    {
+      name: (
+        <InputFile
+          collectionId={collection.id !== 'undefined' ? collection.id : ''}
+          className="w-full h-5 text-secondary-foreground justify-start border-0 bg-transparent py-0 pl-0 text-left hover:bg-secondary"
+        >
+          Import
+        </InputFile>
+      ),
+      onClick: (e) => {
+        e?.stopPropagation()
       },
-      {
-        name: "Delete",
-        onClick: (e) => {
-          e?.stopPropagation();
-          deleteButtonRef.current?.click();
-        },
+      isHidden: collection.type === 'folder',
+    },
+    {
+      name: 'Delete',
+      onClick: (e) => {
+        e?.stopPropagation()
+        deleteButtonRef.current?.click()
       },
-    ];
+    },
+  ]
 
   return (
     <>
       <div
         className={cn(
-          buttonVariants({ variant: "ghost", size: "xs" }),
-          "group relative w-full cursor-pointer items-center justify-between rounded-none",
+          buttonVariants({ variant: 'ghost', size: 'xs' }),
+          'group relative w-full cursor-pointer items-center justify-between rounded-none',
         )}
         onClick={() => {
           updateFolder(
             { ...collection, isOpen: !collection.isOpen },
             collection.id,
-          );
+          )
         }}
       >
         <div className="flex h-7 items-center">
           <ChevronRight
             size={15}
             className={
-              (collection.isOpen ? "rotate-90" : "") +
-              " transition-all duration-100 ease-linear mr-3"
+              (collection.isOpen ? 'rotate-90' : '') +
+              ' transition-all duration-100 ease-linear mr-3'
             }
           />
-          <FolderClosed size={14} className="mr-2" />
+          <FolderClosed
+            size={14}
+            className="mr-2"
+          />
           {collection.name}
         </div>
         <DropdownMenu>
@@ -245,21 +248,21 @@ export default function RenderNavigation({
                   <DropdownMenuItem
                     key={uuid()}
                     onClick={(e) => {
-                      item.onClick(e);
-                      if (item.name === "Export") {
+                      item.onClick(e)
+                      if (item.name === 'Export') {
                         downloadFile({
                           data: collection,
-                          fileName: collection.name + ".json",
-                          fileType: "text/json",
-                        });
+                          fileName: collection.name + '.json',
+                          fileType: 'text/json',
+                        })
                       }
                     }}
                   >
                     {item.name}
                   </DropdownMenuItem>
-                );
+                )
               } else {
-                return null;
+                return null
               }
             })}
           </DropdownMenuContent>
@@ -269,32 +272,35 @@ export default function RenderNavigation({
       {collection.isOpen && (
         <div className="animate__animated animate__fadeIn child ml-6 border-l">
           {collection?.children?.map((folder) => (
-            <RenderNavigation collection={folder} key={folder.id} />
+            <RenderNavigation
+              collection={folder}
+              key={folder.id}
+            />
           ))}
           {collection.apis?.map((api) => (
             <div
               key={api.id}
               onClick={() => navigate(`/api/${collection.id}/${api.id}`)}
               className={cn(
-                buttonVariants({ variant: "ghost", size: "xs" }),
-                "group relative w-full cursor-pointer items-center justify-between rounded-none",
+                buttonVariants({ variant: 'ghost', size: 'xs' }),
+                'group relative w-full cursor-pointer items-center justify-between rounded-none',
                 params.apiId && params.apiId === api.id
-                  ? "border-l-2 border-primary bg-secondary"
-                  : "",
+                  ? 'border-l-2 border-primary bg-secondary'
+                  : '',
               )}
             >
               <div className="flex items-center ">
                 <span
                   className={
-                    (api.method === "GET"
-                      ? "text-green-500"
-                      : api.method === "POST"
-                        ? "text-yellow-500"
-                        : api.method === "PUT"
-                          ? "text-blue-500"
-                          : api.method === "PATCH"
-                            ? "text-purple-500"
-                            : "text-destructive") + " font-bold mr-2 text-xs"
+                    (api.method === 'GET'
+                      ? 'text-green-500'
+                      : api.method === 'POST'
+                      ? 'text-yellow-500'
+                      : api.method === 'PUT'
+                      ? 'text-blue-500'
+                      : api.method === 'PATCH'
+                      ? 'text-purple-500'
+                      : 'text-destructive') + ' font-bold mr-2 text-xs'
                   }
                 >
                   {api.method}
@@ -313,18 +319,18 @@ export default function RenderNavigation({
                 <DropdownMenuContent>
                   <DropdownMenuItem
                     onClick={(e) => {
-                      setApiDetails(api);
-                      e.stopPropagation();
-                      navigate(`/api/${collection.id}/${api.id}/update`);
+                      setApiDetails(api)
+                      e.stopPropagation()
+                      navigate(`/api/${collection.id}/${api.id}/update`)
                     }}
                   >
                     Update
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={(e) => {
-                      setApiDetails(api);
-                      e.stopPropagation();
-                      deleteButtonRef.current?.click();
+                      setApiDetails(api)
+                      e.stopPropagation()
+                      deleteButtonRef.current?.click()
                     }}
                   >
                     Delete
@@ -351,14 +357,20 @@ export default function RenderNavigation({
 
       {/* Add folder Dialog */}
       <div className="hidden">
-        <AddCollectionDialog type={collection.type} onSubmit={addFolder}>
+        <AddCollectionDialog
+          type={collection.type}
+          onSubmit={addFolder}
+        >
           <button ref={addFolderButtonRef}>click</button>
         </AddCollectionDialog>
       </div>
 
       {/* Delete Dialog */}
       <AlertDialog>
-        <AlertDialogTrigger className="hidden" ref={deleteButtonRef}>
+        <AlertDialogTrigger
+          className="hidden"
+          ref={deleteButtonRef}
+        >
           Delete
         </AlertDialogTrigger>
         <AlertDialogContent>
@@ -369,8 +381,8 @@ export default function RenderNavigation({
             <AlertDialogCancel
               type="button"
               className={buttonVariants({
-                size: "xs",
-                variant: "outline",
+                size: 'xs',
+                variant: 'outline',
               })}
             >
               Cancel
@@ -382,8 +394,8 @@ export default function RenderNavigation({
                   : deleteCollection(collection.id)
               }
               className={buttonVariants({
-                variant: "destructive",
-                size: "xs",
+                variant: 'destructive',
+                size: 'xs',
               })}
             >
               Yes
@@ -392,5 +404,5 @@ export default function RenderNavigation({
         </AlertDialogContent>
       </AlertDialog>
     </>
-  );
+  )
 }

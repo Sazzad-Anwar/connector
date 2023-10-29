@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
-import useApiStore from "@/store/store";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronsRight, Info } from "lucide-react";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { v4 as uuid } from "uuid";
+import useApiStore from '@/store/store'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { ChevronsRight, Info } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { v4 as uuid } from 'uuid'
 
-import { ApiSchema, ApiType, FolderType } from "@/types/api";
 import {
   cn,
   containsDynamicVariable,
@@ -13,97 +12,99 @@ import {
   getBreadcrumbsForNthChildren,
   getRootParentIdForNthChildren,
   isEmpty,
-} from "@/lib/utils";
+} from '@/lib/utils'
+import { ApiSchema, ApiType, FolderType } from '@/types/api'
 
-import { Button } from "../ui/button";
-import { Form, FormControl, FormField, FormItem } from "../ui/form";
-import { Input } from "../ui/input";
+import { useNavigate, useParams } from 'react-router-dom'
+import Breadcrumbs from '../breadcrumb'
+import SidenavToggler from '../nav/sidenav-toggler'
+import { Button } from '../ui/button'
+import { Form, FormControl, FormField, FormItem } from '../ui/form'
+import { Input } from '../ui/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
+} from '../ui/select'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "../ui/tooltip";
-import { toast } from "../ui/use-toast";
-import InputTabs from "./input-tabs";
-import { useNavigate, useParams } from "react-router-dom";
-import Breadcrumbs from "../breadcrumb";
-import SidenavToggler from "../nav/sidenav-toggler";
+} from '../ui/tooltip'
+import { toast } from '../ui/use-toast'
+import InputTabs from './input-tabs'
 
 export default function AddApi() {
-  const navigate = useNavigate();
-  const params = useParams();
-  const folderId = params.folderId as string;
-  const { collections, createApi } = useApiStore();
+  const navigate = useNavigate()
+  const params = useParams()
+  const folderId = params.folderId as string
+  const { collections, createApi } = useApiStore()
   const form = useForm<ApiType>({
-    mode: "onChange",
+    mode: 'onChange',
     resolver: zodResolver(ApiSchema),
     defaultValues: {
-      name: "New Api",
-      method: "GET",
+      name: 'New Api',
+      method: 'GET',
     },
-  });
-  const [isUrlError, setIsUrlError] = useState<boolean>(false);
-  const url = form.watch("url");
-  const rootParentId = getRootParentIdForNthChildren(collections, folderId);
+  })
+  const [isUrlError, setIsUrlError] = useState<boolean>(false)
+  const url = form.watch('url')
+  const rootParentId = getRootParentIdForNthChildren(collections, folderId)
   const rootParent = collections.find(
     (item: FolderType) => item.id === rootParentId,
-  );
+  )
 
   const onSubmit: SubmitHandler<ApiType> = (data) => {
-    data.id = uuid();
-    data.params = isEmpty(data.params!) ? [] : data.params;
-    data.headers = isEmpty(data.headers!) ? [] : data.headers;
-    data.body = isEmpty(data.body!) ? [] : data.body;
+    data.id = uuid()
+    data.params = isEmpty(data.params!) ? [] : data.params
+    data.headers = isEmpty(data.headers!) ? [] : data.headers
+    data.body = isEmpty(data.body!) ? [] : data.body
 
-    createApi(data, folderId);
+    createApi(data, folderId)
     toast({
-      variant: "success",
-      title: "Api is created",
-    });
-    navigate(`/api/${folderId}/${data.id}`);
-  };
+      variant: 'success',
+      title: 'Api is created',
+    })
+    navigate(`/api/${folderId}/${data.id}`)
+  }
 
   useEffect(() => {
-    form.setValue("id", "");
-    form.setValue("name", "");
-    form.setValue("method", "GET");
-    form.setValue("url", "");
-    form.setValue("params", [
-      { id: uuid(), key: "", value: "", description: "" },
-    ]);
-    form.setValue("headers", [
-      { id: uuid(), key: "", value: "", description: "" },
-    ]);
-    form.setValue("body", [
-      { id: uuid(), key: "", value: "", description: "" },
-    ]);
-  }, [form]);
+    form.setValue('id', '')
+    form.setValue('name', '')
+    form.setValue('method', 'GET')
+    form.setValue('url', '')
+    form.setValue('params', [
+      { id: uuid(), key: '', value: '', description: '' },
+    ])
+    form.setValue('headers', [
+      { id: uuid(), key: '', value: '', description: '' },
+    ])
+    form.setValue('body', [{ id: uuid(), key: '', value: '', description: '' }])
+  }, [form])
 
   useEffect(() => {
     if (
       containsDynamicVariable(url) &&
       !containsVariable(url, rootParent?.env ?? [])
     ) {
-      setIsUrlError(true);
+      setIsUrlError(true)
     } else {
-      setIsUrlError(false);
+      setIsUrlError(false)
     }
-  }, [rootParent, url]);
+  }, [rootParent, url])
 
   const setBorderColor = (isError: boolean) =>
-    isError ? "border-destructive" : "";
+    isError ? 'border-destructive' : ''
 
   return (
     <Form {...form}>
-      <form className="m-5 h-full" onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="m-5 h-full"
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
         <FormField
           control={form.control}
           name="name"
@@ -116,12 +117,16 @@ export default function AddApi() {
                   folderId,
                 )}
               />
-              <ChevronsRight size={13} className="mx-2" />
+              <ChevronsRight
+                size={13}
+                className="mx-2"
+              />
               <FormControl>
                 <Input
+                  autoComplete="off"
                   placeholder="Api Name"
                   {...field}
-                  value={field.value ?? ""}
+                  value={field.value ?? ''}
                   className={setBorderColor(!!form.formState.errors.name)}
                 />
               </FormControl>
@@ -134,22 +139,25 @@ export default function AddApi() {
             name="method"
             render={({ field }) => (
               <FormItem className="mr-2">
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                >
                   <FormControl>
                     <SelectTrigger
                       className={
-                        (field.value === "GET"
-                          ? "text-green-500"
-                          : field.value === "POST"
-                            ? "text-yellow-500"
-                            : field.value === "PUT"
-                              ? "text-blue-500"
-                              : field.value === "PATCH"
-                                ? "text-purple-500"
-                                : field.value === "DELETE"
-                                  ? "text-destructive"
-                                  : "text-foreground") +
-                        " font-bold w-24 " +
+                        (field.value === 'GET'
+                          ? 'text-green-500'
+                          : field.value === 'POST'
+                          ? 'text-yellow-500'
+                          : field.value === 'PUT'
+                          ? 'text-blue-500'
+                          : field.value === 'PATCH'
+                          ? 'text-purple-500'
+                          : field.value === 'DELETE'
+                          ? 'text-destructive'
+                          : 'text-foreground') +
+                        ' font-bold w-24 ' +
                         setBorderColor(!!form.formState.errors.method)
                       }
                     >
@@ -157,18 +165,18 @@ export default function AddApi() {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {["GET", "POST", "PUT", "PATCH", "DELETE"].map((item) => (
+                    {['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map((item) => (
                       <SelectItem
                         className={
-                          (item === "GET"
-                            ? "text-green-500"
-                            : item === "POST"
-                              ? "text-yellow-500"
-                              : item === "PUT"
-                                ? "text-blue-500"
-                                : item === "PATCH"
-                                  ? "text-purple-500"
-                                  : "text-destructive") + " font-bold"
+                          (item === 'GET'
+                            ? 'text-green-500'
+                            : item === 'POST'
+                            ? 'text-yellow-500'
+                            : item === 'PUT'
+                            ? 'text-blue-500'
+                            : item === 'PATCH'
+                            ? 'text-purple-500'
+                            : 'text-destructive') + ' font-bold'
                         }
                         key={item}
                         value={item}
@@ -188,12 +196,13 @@ export default function AddApi() {
               <FormItem className="flex items-center">
                 <FormControl>
                   <Input
+                    autoComplete="off"
                     placeholder="Url"
                     {...field}
                     size={200}
-                    value={field.value ?? ""}
+                    value={field.value ?? ''}
                     className={cn(
-                      isUrlError ? "text-red-500" : "",
+                      isUrlError ? 'text-red-500' : '',
                       setBorderColor(isUrlError),
                     )}
                   />
@@ -217,14 +226,17 @@ export default function AddApi() {
         <InputTabs
           className="pt-5 h-auto"
           form={form}
-        // height={window.innerHeight - 160}
+          // height={window.innerHeight - 160}
         />
         <div className="flex mt-5 justify-end">
-          <Button disabled={isUrlError} type="submit">
+          <Button
+            disabled={isUrlError}
+            type="submit"
+          >
             Save
           </Button>
         </div>
       </form>
     </Form>
-  );
+  )
 }

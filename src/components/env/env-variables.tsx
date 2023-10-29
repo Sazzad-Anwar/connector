@@ -1,13 +1,15 @@
-import useApiStore from "@/store/store";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronsRight, Plus, Trash2 } from "lucide-react";
-import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
-import { v4 as uuid } from "uuid";
+import useApiStore from '@/store/store'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { ChevronsRight, Plus, Trash2 } from 'lucide-react'
+import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form'
+import { v4 as uuid } from 'uuid'
 
-import { FolderSchema, FolderType } from "@/types/api";
+import { FolderSchema, FolderType } from '@/types/api'
 
-import { Button } from "../ui/button";
-import { Form } from "../ui/form";
+import { useParams } from 'react-router-dom'
+import SidenavToggler from '../nav/sidenav-toggler'
+import { Button } from '../ui/button'
+import { Form } from '../ui/form'
 import {
   Table,
   TableBody,
@@ -15,51 +17,49 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
-import { toast } from "../ui/use-toast";
-import { useParams } from "react-router-dom";
-import SidenavToggler from "../nav/sidenav-toggler";
+} from '../ui/table'
+import { toast } from '../ui/use-toast'
 
 export default function EnvVariables() {
-  const params = useParams();
-  const { collections, updateFolder } = useApiStore();
+  const params = useParams()
+  const { collections, updateFolder } = useApiStore()
   const collection = collections.find(
     (collection: FolderType) => collection.id === params.folderId,
-  )!;
+  )!
   const form = useForm<FolderType>({
-    mode: "onChange",
+    mode: 'onChange',
     resolver: zodResolver(FolderSchema),
     defaultValues: {
       env:
         collection?.id && collection?.env?.length
           ? collection?.env
           : [
-            {
-              id: uuid(),
-              key: "",
-              value: "",
-              description: "",
-            },
-          ],
+              {
+                id: uuid(),
+                key: '',
+                value: '',
+                description: '',
+              },
+            ],
     },
-  });
+  })
   const { fields, insert, remove } = useFieldArray({
     control: form.control,
-    name: "env",
-  });
+    name: 'env',
+  })
 
   const onSubmnt: SubmitHandler<FolderType> = (data) => {
     const folder = {
       ...collection,
-      env: data.env?.filter((item) => item.key !== ""),
-    };
-    updateFolder(folder, collection?.id);
+      env: data.env?.filter((item) => item.key !== ''),
+    }
+    updateFolder(folder, collection?.id)
 
     toast({
-      variant: "success",
-      title: "Variables are saved",
-    });
-  };
+      variant: 'success',
+      title: 'Variables are saved',
+    })
+  }
 
   return (
     <section className="p-5">
@@ -68,7 +68,10 @@ export default function EnvVariables() {
         <h1 className="ml-5 text-base lg:text-lg xl:text-xl">
           {collection?.name}
         </h1>
-        <ChevronsRight size={13} className="mx-2" />
+        <ChevronsRight
+          size={13}
+          className="mx-2"
+        />
         <h1 className="text-base lg:text-lg xl:text-xl">Variables</h1>
       </div>
       <Form {...form}>
@@ -96,9 +99,13 @@ export default function EnvVariables() {
 
             <TableBody>
               {fields.map((field, index) => (
-                <TableRow key={field.id} className="group border">
+                <TableRow
+                  key={field.id}
+                  className="group border"
+                >
                   <TableCell className="border p-0">
                     <input
+                      autoComplete="off"
                       type="text"
                       {...form.register(`env.${index}.key` as const)}
                       className="h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none"
@@ -107,6 +114,7 @@ export default function EnvVariables() {
                   </TableCell>
                   <TableCell className="border p-0">
                     <input
+                      autoComplete="off"
                       {...form.register(`env.${index}.value` as const)}
                       className="h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none"
                       placeholder="Value"
@@ -114,6 +122,7 @@ export default function EnvVariables() {
                   </TableCell>
                   <TableCell className="border border-r-0 p-0">
                     <input
+                      autoComplete="off"
                       {...form.register(`env.${index}.description` as const)}
                       className="h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none"
                       placeholder="Description"
@@ -124,9 +133,9 @@ export default function EnvVariables() {
                       onClick={() =>
                         insert(index + 1, {
                           id: uuid(),
-                          key: "",
-                          value: "",
-                          description: "",
+                          key: '',
+                          value: '',
+                          description: '',
                         })
                       }
                       variant="ghost"
@@ -138,14 +147,14 @@ export default function EnvVariables() {
                     </Button>
                     <Button
                       onClick={() => {
-                        remove(index);
+                        remove(index)
                         if (index === 0) {
                           insert(1, {
                             id: uuid(),
-                            key: "",
-                            value: "",
-                            description: "",
-                          });
+                            key: '',
+                            value: '',
+                            description: '',
+                          })
                         }
                       }}
                       variant="ghost"
@@ -170,5 +179,5 @@ export default function EnvVariables() {
         </form>
       </Form>
     </section>
-  );
+  )
 }

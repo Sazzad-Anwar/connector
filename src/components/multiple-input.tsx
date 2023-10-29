@@ -1,13 +1,14 @@
-import { useEffect } from "react";
-import useApiStore from "@/store/store";
-import { Plus, Trash2 } from "lucide-react";
-import { useFieldArray, UseFormReturn } from "react-hook-form";
-import { v4 as uuid } from "uuid";
+import useApiStore from '@/store/store'
+import { Plus, Trash2 } from 'lucide-react'
+import { useEffect } from 'react'
+import { UseFormReturn, useFieldArray } from 'react-hook-form'
+import { v4 as uuid } from 'uuid'
 
-import { ApiType } from "@/types/api";
-import { cn, containsDynamicVariable, containsVariable } from "@/lib/utils";
+import { cn, containsDynamicVariable, containsVariable } from '@/lib/utils'
+import { ApiType } from '@/types/api'
 
-import { Button } from "./ui/button";
+import { useParams } from 'react-router-dom'
+import { Button } from './ui/button'
 import {
   Table,
   TableBody,
@@ -15,82 +16,81 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "./ui/table";
-import { useParams } from "react-router-dom";
+} from './ui/table'
 
 export type PropsType = {
-  propertyName: "params" | "headers" | "body" | "pathVariables";
-  form: UseFormReturn<ApiType, any, undefined>;
-};
+  propertyName: 'params' | 'headers' | 'body' | 'pathVariables'
+  form: UseFormReturn<ApiType, any, undefined>
+}
 
 export default function MultipleInput({ form, propertyName }: PropsType) {
-  const { env, getEnv } = useApiStore();
-  const routeParams = useParams();
+  const { env, getEnv } = useApiStore()
+  const routeParams = useParams()
   const { fields, insert, append, remove } = useFieldArray({
     control: form.control,
     name: propertyName,
-  });
-  const folderId = routeParams?.folderId;
-  const params = form.watch(propertyName);
+  })
+  const folderId = routeParams?.folderId
+  const params = form.watch(propertyName)
 
   useEffect(() => {
     if (folderId) {
-      getEnv(folderId);
+      getEnv(folderId)
     }
-  }, [getEnv, folderId]);
+  }, [getEnv, folderId])
 
   useEffect(() => {
     if (fields.length < 1) {
       append({
         id: uuid(),
-        key: "",
-        value: "",
-        description: "",
-      });
+        key: '',
+        value: '',
+        description: '',
+      })
     }
-  }, [fields, append]);
+  }, [fields, append])
 
   const isErrorIndex = (index: number) => {
     const items = params?.filter(
       (item) =>
-        item.value !== "" &&
+        item.value !== '' &&
         containsDynamicVariable(item.value) &&
         !containsVariable(item.value, env),
-    );
+    )
 
-    const indexArr: number[] = [];
+    const indexArr: number[] = []
 
     items?.map((item) => {
-      indexArr.push(params!.indexOf(item)!);
-    });
+      indexArr.push(params!.indexOf(item)!)
+    })
 
     if (indexArr.includes(index)) {
-      return true;
+      return true
     } else {
-      return false;
+      return false
     }
-  };
+  }
 
   const isCorrectVar = (index: number) => {
     const items = params?.filter(
       (item) =>
-        item.value !== "" &&
+        item.value !== '' &&
         containsDynamicVariable(item.value) &&
         containsVariable(item.value, env),
-    );
+    )
 
-    const indexArr: number[] = [];
+    const indexArr: number[] = []
 
     items?.map((item) => {
-      indexArr.push(params!.indexOf(item)!);
-    });
+      indexArr.push(params!.indexOf(item)!)
+    })
 
     if (indexArr.includes(index)) {
-      return true;
+      return true
     } else {
-      return false;
+      return false
     }
-  };
+  }
 
   return (
     <Table className="overflow-auto max-h-[calc(100vh-300px)]">
@@ -113,9 +113,13 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
 
       <TableBody>
         {fields.map((field, index) => (
-          <TableRow key={field.id} className="group border">
+          <TableRow
+            key={field.id}
+            className="group border"
+          >
             <TableCell className="border p-0">
               <input
+                autoComplete="off"
                 type="text"
                 {...form.register(`${propertyName}.${index}.key` as const)}
                 className="h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none"
@@ -124,14 +128,15 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
             </TableCell>
             <TableCell className="border p-0">
               <input
+                autoComplete="off"
                 {...form.register(`${propertyName}.${index}.value` as const)}
                 className={cn(
-                  "h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none",
+                  'h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none',
                   isErrorIndex(index)
-                    ? "text-red-500"
+                    ? 'text-red-500'
                     : isCorrectVar(index)
-                      ? "text-cyan-500"
-                      : "text-accent-foreground",
+                    ? 'text-cyan-500'
+                    : 'text-accent-foreground',
                 )}
                 placeholder="Value"
               />
@@ -139,6 +144,7 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
             <TableCell className="border border-r-0 p-0">
               <div className="flex items-center justify-between">
                 <input
+                  autoComplete="off"
                   {...form.register(
                     `${propertyName}.${index}.description` as const,
                   )}
@@ -151,9 +157,9 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
                     onClick={() =>
                       insert(index + 1, {
                         id: uuid(),
-                        key: "",
-                        value: "",
-                        description: "",
+                        key: '',
+                        value: '',
+                        description: '',
                       })
                     }
                     variant="ghost"
@@ -179,5 +185,5 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
         ))}
       </TableBody>
     </Table>
-  );
+  )
 }

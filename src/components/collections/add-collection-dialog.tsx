@@ -1,7 +1,7 @@
-import React, { useRef } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { SubmitHandler, useForm } from "react-hook-form";
-import * as z from "zod";
+import { zodResolver } from '@hookform/resolvers/zod'
+import React, { useRef } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import * as z from 'zod'
 
 import {
   AlertDialog,
@@ -9,8 +9,8 @@ import {
   AlertDialogContent,
   AlertDialogFooter,
   AlertDialogTrigger,
-} from "../ui/alert-dialog";
-import { Button, buttonVariants } from "../ui/button";
+} from '../ui/alert-dialog'
+import { Button, buttonVariants } from '../ui/button'
 import {
   Form,
   FormControl,
@@ -18,21 +18,21 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
-import { Input } from "../ui/input";
+} from '../ui/form'
+import { Input } from '../ui/input'
 
 export const CollectionSchema = z.object({
   collectionName: z
     .string()
-    .min(3, { message: "Collection name should be more than 3 characters" }),
-});
+    .min(3, { message: 'Collection name should be more than 3 characters' }),
+})
 
 type PropsType = {
-  children: React.ReactNode;
-  onSubmit: SubmitHandler<z.infer<typeof CollectionSchema>>;
-  name?: string;
-  type?: "collection" | "folder";
-};
+  children: React.ReactNode
+  onSubmit: SubmitHandler<z.infer<typeof CollectionSchema>>
+  name?: string
+  type?: 'collection' | 'folder'
+}
 
 export default function AddCollectionDialog({
   children,
@@ -40,14 +40,14 @@ export default function AddCollectionDialog({
   onSubmit,
   type,
 }: PropsType) {
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const form = useForm<z.infer<typeof CollectionSchema>>({
-    mode: "onChange",
+    mode: 'onChange',
     resolver: zodResolver(CollectionSchema),
     defaultValues: {
       collectionName: name,
     },
-  });
+  })
 
   const handleSubmit: SubmitHandler<z.infer<typeof CollectionSchema>> = (
     data,
@@ -55,11 +55,11 @@ export default function AddCollectionDialog({
     const updatedData = {
       ...data,
       env: [],
-    };
-    buttonRef.current?.click();
-    form.reset();
-    onSubmit(updatedData);
-  };
+    }
+    buttonRef.current?.click()
+    form.reset()
+    onSubmit(updatedData)
+  }
 
   return (
     <AlertDialog>
@@ -73,13 +73,14 @@ export default function AddCollectionDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    {type === "collection" ? "Collection" : "Folder"} Name
+                    {type === 'collection' ? 'Collection' : 'Folder'} Name
                   </FormLabel>
                   <FormControl>
                     <Input
+                      autoComplete="off"
                       placeholder="name"
                       {...field}
-                      value={field.value ?? ""}
+                      value={field.value ?? ''}
                     />
                   </FormControl>
                   <FormMessage />
@@ -90,11 +91,14 @@ export default function AddCollectionDialog({
               <AlertDialogCancel
                 ref={buttonRef}
                 type="button"
-                className={buttonVariants({ size: "xs", variant: "outline" })}
+                className={buttonVariants({ size: 'xs', variant: 'outline' })}
               >
                 Cancel
               </AlertDialogCancel>
-              <Button type="submit" size="xs">
+              <Button
+                type="submit"
+                size="xs"
+              >
                 Save
               </Button>
             </AlertDialogFooter>
@@ -102,5 +106,5 @@ export default function AddCollectionDialog({
         </Form>
       </AlertDialogContent>
     </AlertDialog>
-  );
+  )
 }

@@ -1,76 +1,79 @@
-import { useEffect, useRef, useState } from "react";
-import { UseFormReturn } from "react-hook-form";
-import { v4 as uuid } from "uuid";
+import { useEffect, useRef, useState } from 'react'
+import { UseFormReturn } from 'react-hook-form'
+import { v4 as uuid } from 'uuid'
 
-import { ApiType, ParamsType } from "@/types/api";
-import { arrayToObjectConversion } from "@/lib/utils";
+import { arrayToObjectConversion } from '@/lib/utils'
+import { ApiType, ParamsType } from '@/types/api'
 
-import MultipleInput from "../multiple-input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { JSONErrorType } from "./api";
-import ResultRender from "../result-renderer";
+import MultipleInput from '../multiple-input'
+import ResultRender from '../result-renderer'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
+import { JSONErrorType } from './api'
 
 type PropsType = {
-  form: UseFormReturn<ApiType, any, undefined>;
-  api?: ApiType;
-  className?: string;
-  height?: number | string;
-};
+  form: UseFormReturn<ApiType, any, undefined>
+  api?: ApiType
+  className?: string
+  height?: number | string
+}
 
 export default function InputTabs({ form, api, height, className }: PropsType) {
-  const jsonBodyDivRef = useRef<HTMLDivElement>(null);
-  const [jsonBodyData, setJsonBodyData] = useState<any>({});
-  const [jsonError, setJsonError] = useState<JSONErrorType>();
+  const jsonBodyDivRef = useRef<HTMLDivElement>(null)
+  const [jsonBodyData, setJsonBodyData] = useState<any>({})
+  const [jsonError, setJsonError] = useState<JSONErrorType>()
 
   const setJsonBody = (data: string) => {
     try {
-      setJsonBodyData(JSON.parse(data));
-      const jsonData = JSON.parse(data);
-      const jsonArray = [] as ParamsType[];
+      setJsonBodyData(JSON.parse(data))
+      const jsonData = JSON.parse(data)
+      const jsonArray = [] as ParamsType[]
 
       Object.keys(jsonData).map((item) => {
-        const data = { key: item, value: jsonData[item] as any, id: uuid() };
-        jsonArray.push(data);
-      });
+        const data = { key: item, value: jsonData[item] as any, id: uuid() }
+        jsonArray.push(data)
+      })
 
-      form.setValue("body", jsonArray);
+      form.setValue('body', jsonArray)
 
       setJsonError({
         isError: false,
-        error: "",
-      });
+        error: '',
+      })
     } catch (error: any) {
       setJsonError({
         isError: true,
         error: error.message,
-      });
+      })
     }
-  };
+  }
 
   useEffect(() => {
     if (api?.id) {
-      setJsonBodyData(arrayToObjectConversion(api!.body!));
+      setJsonBodyData(arrayToObjectConversion(api!.body!))
     }
-  }, [api]);
+  }, [api])
 
   return (
     <div className={className}>
-      <Tabs defaultValue="body" className="w-full">
+      <Tabs
+        defaultValue="body"
+        className="w-full"
+      >
         <TabsList>
           <TabsTrigger value="params">
-            Params{" "}
+            Params{' '}
             {api?.params?.length ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
           </TabsTrigger>
           <TabsTrigger value="headers">
-            Headers{" "}
+            Headers{' '}
             {api?.headers?.length ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
-            ) : null}{" "}
+            ) : null}{' '}
           </TabsTrigger>
           <TabsTrigger value="body">
-            Body{" "}
+            Body{' '}
             {api?.body?.length ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
@@ -86,7 +89,10 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                 : (height as number),
           }}
         >
-          <MultipleInput propertyName="params" form={form} />
+          <MultipleInput
+            propertyName="params"
+            form={form}
+          />
         </TabsContent>
         <TabsContent
           value="headers"
@@ -98,15 +104,30 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                 : (height as number),
           }}
         >
-          <MultipleInput propertyName="headers" form={form} />
+          <MultipleInput
+            propertyName="headers"
+            form={form}
+          />
         </TabsContent>
-        <TabsContent value="body" className="animate__animated animate__fadeIn">
-          <Tabs defaultValue="x-www-form-urlencoded" className="w-full">
+        <TabsContent
+          value="body"
+          className="animate__animated animate__fadeIn"
+        >
+          <Tabs
+            defaultValue="x-www-form-urlencoded"
+            className="w-full"
+          >
             <TabsList className="px-.5 h-9">
-              <TabsTrigger value="x-www-form-urlencoded" className="h-7">
+              <TabsTrigger
+                value="x-www-form-urlencoded"
+                className="h-7"
+              >
                 x-www-form-urlencoded
               </TabsTrigger>
-              <TabsTrigger value="raw" className="h-7">
+              <TabsTrigger
+                value="raw"
+                className="h-7"
+              >
                 Raw JSON
               </TabsTrigger>
             </TabsList>
@@ -136,8 +157,8 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                   height && (height as number) >= 300
                     ? (height as number) - 230
                     : !height
-                      ? window.innerHeight - 320
-                      : (height as number)
+                    ? window.innerHeight - 320
+                    : (height as number)
                 }
                 readOnly={false}
                 setData={setJsonBody}
@@ -154,11 +175,14 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                     : (height as number),
               }}
             >
-              <MultipleInput propertyName="body" form={form} />
+              <MultipleInput
+                propertyName="body"
+                form={form}
+              />
             </TabsContent>
           </Tabs>
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }
