@@ -71,8 +71,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
   return (
     <div className={className}>
       <Tabs
-        value={defaultOpen}
-        // defaultValue={defaultOpen}
+        defaultValue={defaultOpen}
         className="w-full"
       >
         <TabsList>

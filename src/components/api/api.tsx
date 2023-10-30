@@ -185,13 +185,15 @@ export default function Api() {
         time: (responseTime as number) + 'ms',
       })
 
-      const updatedEnv = updateEnvWithDynamicVariableValue(
-        api.dynamicVariables!,
-        env,
-        response.data,
-      )
+      if (api.dynamicVariables?.length) {
+        const updatedEnv = updateEnvWithDynamicVariableValue(
+          submitData?.dynamicVariables ?? api.dynamicVariables!,
+          env,
+          response.data,
+        )
 
-      updateEnv(collections, folderId, updatedEnv)
+        updateEnv(collections, folderId, updatedEnv)
+      }
 
       setIsLoading(false)
     } catch (error: any) {
