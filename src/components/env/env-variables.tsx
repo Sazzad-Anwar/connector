@@ -50,6 +50,38 @@ export default function EnvVariables() {
   })
 
   useEffect(() => {
+    const handleEscapeKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        // Handle the "Escape" key press here
+        if (form.formState.isDirty) {
+          if (collection.env?.length) {
+            const env = collection.env
+            form.setValue('env', env)
+          } else {
+            form.setValue('env', [
+              {
+                id: uuid(),
+                key: '',
+                value: '',
+                description: '',
+              },
+            ])
+          }
+          form.reset()
+        }
+      }
+    }
+
+    // Add the event listener when the component mounts
+    document.addEventListener('keydown', handleEscapeKeyPress)
+
+    // Remove the event listener when the component unmounts
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKeyPress)
+    }
+  }, [form, collection])
+
+  useEffect(() => {
     if (collection.env?.length) {
       const env = collection.env
       form.setValue('env', env)
@@ -64,6 +96,23 @@ export default function EnvVariables() {
       ])
     }
   }, [form, collection])
+
+  const reloadPage = () => {
+    if (collection.env?.length) {
+      const env = collection.env
+      form.setValue('env', env)
+    } else {
+      form.setValue('env', [
+        {
+          id: uuid(),
+          key: '',
+          value: '',
+          description: '',
+        },
+      ])
+    }
+    form.reset()
+  }
 
   const onSubmnt: SubmitHandler<FolderType> = (data) => {
     const folder = {
@@ -186,13 +235,30 @@ export default function EnvVariables() {
               ))}
             </TableBody>
           </Table>
-          <Button
-            type="submit"
-            size="sm"
-            className="ml-auto mt-5 flex justify-self-end"
-          >
-            Save
-          </Button>
+          <div className="flex items-center justify-end w-full">
+            <div className="flex items-center">
+              {form.formState.isDirty && (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-5 mr-5"
+                    onClick={() => reloadPage()}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="mt-5"
+                  >
+                    Save
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
         </form>
       </Form>
     </section>
