@@ -1,5 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
-@import "animate.css";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import 'animate.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -25,7 +25,7 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --radius: 0.3rem;
   }
 
   .dark {
@@ -54,13 +54,11 @@
 @layer base {
   * {
     @apply border-border;
-    font-family: "Inter", sans-serif;
+    font-family: 'Inter', sans-serif;
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings:
-      "rlig" 1,
-      "calt" 1;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
   }
   .dark tr:last-child td:last-child,
   tr:last-child td:last-child {

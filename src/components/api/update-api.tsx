@@ -74,7 +74,7 @@ export default function UpdateApi() {
     const handleEscapeKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
-        navigate(`/api/${folderId}/${apiId}`)
+        navigate(-1)
       }
     }
 
@@ -85,7 +85,7 @@ export default function UpdateApi() {
     return () => {
       document.removeEventListener('keydown', handleEscapeKeyPress)
     }
-  }, [folderId, apiId, navigate])
+  }, [navigate])
 
   useEffect(() => {
     if (api) {
@@ -252,6 +252,14 @@ export default function UpdateApi() {
           api={api}
         />
         <div className="mr-5 flex justify-end">
+          <Button
+            variant="outline"
+            className="mr-2"
+            type="button"
+            onClick={() => navigate(-1)}
+          >
+            Cancel
+          </Button>
           <Button
             disabled={isUrlError}
             type="submit"

@@ -96,6 +96,23 @@ export default function AddApi() {
     }
   }, [rootParent, url])
 
+  useEffect(() => {
+    const handleEscapeKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        // Handle the "Escape" key press here
+        navigate(-1)
+      }
+    }
+
+    // Add the event listener when the component mounts
+    document.addEventListener('keydown', handleEscapeKeyPress)
+
+    // Remove the event listener when the component unmounts
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKeyPress)
+    }
+  }, [navigate])
+
   const setBorderColor = (isError: boolean) =>
     isError ? 'border-destructive' : ''
 

@@ -9,8 +9,8 @@ import { v4 as uuid } from 'uuid'
 
 import {
   arrayToObjectConversion,
+  checkAndReplaceWithDynamicVariable,
   containsDynamicVariable,
-  containsVariable,
   extractVariable,
   getBreadcrumbsForNthChildren,
   getQueryString,
@@ -152,22 +152,14 @@ export default function Api() {
 
       let url = api.url + (params ? '?' + params : '')
       url = containsDynamicVariable(url) ? replaceVariables(url, env) : url
-      const requestBody = arrayToObjectConversion(submitData.body!)
-      const headers = arrayToObjectConversion(submitData.headers!)
-
-      Object.keys(headers).map((item) => {
-        if (
-          containsDynamicVariable(headers[item]) &&
-          containsVariable(headers[item], env)
-        ) {
-          headers[item] = replaceVariables(headers[item], env)
-        } else if (
-          containsDynamicVariable(headers[item]) &&
-          containsVariable(headers[item], env)
-        ) {
-          delete headers[item]
-        }
-      })
+      const requestBody = checkAndReplaceWithDynamicVariable(
+        arrayToObjectConversion(submitData.body!),
+        env,
+      )
+      const headers = checkAndReplaceWithDynamicVariable(
+        arrayToObjectConversion(submitData.headers!),
+        env,
+      )
 
       const response = await axios({
         method: api.method,
@@ -187,11 +179,10 @@ export default function Api() {
 
       if (api.dynamicVariables?.length) {
         const updatedEnv = updateEnvWithDynamicVariableValue(
-          submitData?.dynamicVariables ?? api.dynamicVariables!,
+          submitData.dynamicVariables!,
           env,
           response.data,
         )
-
         updateEnv(collections, folderId, updatedEnv)
       }
 

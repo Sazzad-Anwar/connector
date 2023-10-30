@@ -241,7 +241,7 @@ export default function RenderNavigation({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <MoreVertical
-              className="opacity-20 group-hover:opacity-100"
+              className="opacity-0 group-hover:opacity-100"
               size={18}
             />
           </DropdownMenuTrigger>
@@ -316,7 +316,7 @@ export default function RenderNavigation({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <MoreVertical
-                    className="opacity-20 group-hover:opacity-100"
+                    className="opacity-0 group-hover:opacity-100"
                     size={18}
                   />
                 </DropdownMenuTrigger>

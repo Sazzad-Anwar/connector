@@ -173,10 +173,6 @@ export function updateEnvWithDynamicVariableValue(
 
 export function resolveQuery(queryString: string, data: any) {
   let properties = queryString.split('.') // Split query string by '.'
-  console.log(
-    '🚀 ~ file: utils.ts:176 ~ resolveQuery ~ properties:',
-    properties,
-  )
 
   let result = data
   if (Array.isArray(result)) {
@@ -195,10 +191,30 @@ export function resolveQuery(queryString: string, data: any) {
   } else if (result && typeof result === 'object') {
     properties = properties.filter((item) => item !== 'response')
     for (const property of properties) {
-      result = property !== 'response' ? result[property] : null
+      result = property !== 'response' ? result[property] ?? '' : ''
     }
   } else {
     result = undefined
   }
   return result
+}
+
+export function checkAndReplaceWithDynamicVariable(
+  params: { [key: string]: string },
+  env: ParamsType[],
+) {
+  Object.keys(params).map((item) => {
+    if (
+      containsDynamicVariable(params[item]) &&
+      containsVariable(params[item], env)
+    ) {
+      params[item] = replaceVariables(params[item], env)
+    } else if (
+      containsDynamicVariable(params[item]) &&
+      containsVariable(params[item], env)
+    ) {
+      delete params[item]
+    }
+  })
+  return params
 }
