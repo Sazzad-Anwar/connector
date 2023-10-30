@@ -49,7 +49,8 @@ export type ResponseStatus = {
 }
 
 export default function Api() {
-  const { api, getApi, collections, env, getEnv, updateEnv } = useApiStore()
+  const { api, getApi, updateApi, collections, env, getEnv, updateEnv } =
+    useApiStore()
   const params = useParams()
   const navigate = useNavigate()
   const [result, setResult] = useState<any>()
@@ -57,6 +58,7 @@ export default function Api() {
   const [heightOfBreadcrumbUrl, setHeightOfBreadcrumbUrl] = useState<number>()
   const breadCrumbDivRef = useRef<HTMLDivElement>(null)
   const urlDivRef = useRef<HTMLDivElement>(null)
+  const updateButtonRef = useRef<HTMLButtonElement>(null)
   const [sizes, setSizes] = useState([200, 300])
   const [responseStatus, setResponseStatus] = useState<ResponseStatus>({
     status: 0,
@@ -112,35 +114,59 @@ export default function Api() {
   }, [])
 
   useEffect(() => {
-    form.setValue('id', api?.id ?? '')
-    form.setValue('name', api?.name ?? '')
-    form.setValue('method', api?.method ?? 'GET')
-    form.setValue('url', api?.url ?? '')
-    form.setValue(
-      'params',
-      api?.params?.length
-        ? api?.params
-        : [{ id: uuid(), key: '', value: '', description: '' }],
-    )
-    form.setValue(
-      'headers',
-      api?.headers?.length
-        ? api?.headers
-        : [{ id: uuid(), key: '', value: '', description: '' }],
-    )
-    form.setValue(
-      'body',
-      api?.body?.length
-        ? api?.body
-        : [{ id: uuid(), key: '', value: '', description: '' }],
-    )
-    form.setValue(
-      'dynamicVariables',
-      api?.dynamicVariables?.length
-        ? api?.dynamicVariables
-        : [{ id: uuid(), key: '', value: '', description: '' }],
-    )
-  }, [form, api])
+    const setAllParams = () => {
+      form.setValue('id', api?.id ?? '')
+      form.setValue('name', api?.name ?? '')
+      form.setValue('method', api?.method ?? 'GET')
+      form.setValue('url', api?.url ?? '')
+      form.setValue(
+        'params',
+        api?.params?.length
+          ? api?.params
+          : [{ id: uuid(), key: '', value: '', description: '' }],
+      )
+      form.setValue(
+        'headers',
+        api?.headers?.length
+          ? api?.headers
+          : [{ id: uuid(), key: '', value: '', description: '' }],
+      )
+      form.setValue(
+        'body',
+        api?.body?.length
+          ? api?.body
+          : [{ id: uuid(), key: '', value: '', description: '' }],
+      )
+      form.setValue(
+        'dynamicVariables',
+        api?.dynamicVariables?.length
+          ? api?.dynamicVariables
+          : [{ id: uuid(), key: '', value: '', description: '' }],
+      )
+    }
+
+    const handleEscapeKeyPress = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 's' && form.formState.isDirty) {
+        event.preventDefault()
+        updateButtonRef.current?.click()
+        form.reset()
+        getApi(api?.id)
+      }
+      if (event.key === 'Escape') {
+        // Handle the "Escape" key press here
+        form.reset()
+        setAllParams()
+      }
+    }
+
+    // Add the event listener when the component mounts
+    document.addEventListener('keydown', handleEscapeKeyPress)
+    setAllParams()
+    // Remove the event listener when the component unmounts
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKeyPress)
+    }
+  }, [form, api, getApi])
 
   const onSubmit: SubmitHandler<ApiType> = async (submitData) => {
     const startTime = Date.now()
@@ -204,6 +230,29 @@ export default function Api() {
     buttonRef.current?.click()
   }
 
+  const saveUpdate = () => {
+    const data: ApiType = {} as ApiType
+    data.id = api.id
+    data.params = isEmpty(form.getValues('params')!)
+      ? []
+      : form.getValues('params')
+    data.headers = isEmpty(form.getValues('headers')!)
+      ? []
+      : form.getValues('headers')
+    data.dynamicVariables = isEmpty(form.getValues('dynamicVariables')!)
+      ? []
+      : form.getValues('dynamicVariables')
+    data.body = isEmpty(form.getValues('body')!) ? [] : form.getValues('body')
+
+    updateApi(data, api.id)
+    toast({
+      variant: 'success',
+      title: 'Api is updated',
+    })
+    form.reset()
+    getApi(api?.id)
+  }
+
   if (
     apiId === 'undefined' ||
     apiId === 'null' ||
@@ -253,6 +302,17 @@ export default function Api() {
                 className="mx-2"
               />
               {api.name}
+              {form.formState.isDirty && (
+                <Button
+                  ref={updateButtonRef}
+                  onClick={() => saveUpdate()}
+                  type="button"
+                  size="xs"
+                  className="px-1.5 ml-2"
+                >
+                  Save update
+                </Button>
+              )}
             </div>
             <div
               ref={urlDivRef}

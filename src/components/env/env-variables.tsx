@@ -6,7 +6,7 @@ import { v4 as uuid } from 'uuid'
 
 import { FolderSchema, FolderType } from '@/types/api'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import SidenavToggler from '../nav/sidenav-toggler'
 import { Button } from '../ui/button'
@@ -23,6 +23,7 @@ import { toast } from '../ui/use-toast'
 
 export default function EnvVariables() {
   const params = useParams()
+  const submitButtonRef = useRef<HTMLButtonElement>(null)
   const { collections, updateFolder } = useApiStore()
   const collection = collections.find(
     (collection: FolderType) => collection.id === params.folderId,
@@ -30,19 +31,6 @@ export default function EnvVariables() {
   const form = useForm<FolderType>({
     mode: 'onChange',
     resolver: zodResolver(FolderSchema),
-    defaultValues: {
-      env:
-        collection?.id && collection?.env?.length
-          ? collection?.env
-          : [
-              {
-                id: uuid(),
-                key: '',
-                value: '',
-                description: '',
-              },
-            ],
-    },
   })
   const { fields, insert, remove } = useFieldArray({
     control: form.control,
@@ -51,6 +39,11 @@ export default function EnvVariables() {
 
   useEffect(() => {
     const handleEscapeKeyPress = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 's' && form.formState.isDirty) {
+        event.preventDefault()
+        submitButtonRef.current?.click()
+        form.reset()
+      }
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
         if (form.formState.isDirty) {
@@ -125,6 +118,7 @@ export default function EnvVariables() {
       variant: 'success',
       title: 'Variables are saved',
     })
+    reloadPage()
   }
 
   return (
@@ -249,6 +243,7 @@ export default function EnvVariables() {
                     Cancel
                   </Button>
                   <Button
+                    ref={submitButtonRef}
                     type="submit"
                     size="sm"
                     className="mt-5"

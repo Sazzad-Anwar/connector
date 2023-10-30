@@ -19,13 +19,9 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
     const { theme } = useTheme()
     const editorRef = useRef<any>(null)
     const [isErrorResult, setIsErrorResult] = useState<boolean>(false)
-    const [editorValue, setEditorValue] = useState<string>('{}')
-
-    useEffect(() => {
-      if (result) {
-        setEditorValue(JSON.stringify(result, null, '\t'))
-      }
-    }, [result])
+    const [editorValue, setEditorValue] = useState<string>(
+      JSON.stringify(result, null, '\t') ?? '{}',
+    )
 
     function setEditorTheme(monaco: any) {
       monaco.editor.defineTheme('onedark', {
