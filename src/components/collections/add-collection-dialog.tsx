@@ -77,8 +77,9 @@ export default function AddCollectionDialog({
                   </FormLabel>
                   <FormControl>
                     <Input
+                      autoFocus
                       autoComplete="off"
-                      placeholder="name"
+                      placeholder="Collection Name"
                       {...field}
                       value={field.value ?? ''}
                     />

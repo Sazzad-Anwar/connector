@@ -49,8 +49,10 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
   }
 
   useEffect(() => {
-    if (api?.id) {
+    if (api?.id && api?.body?.length) {
       setJsonBodyData(arrayToObjectConversion(api!.body!))
+    } else {
+      setJsonBodyData({})
     }
   }, [api])
 
