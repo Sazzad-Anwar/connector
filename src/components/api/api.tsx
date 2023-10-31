@@ -17,6 +17,7 @@ import {
   isEmpty,
   replaceVariables,
   updateEnvWithDynamicVariableValue,
+  updateUrlWithPathVariables,
 } from '@/lib/utils'
 import { ApiSchema, ApiType } from '@/types/api'
 
@@ -72,11 +73,13 @@ export default function Api() {
     resolver: zodResolver(ApiSchema),
   })
   const customParams = form.watch('params')
-  const url = !isEmpty(customParams!)
-    ? api.url +
-      '?' +
-      getQueryString(arrayToObjectConversion(customParams!), env)
+  const customPathVariables = form.watch('pathVariables')
+  let url = !isEmpty(customPathVariables!)
+    ? updateUrlWithPathVariables(api.url, customPathVariables!)
     : api.url
+  url = !isEmpty(customParams!)
+    ? url + '?' + getQueryString(arrayToObjectConversion(customParams!), env)
+    : url
   const apiId = params.apiId as string
   const folderId = params.folderId as string
 
@@ -143,10 +146,16 @@ export default function Api() {
           ? api?.dynamicVariables
           : [{ id: uuid(), key: '', value: '', description: '' }],
       )
+      form.setValue(
+        'pathVariables',
+        api?.pathVariables?.length
+          ? api?.pathVariables
+          : [{ id: uuid(), key: '', value: '', description: '' }],
+      )
     }
 
     const handleEscapeKeyPress = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === 's' && form.formState.isDirty) {
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
         event.preventDefault()
         updateButtonRef.current?.click()
         form.reset()
@@ -176,7 +185,8 @@ export default function Api() {
         ? getQueryString(arrayToObjectConversion(api.params!), env)
         : getQueryString(arrayToObjectConversion(submitData.params!), env)
 
-      let url = api.url + (params ? '?' + params : '')
+      let url = updateUrlWithPathVariables(api.url, submitData.pathVariables!)
+      url = url + (params ? '?' + params : '')
       url = containsDynamicVariable(url) ? replaceVariables(url, env) : url
       const requestBody = checkAndReplaceWithDynamicVariable(
         arrayToObjectConversion(submitData.body!),
@@ -243,6 +253,9 @@ export default function Api() {
       ? []
       : form.getValues('dynamicVariables')
     data.body = isEmpty(form.getValues('body')!) ? [] : form.getValues('body')
+    data.pathVariables = isEmpty(form.getValues('pathVariables')!)
+      ? []
+      : form.getValues('pathVariables')
 
     updateApi(data, api.id)
     toast({
@@ -308,9 +321,9 @@ export default function Api() {
                   onClick={() => saveUpdate()}
                   type="button"
                   size="xs"
-                  className="px-1.5 ml-2"
+                  className="py-.5 px-1 ml-2 text-xs"
                 >
-                  Save update
+                  Save
                 </Button>
               )}
             </div>

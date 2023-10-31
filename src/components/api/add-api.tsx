@@ -1,7 +1,7 @@
 import useApiStore from '@/store/store'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ChevronsRight, Info } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { v4 as uuid } from 'uuid'
 
@@ -39,6 +39,7 @@ import InputTabs from './input-tabs'
 
 export default function AddApi() {
   const navigate = useNavigate()
+  const saveButtonRef = useRef<HTMLButtonElement>(null)
   const params = useParams()
   const folderId = params.folderId as string
   const { collections, createApi } = useApiStore()
@@ -62,6 +63,10 @@ export default function AddApi() {
     data.params = isEmpty(data.params!) ? [] : data.params
     data.headers = isEmpty(data.headers!) ? [] : data.headers
     data.body = isEmpty(data.body!) ? [] : data.body
+    data.dynamicVariables = isEmpty(data.dynamicVariables!)
+      ? []
+      : data.dynamicVariables
+    data.pathVariables = isEmpty(data.pathVariables!) ? [] : data.pathVariables
 
     createApi(data, folderId)
     toast({
@@ -83,6 +88,12 @@ export default function AddApi() {
       { id: uuid(), key: '', value: '', description: '' },
     ])
     form.setValue('body', [{ id: uuid(), key: '', value: '', description: '' }])
+    form.setValue('dynamicVariables', [
+      { id: uuid(), key: '', value: '', description: '' },
+    ])
+    form.setValue('pathVariables', [
+      { id: uuid(), key: '', value: '', description: '' },
+    ])
   }, [form])
 
   useEffect(() => {
@@ -98,6 +109,11 @@ export default function AddApi() {
 
   useEffect(() => {
     const handleEscapeKeyPress = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 's') {
+        event.preventDefault()
+        saveButtonRef.current?.click()
+        form.reset()
+      }
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
         navigate(-1)
@@ -106,12 +122,11 @@ export default function AddApi() {
 
     // Add the event listener when the component mounts
     document.addEventListener('keydown', handleEscapeKeyPress)
-
     // Remove the event listener when the component unmounts
     return () => {
       document.removeEventListener('keydown', handleEscapeKeyPress)
     }
-  }, [navigate])
+  }, [navigate, form])
 
   const setBorderColor = (isError: boolean) =>
     isError ? 'border-destructive' : ''
@@ -247,6 +262,7 @@ export default function AddApi() {
         />
         <div className="flex mt-5 justify-end">
           <Button
+            ref={saveButtonRef}
             disabled={isUrlError}
             type="submit"
           >

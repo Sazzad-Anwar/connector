@@ -218,3 +218,21 @@ export function checkAndReplaceWithDynamicVariable(
   })
   return params
 }
+
+export function updateUrlWithPathVariables(url: string, params: ParamsType[]) {
+  const values: string[] = []
+  if (params?.length) {
+    params.forEach((item, index) => {
+      values[index] = item.value
+    })
+
+    const baseURL = url
+
+    // Construct URL based on the index order
+    const finalURL = baseURL + '/' + values.join('/')
+
+    return finalURL
+  } else {
+    return url
+  }
+}

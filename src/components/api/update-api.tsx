@@ -1,7 +1,7 @@
 import useApiStore from '@/store/store'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ChevronsRight } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { v4 as uuid } from 'uuid'
 
@@ -34,6 +34,7 @@ import InputTabs from './input-tabs'
 export default function UpdateApi() {
   const navigate = useNavigate()
   const params = useParams()
+  const updateButtonRef = useRef<HTMLButtonElement>(null)
   const folderId = params.folderId as string
   const apiId = params.apiId as string
   const { collections, updateApi, api, getApi } = useApiStore()
@@ -55,6 +56,7 @@ export default function UpdateApi() {
       ? []
       : data.dynamicVariables
     data.body = isEmpty(data.body!) ? [] : data.body
+    data.pathVariables = isEmpty(data.pathVariables!) ? [] : data.pathVariables
 
     updateApi(data, api.id)
     toast({
@@ -72,6 +74,10 @@ export default function UpdateApi() {
 
   useEffect(() => {
     const handleEscapeKeyPress = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault()
+        updateButtonRef.current?.click()
+      }
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
         navigate(-1)
@@ -85,7 +91,7 @@ export default function UpdateApi() {
     return () => {
       document.removeEventListener('keydown', handleEscapeKeyPress)
     }
-  }, [navigate])
+  }, [navigate, form])
 
   useEffect(() => {
     if (api) {
@@ -115,6 +121,12 @@ export default function UpdateApi() {
         'dynamicVariables',
         api?.dynamicVariables?.length
           ? api?.dynamicVariables
+          : [{ id: uuid(), key: '', value: '', description: '' }],
+      )
+      form.setValue(
+        'pathVariables',
+        api?.pathVariables?.length
+          ? api?.pathVariables
           : [{ id: uuid(), key: '', value: '', description: '' }],
       )
     }
@@ -261,6 +273,7 @@ export default function UpdateApi() {
             Cancel
           </Button>
           <Button
+            ref={updateButtonRef}
             disabled={isUrlError}
             type="submit"
           >

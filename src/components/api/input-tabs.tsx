@@ -79,7 +79,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
         <TabsList>
           <TabsTrigger value="params">
             Params{' '}
-            {api?.params?.length ? (
+            {api?.params?.length || api?.pathVariables?.length ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
           </TabsTrigger>
@@ -104,7 +104,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
         </TabsList>
         <TabsContent
           value="params"
-          className="animate__animated animate__fadeIn overflow-auto my-5"
+          className="animate__animated animate__fadeIn"
           style={{
             maxHeight:
               (height as number) >= 300
@@ -112,10 +112,61 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                 : (height as number),
           }}
         >
-          <MultipleInput
-            propertyName="params"
-            form={form}
-          />
+          <Tabs
+            defaultValue="queryParams"
+            className="w-full"
+          >
+            <TabsList className="px-.5 h-9">
+              <TabsTrigger
+                value="queryParams"
+                className="h-7"
+              >
+                Query Params
+                {api?.params?.length ? (
+                  <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+                ) : null}
+              </TabsTrigger>
+              <TabsTrigger
+                value="urlParams"
+                className="h-7"
+              >
+                URL Params
+                {api?.pathVariables?.length ? (
+                  <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+                ) : null}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent
+              value="queryParams"
+              className="animate__animated animate__fadeIn"
+              style={{
+                height:
+                  (height as number) >= 300
+                    ? (height as number) - 300
+                    : (height as number),
+              }}
+            >
+              <MultipleInput
+                propertyName="params"
+                form={form}
+              />
+            </TabsContent>
+            <TabsContent
+              value="urlParams"
+              className="animate__animated animate__fadeIn relative overflow-auto"
+              style={{
+                maxHeight:
+                  (height as number) >= 300
+                    ? (height as number) - 230
+                    : (height as number),
+              }}
+            >
+              <MultipleInput
+                propertyName="pathVariables"
+                form={form}
+              />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
         <TabsContent
           value="headers"
