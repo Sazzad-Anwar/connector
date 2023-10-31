@@ -9,9 +9,12 @@ import {
   cn,
   containsDynamicVariable,
   containsVariable,
+  filterURLWithParams,
   getBreadcrumbsForNthChildren,
   getRootParentIdForNthChildren,
   isEmpty,
+  parseURLParameters,
+  parseURLQueryParameters,
 } from '@/lib/utils'
 import { ApiSchema, ApiType, FolderType } from '@/types/api'
 
@@ -56,7 +59,11 @@ export default function UpdateApi() {
       ? []
       : data.dynamicVariables
     data.body = isEmpty(data.body!) ? [] : data.body
-    data.pathVariables = isEmpty(data.pathVariables!) ? [] : data.pathVariables
+    data.pathVariables = !data.url?.includes('/:')
+      ? []
+      : isEmpty(data.pathVariables!)
+      ? []
+      : data.pathVariables
 
     updateApi(data, api.id)
     toast({
@@ -94,11 +101,26 @@ export default function UpdateApi() {
   }, [navigate, form])
 
   useEffect(() => {
+    const urlParams = parseURLParameters(url)
+    const queryParams = parseURLQueryParameters(url!)
+    if (urlParams.length) {
+      form.setValue('pathVariables', urlParams)
+    }
+
+    if (queryParams.length) {
+      form.setValue('params', queryParams)
+    }
+  }, [form, url])
+
+  useEffect(() => {
     if (api) {
       form.setValue('id', api?.id ?? '')
       form.setValue('name', api?.name ?? '')
       form.setValue('method', api?.method ?? 'GET')
-      form.setValue('url', api?.url ?? '')
+      form.setValue(
+        'url',
+        filterURLWithParams(api.url, api.pathVariables!) ?? '',
+      )
       form.setValue(
         'params',
         api?.params?.length
@@ -248,6 +270,15 @@ export default function UpdateApi() {
                     {...field}
                     size={200}
                     value={field.value ?? ''}
+                    onChange={(e) => {
+                      if (e.target.value.includes('?')) {
+                        e.target.value = e.target.value.replace('?', '')
+                      }
+                      if (e.target.value.includes('&')) {
+                        e.target.value = e.target.value.replace('&', '')
+                      }
+                      field.onChange(e)
+                    }}
                     className={cn(
                       isUrlError ? 'text-red-500' : '',
                       setBorderColor(isUrlError),

@@ -124,6 +124,7 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
           >
             <TableCell className="border p-0">
               <input
+                disabled={propertyName === 'pathVariables'}
                 autoComplete="off"
                 type="text"
                 {...form.register(`${propertyName}.${index}.key` as const)}
@@ -166,6 +167,7 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
 
                 <div className="flex items-center">
                   <Button
+                    disabled={propertyName === 'pathVariables'}
                     onClick={() =>
                       insert(index + 1, {
                         id: uuid(),
@@ -177,16 +179,23 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
                     variant="ghost"
                     size="xs"
                     type="button"
-                    className="mr-1 px-1 opacity-20 transition-all duration-300 ease-linear group-hover:opacity-100"
+                    className={cn(
+                      'mr-1 px-1 opacity-20 transition-all duration-300 ease-linear group-hover:opacity-100',
+                      propertyName === 'pathVariables' ? 'hidden' : 'block',
+                    )}
                   >
                     <Plus size={16} />
                   </Button>
                   <Button
+                    disabled={propertyName === 'pathVariables'}
                     onClick={() => remove(index)}
                     variant="ghost"
                     size="xs"
                     type="button"
-                    className="mr-1 px-1 opacity-20 transition-all duration-300 ease-linear group-hover:opacity-100"
+                    className={cn(
+                      'mr-1 px-1 opacity-20 transition-all duration-300 ease-linear group-hover:opacity-100',
+                      propertyName === 'pathVariables' ? 'hidden' : 'block',
+                    )}
                   >
                     <Trash2 size={16} />
                   </Button>

@@ -3,6 +3,7 @@ import { twMerge } from 'tailwind-merge'
 
 import { FolderType, ParamsType } from '@/types/api'
 import clsx, { ClassValue } from 'clsx'
+import { v4 as uuid } from 'uuid'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -221,18 +222,145 @@ export function checkAndReplaceWithDynamicVariable(
 
 export function updateUrlWithPathVariables(url: string, params: ParamsType[]) {
   const values: string[] = []
+  let baseURL = url
+  let queryString = ''
+
+  // Find and replace path variables in the URL
   if (params?.length) {
-    params.forEach((item, index) => {
-      values[index] = item.value
+    params.forEach((item) => {
+      baseURL = baseURL.replace(`:${item.key}`, item.value)
+    })
+  }
+
+  // Separate query string if exists
+  const urlParts = baseURL.split('?')
+  if (urlParts.length > 1) {
+    baseURL = urlParts[0]
+    queryString = urlParts[1]
+  }
+
+  // Construct URL based on the index order
+  if (queryString) {
+    const updatedURL = baseURL + '/' + values.join('/') + '?' + queryString
+    return updatedURL.endsWith('/') ? updatedURL.slice(0, -1) : updatedURL
+  } else {
+    const updatedURL = baseURL + '/' + values.join('/')
+    return updatedURL.endsWith('/') ? updatedURL.slice(0, -1) : updatedURL
+  }
+}
+
+export function parseURLParameters(url: string) {
+  const regex = /:([^/?]+)/g // Updated regex to stop at '?' or '/'
+  let match
+  const parameters = []
+
+  while ((match = regex.exec(url)) !== null) {
+    if (match.index > url.indexOf('?') && url?.includes('?')) {
+      break // Stop parsing if the URL contains a query string and the match is after '?'
+    }
+
+    parameters.push({
+      id: uuid(), // This will be filled later based on your data
+      key: match[1],
+      value: '',
+      description: '',
+    })
+  }
+
+  return parameters
+}
+
+export function parseURLQueryParameters(url: string) {
+  const parameters: ParamsType[] = []
+
+  const queryString = url?.split('?')[1]
+
+  if (queryString) {
+    const params = queryString.split('&')
+
+    params.forEach((param) => {
+      const keyValue = param.split('=')
+      if (keyValue.length === 2) {
+        parameters.push({
+          id: uuid(),
+          key: keyValue[0],
+          value: keyValue[1],
+        })
+      }
+    })
+  }
+
+  return parameters
+}
+
+export function generateURLFromParams(url: string, params: ParamsType[]) {
+  let newURL = url
+
+  if (params && params.length && !params.find((item) => item.key === '')) {
+    params.forEach((param, index) => {
+      if (index + 1 !== params.length && !url?.includes(`:${param?.key}`)) {
+        newURL = newURL.replace(
+          `:${param?.key}`,
+          `:${param?.key}/:${params[index + 1]?.key}`,
+        )
+      } else {
+        newURL =
+          newURL + (!url?.includes(`:${param?.key}`) ? `/:${param?.key}` : '')
+      }
     })
 
-    const baseURL = url
+    const keysInURL = new Set(newURL?.match(/:([^/?]+)/g))
 
-    // Construct URL based on the index order
-    const finalURL = baseURL + '/' + values.join('/')
+    params.forEach((param) => {
+      if (!keysInURL.has(`:${param.key}`)) {
+        newURL = newURL?.replace(/:[^/?]+/, `:${param.key}`)
+      }
+    })
 
-    return finalURL
+    return newURL
   } else {
+    const queryPortion = newURL?.split('?')?.length
+      ? newURL?.split('?')[1] ?? ''
+      : ''
+
+    newURL =
+      queryPortion !== ''
+        ? newURL?.split('/:')[0] + '?' + queryPortion
+        : newURL?.split('/:')[0]
+
+    return newURL
+  }
+}
+
+// this function will filter the url and remove ':pathVar' which are not includes in Params array
+export function filterURLWithParams(url: string, params: ParamsType[]) {
+  const keysInArray = params?.map((param) => `:${param.key}`)
+  const regex = /:[^/?]+/g
+  const matchedKeys = url?.match(regex)
+
+  if (matchedKeys) {
+    const keysInURL = new Set(matchedKeys)
+    const unusedKeys = [...keysInURL].filter(
+      (key) => !keysInArray.includes(key),
+    )
+
+    unusedKeys.forEach((unusedKey) => {
+      url = url.replace(unusedKey, '') // Remove unused keys from the URL
+    })
+
+    // Clean up any leftover slashes from removed parameters
+    url = url
+      .replace(/\/{2,}/g, '/')
+      .replace(/\?&/, '?')
+      .replace(/\?$/, '')
+
+    // Remove trailing slash if present at the end
+    if (url.endsWith('/')) {
+      url = url.slice(0, -1)
+    }
+
     return url
   }
+
+  return url
 }

@@ -121,7 +121,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                 value="queryParams"
                 className="h-7"
               >
-                Query Params
+                Query
                 {api?.params?.length ? (
                   <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
                 ) : null}
@@ -130,7 +130,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                 value="urlParams"
                 className="h-7"
               >
-                URL Params
+                Path
                 {api?.pathVariables?.length ? (
                   <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
                 ) : null}

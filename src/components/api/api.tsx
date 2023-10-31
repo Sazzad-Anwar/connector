@@ -12,6 +12,7 @@ import {
   checkAndReplaceWithDynamicVariable,
   containsDynamicVariable,
   extractVariable,
+  generateURLFromParams,
   getBreadcrumbsForNthChildren,
   getQueryString,
   isEmpty,
@@ -73,13 +74,14 @@ export default function Api() {
     resolver: zodResolver(ApiSchema),
   })
   const customParams = form.watch('params')
-  const customPathVariables = form.watch('pathVariables')
-  let url = !isEmpty(customPathVariables!)
-    ? updateUrlWithPathVariables(api.url, customPathVariables!)
-    : api.url
-  url = !isEmpty(customParams!)
-    ? url + '?' + getQueryString(arrayToObjectConversion(customParams!), env)
-    : url
+  const pathVariables = form.watch('pathVariables')
+  let url = form.watch('url')
+  url = generateURLFromParams(url, pathVariables!)
+
+  url =
+    !isEmpty(customParams!) && !url?.includes('?')
+      ? url + '?' + getQueryString(arrayToObjectConversion(customParams!), env)
+      : url
   const apiId = params.apiId as string
   const folderId = params.folderId as string
 
@@ -121,7 +123,10 @@ export default function Api() {
       form.setValue('id', api?.id ?? '')
       form.setValue('name', api?.name ?? '')
       form.setValue('method', api?.method ?? 'GET')
-      form.setValue('url', api?.url ?? '')
+      form.setValue(
+        'url',
+        api?.url?.includes('?') ? api?.url?.split('?')[0] : api?.url ?? '',
+      )
       form.setValue(
         'params',
         api?.params?.length
@@ -185,7 +190,10 @@ export default function Api() {
         ? getQueryString(arrayToObjectConversion(api.params!), env)
         : getQueryString(arrayToObjectConversion(submitData.params!), env)
 
-      let url = updateUrlWithPathVariables(api.url, submitData.pathVariables!)
+      let url = updateUrlWithPathVariables(
+        generateURLFromParams(submitData.url, submitData.pathVariables!),
+        submitData.pathVariables!,
+      )
       url = url + (params ? '?' + params : '')
       url = containsDynamicVariable(url) ? replaceVariables(url, env) : url
       const requestBody = checkAndReplaceWithDynamicVariable(
@@ -266,6 +274,26 @@ export default function Api() {
     getApi(api?.id)
   }
 
+  const copyUrl = () => {
+    let updatedUrl = updateUrlWithPathVariables(
+      generateURLFromParams(url, pathVariables!),
+      pathVariables!,
+    )
+    updatedUrl =
+      updatedUrl +
+      (customParams
+        ? '?' + getQueryString(arrayToObjectConversion(customParams!), env)
+        : '')
+    updatedUrl = containsDynamicVariable(updatedUrl)
+      ? replaceVariables(updatedUrl, env)
+      : updatedUrl
+    copy(updatedUrl)
+    toast({
+      variant: 'success',
+      title: 'Url is copied',
+    })
+  }
+
   if (
     apiId === 'undefined' ||
     apiId === 'null' ||
@@ -329,7 +357,7 @@ export default function Api() {
             </div>
             <div
               ref={urlDivRef}
-              className="mx-auto flex w-[calc(100%-40px)] items-center justify-between rounded border p-1"
+              className="mx-auto flex w-[calc(100%-40px)] items-center justify-between rounded border p-0"
               onDoubleClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
             >
               <div className="flex items-center">
@@ -350,7 +378,7 @@ export default function Api() {
                 >
                   {api.method}
                 </span>
-                <div className=" max-w-[12rem] overflow-hidden truncate px-2 md:max-w-md lg:max-w-lg xl:max-w-4xl 2xl:max-w-7xl">
+                <div className=" max-w-[12rem] overflow-hidden truncate px-2 md:max-w-[34rem] lg:max-w-[45rem] xl:max-w-4xl 2xl:max-w-7xl">
                   {containsDynamicVariable(api.url) ? (
                     <TooltipProvider>
                       <Tooltip>
@@ -374,24 +402,18 @@ export default function Api() {
                 <Button
                   type="button"
                   variant="ghost"
-                  className="mr-2 flex h-8 w-8 justify-self-end p-1"
+                  className="mr-2 flex h-8 w-8 justify-self-end p-0"
                   size="sm"
-                  onClick={() => {
-                    copy(url)
-                    toast({
-                      variant: 'success',
-                      title: 'Url is copied',
-                    })
-                  }}
+                  onClick={() => copyUrl()}
                 >
                   <Clipboard size={18} />
                 </Button>
                 <Button
                   onClick={() => callApi()}
-                  className="rounded text-white"
-                  size="sm"
+                  className="text-white p-1 rounded-l-none"
+                  size="icon"
                 >
-                  Connect
+                  <i className="bi bi-plugin text-2xl" />
                 </Button>
               </div>
             </div>

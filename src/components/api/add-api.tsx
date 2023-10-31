@@ -12,6 +12,8 @@ import {
   getBreadcrumbsForNthChildren,
   getRootParentIdForNthChildren,
   isEmpty,
+  parseURLParameters,
+  parseURLQueryParameters,
 } from '@/lib/utils'
 import { ApiSchema, ApiType, FolderType } from '@/types/api'
 
@@ -95,6 +97,18 @@ export default function AddApi() {
       { id: uuid(), key: '', value: '', description: '' },
     ])
   }, [form])
+
+  useEffect(() => {
+    const urlParams = parseURLParameters(url)
+    const queryParams = parseURLQueryParameters(url!)
+    if (urlParams.length) {
+      form.setValue('pathVariables', urlParams)
+    }
+
+    if (queryParams.length) {
+      form.setValue('params', queryParams)
+    }
+  }, [form, url])
 
   useEffect(() => {
     if (
@@ -233,6 +247,15 @@ export default function AddApi() {
                     {...field}
                     size={200}
                     value={field.value ?? ''}
+                    onChange={(e) => {
+                      if (e.target.value.includes('?')) {
+                        e.target.value = e.target.value.replace('?', '')
+                      }
+                      if (e.target.value.includes('&')) {
+                        e.target.value = e.target.value.replace('&', '')
+                      }
+                      field.onChange(e)
+                    }}
                     className={cn(
                       isUrlError ? 'text-red-500' : '',
                       setBorderColor(isUrlError),
