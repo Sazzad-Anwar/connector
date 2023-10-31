@@ -79,7 +79,11 @@ export default function AddCollectionDialog({
                     <Input
                       autoFocus
                       autoComplete="off"
-                      placeholder="Collection Name"
+                      placeholder={
+                        type === 'collection'
+                          ? 'Collection name'
+                          : 'Folder name'
+                      }
                       {...field}
                       value={field.value ?? ''}
                     />

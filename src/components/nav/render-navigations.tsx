@@ -362,7 +362,7 @@ export default function RenderNavigation({
       {/* Add folder Dialog */}
       <div className="hidden">
         <AddCollectionDialog
-          type={collection.type}
+          type="folder"
           onSubmit={addFolder}
         >
           <button ref={addFolderButtonRef}>click</button>
