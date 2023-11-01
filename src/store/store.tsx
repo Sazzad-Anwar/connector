@@ -318,7 +318,6 @@ const useApiStore = create<Store>()((set) => ({
     isLocalStorageAvailable() &&
       localStorage.setItem('collections', JSON.stringify(collections))
   },
-
   deleteFolder: (id) => {
     let collections = JSON.parse(
       isLocalStorageAvailable() ? localStorage.getItem('collections')! : '[]',

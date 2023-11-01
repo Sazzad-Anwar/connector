@@ -47,6 +47,10 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
     }
 
     useEffect(() => {
+      setEditorValue(JSON.stringify(result, null, '\t') ?? '{}')
+    }, [result])
+
+    useEffect(() => {
       try {
         if (typeof result === 'string') {
           JSON.parse(result as string)

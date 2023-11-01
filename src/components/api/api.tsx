@@ -2,7 +2,7 @@ import useApiStore from '@/store/store'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import copy from 'copy-to-clipboard'
-import { ChevronsRight, Clipboard } from 'lucide-react'
+import { ChevronsRight, Copy } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { v4 as uuid } from 'uuid'
@@ -92,8 +92,31 @@ export default function Api() {
     } else {
       navigate('/')
     }
+    setResponseStatus({ status: 0, statusText: '', time: '' })
     setResult(null)
   }, [apiId, folderId, getApi, navigate, getEnv])
+
+  useEffect(() => {
+    if (api.id === apiId) {
+      setResult(api.response ? JSON.parse(api.response!) : null)
+      setResponseStatus(
+        api.responseStatus
+          ? JSON.parse(api.responseStatus!)
+          : {
+              status: 0,
+              statusText: '',
+              time: '',
+            },
+      )
+    } else {
+      setResult(null)
+      setResponseStatus({
+        status: 0,
+        statusText: '',
+        time: '',
+      })
+    }
+  }, [api, apiId])
 
   useEffect(() => {
     setTimeout(() => {
@@ -182,45 +205,90 @@ export default function Api() {
     }
   }, [form, api, getApi])
 
+  // this is making the API call
   const onSubmit: SubmitHandler<ApiType> = async (submitData) => {
+    // track the time to get the duration of api call
     const startTime = Date.now()
     try {
       setIsLoading(true)
+
+      // get the params in querystring from an array
       const params = isEmpty(submitData.params!)
         ? getQueryString(arrayToObjectConversion(api.params!), env)
         : getQueryString(arrayToObjectConversion(submitData.params!), env)
 
-      let url = updateUrlWithPathVariables(
-        generateURLFromParams(submitData.url, submitData.pathVariables!),
-        submitData.pathVariables!,
-      )
+      // This will update the url with given path variable  and will generate if user input something
+      let url = submitData.pathVariables?.find((item) => item.key !== '')
+        ? updateUrlWithPathVariables(
+            generateURLFromParams(submitData.url, submitData.pathVariables!),
+            submitData.pathVariables!,
+          )
+        : submitData.url
       url = url + (params ? '?' + params : '')
+
+      // This will replace the {{dynamic_variable}} withe the variable's value
       url = containsDynamicVariable(url) ? replaceVariables(url, env) : url
+
+      // This will check if the {{dynamic_variable}} exists on body payload. If exists then replace with the value
       const requestBody = checkAndReplaceWithDynamicVariable(
         arrayToObjectConversion(submitData.body!),
         env,
       )
+
+      // This will check if the {{dynamic_variable}} exists on header payload. If exists then replace with the value
       const headers = checkAndReplaceWithDynamicVariable(
         arrayToObjectConversion(submitData.headers!),
         env,
       )
 
+      // This is for the media upload
+      const formData = new FormData()
+      const files = submitData.body?.filter((item) => item?.type === 'file')
+      if (files?.length) {
+        files.map((file) => {
+          formData.append(file.key, file.value[0])
+        })
+      }
+      Object.keys(requestBody).map((item) => {
+        if (!files?.find((file) => file.key === item)) {
+          formData.append(item, requestBody[item])
+        }
+      })
+
+      // this is axios call
       const response = await axios({
         method: api.method,
         url,
-        data: requestBody,
+        data: files?.length ? formData : requestBody,
         headers: headers,
         timeout: 4000,
       })
       const endTime = Date.now()
+
+      // This will get the response time duration
       const responseTime = endTime - startTime
       setResult(response.data)
+
+      // auto saving the response
+      const dataWithResponse = {
+        ...api,
+        response: JSON.stringify(response.data),
+        responseStatus: JSON.stringify({
+          status: response?.status,
+          statusText: response?.statusText,
+          time: (responseTime as number) + 'ms',
+        }),
+      }
+
+      updateApi(dataWithResponse, api.id)
+
       setResponseStatus({
         status: response?.status,
         statusText: response?.statusText,
         time: (responseTime as number) + 'ms',
       })
 
+      // If there is any requirement to set the value of a {{dynamic_variable}} with the response, this logic will do that and update that {{dynamic_variable}}
       if (api.dynamicVariables?.length) {
         const updatedEnv = updateEnvWithDynamicVariableValue(
           submitData.dynamicVariables!,
@@ -387,8 +455,24 @@ export default function Api() {
                             url,
                           )}}}`}</span>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent className="flex items-center text-base">
                           {replaceVariables(`{{${extractVariable(url)}}}`, env)}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="ml-2 flex h-4 w-4 justify-self-end p-0"
+                            size="xs"
+                            onClick={() =>
+                              copy(
+                                replaceVariables(
+                                  `{{${extractVariable(url)}}}`,
+                                  env,
+                                ),
+                              )
+                            }
+                          >
+                            <Copy size={16} />
+                          </Button>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -406,7 +490,7 @@ export default function Api() {
                   size="sm"
                   onClick={() => copyUrl()}
                 >
-                  <Clipboard size={18} />
+                  <Copy size={18} />
                 </Button>
                 <Button
                   onClick={() => callApi()}

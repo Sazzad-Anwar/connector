@@ -9,7 +9,6 @@ import {
   cn,
   containsDynamicVariable,
   containsVariable,
-  filterURLWithParams,
   getBreadcrumbsForNthChildren,
   getRootParentIdForNthChildren,
   isEmpty,
@@ -117,10 +116,7 @@ export default function UpdateApi() {
       form.setValue('id', api?.id ?? '')
       form.setValue('name', api?.name ?? '')
       form.setValue('method', api?.method ?? 'GET')
-      form.setValue(
-        'url',
-        filterURLWithParams(api.url, api.pathVariables!) ?? '',
-      )
+      form.setValue('url', api.url)
       form.setValue(
         'params',
         api?.params?.length

@@ -4,6 +4,7 @@ export const ParamsSchema = z.object({
   id: z.string(),
   key: z.string(),
   value: z.any(),
+  type: z.enum(['text', 'file']).optional(),
   description: z.string().optional(),
 })
 
@@ -22,7 +23,11 @@ export const FolderSchema = z.object({
   env: z.array(ParamsSchema).optional(),
 })
 
-export type ApiType = z.infer<typeof ApiSchema> & { id: string }
+export type ApiType = z.infer<typeof ApiSchema> & {
+  id: string
+  response?: string
+  responseStatus?: string
+}
 export type ParamsType = z.infer<typeof ParamsSchema> & { id: string }
 export type FolderType = z.infer<typeof FolderSchema> & {
   type: 'collection' | 'folder'

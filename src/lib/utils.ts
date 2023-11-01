@@ -245,23 +245,26 @@ export function updateUrlWithPathVariables(url: string, params: ParamsType[]) {
     return updatedURL.endsWith('/') ? updatedURL.slice(0, -1) : updatedURL
   } else {
     const updatedURL = baseURL + '/' + values.join('/')
+
     return updatedURL.endsWith('/') ? updatedURL.slice(0, -1) : updatedURL
   }
 }
 
+const pathVariableMatcher = /\/:(?![0-9])[^/?]+/g
+
 export function parseURLParameters(url: string) {
-  const regex = /:([^/?]+)/g // Updated regex to stop at '?' or '/'
-  let match
+  const regex = pathVariableMatcher
   const parameters = []
+  let match
 
   while ((match = regex.exec(url)) !== null) {
-    if (match.index > url.indexOf('?') && url?.includes('?')) {
+    if (match.index > url.indexOf('?') && url.includes('?')) {
       break // Stop parsing if the URL contains a query string and the match is after '?'
     }
 
     parameters.push({
-      id: uuid(), // This will be filled later based on your data
-      key: match[1],
+      id: 'uuid', // This will be filled later based on your data
+      key: match[0].substring(2), // Extracting the parameter key without '/:'
       value: '',
       description: '',
     })
@@ -298,25 +301,24 @@ export function generateURLFromParams(url: string, params: ParamsType[]) {
 
   if (params && params.length && !params.find((item) => item.key === '')) {
     params.forEach((param, index) => {
-      if (index + 1 !== params.length && !url?.includes(`:${param?.key}`)) {
+      if (index + 1 !== params.length && !url?.includes(`/:${param?.key}`)) {
         newURL = newURL.replace(
-          `:${param?.key}`,
-          `:${param?.key}/:${params[index + 1]?.key}`,
+          `/:${param?.key}`,
+          `/:${param?.key}/:${params[index + 1]?.key}`,
         )
       } else {
         newURL =
-          newURL + (!url?.includes(`:${param?.key}`) ? `/:${param?.key}` : '')
+          newURL + (!url?.includes(`/:${param?.key}`) ? `/:${param?.key}` : '')
       }
     })
 
-    const keysInURL = new Set(newURL?.match(/:([^/?]+)/g))
+    const keysInURL = new Set(newURL?.match(pathVariableMatcher))
 
     params.forEach((param) => {
-      if (!keysInURL.has(`:${param.key}`)) {
-        newURL = newURL?.replace(/:[^/?]+/, `:${param.key}`)
+      if (!keysInURL.has(`/:${param.key}`)) {
+        newURL = newURL?.replace(pathVariableMatcher, `/:${param.key}`)
       }
     })
-
     return newURL
   } else {
     const queryPortion = newURL?.split('?')?.length
@@ -327,15 +329,14 @@ export function generateURLFromParams(url: string, params: ParamsType[]) {
       queryPortion !== ''
         ? newURL?.split('/:')[0] + '?' + queryPortion
         : newURL?.split('/:')[0]
-
     return newURL
   }
 }
 
 // this function will filter the url and remove ':pathVar' which are not includes in Params array
 export function filterURLWithParams(url: string, params: ParamsType[]) {
-  const keysInArray = params?.map((param) => `:${param.key}`)
-  const regex = /:[^/?]+/g
+  const keysInArray = params?.map((param) => `/:${param.key}`)
+  const regex = pathVariableMatcher
   const matchedKeys = url?.match(regex)
 
   if (matchedKeys) {
