@@ -246,7 +246,9 @@ export default function Api() {
       const files = submitData.body?.filter((item) => item?.type === 'file')
       if (files?.length) {
         files.map((file) => {
-          formData.append(file.key, file.value[0])
+          Array.from(file.value).map((item: Blob | any) => {
+            formData.append(file.key, item)
+          })
         })
       }
       Object.keys(requestBody).map((item) => {

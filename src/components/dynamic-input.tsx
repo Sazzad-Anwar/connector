@@ -115,6 +115,7 @@ export default function DynamicInput({
               ? 'file'
               : 'text'
           }
+          multiple={true}
           autoComplete="off"
           {...form.register(`${propertyName}.${index}.value` as const)}
           className={cn(
