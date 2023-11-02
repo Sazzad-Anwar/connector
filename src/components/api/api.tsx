@@ -25,6 +25,7 @@ import { ApiSchema, ApiType } from '@/types/api'
 
 import { useNavigate, useParams } from 'react-router-dom'
 import SplitPane, { Pane } from 'split-pane-react'
+import { config } from '../../config/confit'
 import Breadcrumbs from '../breadcrumb'
 import Loading from '../loading'
 import SideNavToggler from '../nav/sidenav-toggler'
@@ -271,10 +272,9 @@ export default function Api() {
       // this is axios call
       const response = await axios({
         method: api.method,
-        url,
+        url: config.CORS_BYPASS_URL + url,
         data: requestPayload,
-        headers: headers,
-        timeout: 4000,
+        headers,
       })
       const endTime = Date.now()
 
@@ -362,19 +362,24 @@ export default function Api() {
   }
 
   const copyUrl = () => {
-    let updatedUrl = updateUrlWithPathVariables(
-      generateURLFromParams(url, pathVariables!),
-      pathVariables!,
-    )
-    updatedUrl =
-      updatedUrl +
-      (customParams
-        ? '?' + getQueryString(arrayToObjectConversion(customParams!), env)
-        : '')
-    updatedUrl = containsDynamicVariable(updatedUrl)
-      ? replaceVariables(updatedUrl, env)
-      : updatedUrl
-    copy(updatedUrl)
+    const params = isEmpty(form.getValues('params')!)
+      ? getQueryString(arrayToObjectConversion(api.params!), env)
+      : getQueryString(arrayToObjectConversion(form.getValues('params')!), env)
+    let url = form.getValues('pathVariables')?.find((item) => item.key !== '')
+      ? updateUrlWithPathVariables(
+          generateURLFromParams(
+            form.getValues('url'),
+            form.getValues('pathVariables')!,
+          ),
+          form.getValues('pathVariables')!,
+        )
+      : form.getValues('url')
+    url = url + (params ? '?' + params : '')
+
+    // This will replace the {{dynamic_variable}} withe the variable's value
+    url = containsDynamicVariable(url) ? replaceVariables(url, env) : url
+
+    copy(url)
     toast({
       variant: 'success',
       title: 'Url is copied',
