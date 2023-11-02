@@ -19,7 +19,7 @@ import { ApiSchema, ApiType, FolderType } from '@/types/api'
 
 import { useNavigate, useParams } from 'react-router-dom'
 import Breadcrumbs from '../breadcrumb'
-import SidenavToggler from '../nav/sidenav-toggler'
+import SideNavToggler from '../nav/sidenav-toggler'
 import { Button } from '../ui/button'
 import { Form, FormControl, FormField, FormItem } from '../ui/form'
 import { Input } from '../ui/input'
@@ -155,7 +155,7 @@ export default function AddApi() {
           name="name"
           render={({ field }) => (
             <FormItem className="flex items-center">
-              <SidenavToggler />
+              <SideNavToggler />
               <Breadcrumbs
                 breadcrumbs={getBreadcrumbsForNthChildren(
                   collections,

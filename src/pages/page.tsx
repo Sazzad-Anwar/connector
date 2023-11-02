@@ -1,4 +1,4 @@
-import SidenavToggler from "@/components/nav/sidenav-toggler";
+import SideNavToggler from '@/components/nav/sidenav-toggler'
 // import { buttonVariants } from "@/components/ui/button";
 // import { Link } from "react-router-dom";
 // import { cn } from "@/lib/utils";
@@ -7,7 +7,7 @@ import SidenavToggler from "@/components/nav/sidenav-toggler";
 export default function page() {
   return (
     <section className="flex h-screen flex-col items-center justify-center text-center relative">
-      <SidenavToggler className="absolute top-5 left-5" />
+      <SideNavToggler className="absolute top-5 left-5" />
       <div className="flex justify-center items-center h-14 w-14 rounded-full border bg-secondary p-2">
         <i className="bi bi-plugin text-4xl " />
       </div>
@@ -23,5 +23,5 @@ export default function page() {
         <FaServer size={15} className="ml-2" />
       </Link>*/}
     </section>
-  );
+  )
 }

@@ -8,7 +8,7 @@ import { FolderSchema, FolderType } from '@/types/api'
 
 import { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import SidenavToggler from '../nav/sidenav-toggler'
+import SideNavToggler from '../nav/sidenav-toggler'
 import { Button } from '../ui/button'
 import { Form } from '../ui/form'
 import {
@@ -124,7 +124,7 @@ export default function EnvVariables() {
   return (
     <section className="p-5">
       <div className="flex items-center">
-        <SidenavToggler />
+        <SideNavToggler />
         <h1 className="ml-5 text-base lg:text-lg xl:text-xl">
           {collection?.name}
         </h1>

@@ -27,7 +27,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import SplitPane, { Pane } from 'split-pane-react'
 import Breadcrumbs from '../breadcrumb'
 import Loading from '../loading'
-import SidenavToggler from '../nav/sidenav-toggler'
+import SideNavToggler from '../nav/sidenav-toggler'
 import NotFound from '../notFound'
 import { Button } from '../ui/button'
 import {
@@ -418,7 +418,7 @@ export default function Api() {
               ref={breadCrumbDivRef}
               className="flex items-center p-5"
             >
-              <SidenavToggler />
+              <SideNavToggler />
               <Breadcrumbs
                 breadcrumbs={getBreadcrumbsForNthChildren(
                   collections,
@@ -481,14 +481,18 @@ export default function Api() {
                             variant="outline"
                             className="ml-2 flex h-4 w-4 justify-self-end p-0"
                             size="xs"
-                            onClick={() =>
+                            onClick={() => {
                               copy(
                                 replaceVariables(
                                   `{{${extractVariable(url)}}}`,
                                   env,
                                 ),
                               )
-                            }
+                              toast({
+                                variant: 'success',
+                                title: 'Env value is copied!',
+                              })
+                            }}
                           >
                             <Copy size={16} />
                           </Button>

@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 
 import useImportJSON from '@/hooks/useImportJSON'
 import { cn } from '@/lib/utils'
-import useSidepanelToggleStore from '@/store/sidePanelToggle'
+import useSidePanelToggleStore from '@/store/sidePanelToggle'
 import useApiStore from '@/store/store'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Braces, Plus } from 'lucide-react'
@@ -30,7 +30,7 @@ type PropsType = {
 export default function SideNav({ isLoadingInSheet }: PropsType) {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const { InputFile } = useImportJSON()
-  const { isOpen } = useSidepanelToggleStore()
+  const { isOpen } = useSidePanelToggleStore()
   const [search, setSearch] = useState<string>('')
   const { collections, createFolder, findOneFolder } = useApiStore()
   const form = useForm<z.infer<typeof CollectionSchema>>({
@@ -58,9 +58,9 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
     <aside
       className={cn(
         'relative h-screen overflow-hidden border-r bg-background ',
-        isLoadingInSheet ? 'w-full' : 'w-0',
+        isLoadingInSheet ? 'w-full' : isOpen ? 'w-full' : 'w-0',
         // isOpen ? "lg:w-[250px] xl:w-[300px]" : "hidden",
-        isOpen ? 'w-full ' : 'hidden',
+        // isOpen ? 'w-full ' : 'hidden',
       )}
     >
       <div className="h-full overflow-auto">

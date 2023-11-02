@@ -1,13 +1,13 @@
-import useSidepanelToggleStore from "@/store/sidePanelToggle";
-import { ChevronRight, Menu } from "lucide-react";
+import useSidePanelToggleStore from '@/store/sidePanelToggle'
+import { ChevronRight, Menu } from 'lucide-react'
 
-import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "../ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
-import SideNav from "./nav";
+import { cn } from '@/lib/utils'
+import { Button, buttonVariants } from '../ui/button'
+import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet'
+import SideNav from './nav'
 
-export default function SidenavToggler({ className }: { className?: string }) {
-  const { toggle, isOpen } = useSidepanelToggleStore();
+export default function SideNavToggler({ className }: { className?: string }) {
+  const { toggle, isOpen } = useSidePanelToggleStore()
 
   return (
     <div className={className}>
@@ -24,16 +24,19 @@ export default function SidenavToggler({ className }: { className?: string }) {
         <SheetTrigger
           asChild
           className={cn(
-            buttonVariants({ variant: "outline", size: "xs" }),
-            "flex h-6 w-6 p-1 lg:hidden",
+            buttonVariants({ variant: 'outline', size: 'xs' }),
+            'flex h-6 w-6 p-1 lg:hidden cursor-pointer',
           )}
         >
           <Menu size={20} />
         </SheetTrigger>
-        <SheetContent side="left" className="w-full p-0 sm:w-[300px]">
+        <SheetContent
+          side="left"
+          className="w-full p-0 sm:w-[300px]"
+        >
           <SideNav isLoadingInSheet={true} />
         </SheetContent>
       </Sheet>
     </div>
-  );
+  )
 }

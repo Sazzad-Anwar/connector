@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { cn } from '@/lib/utils'
-import useSidepanelToggleStore from '@/store/sidePanelToggle'
+import useSidePanelToggleStore from '@/store/sidePanelToggle'
 import { platform } from '@tauri-apps/api/os'
 import {
   checkUpdate,
@@ -14,10 +15,10 @@ import { Toaster } from './ui/toaster'
 import { toast } from './ui/use-toast'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const { isOpen } = useSidepanelToggleStore()
+  const { isOpen } = useSidePanelToggleStore()
   const sideNavWidth = 300
   const [sizes, setSizes] = useState([
-    window.innerWidth >= 991 ? 250 : sideNavWidth,
+    window.innerWidth >= 1024 ? 250 : sideNavWidth,
     window.innerWidth - sideNavWidth,
   ])
 
