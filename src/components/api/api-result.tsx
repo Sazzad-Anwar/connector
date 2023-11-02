@@ -35,6 +35,8 @@ export default function ApiResult({
     return payload_size_kb > 1 ? `${payload_size_kb} KB` : `${string_length} B`
   }
 
+  console.log(result)
+
   return (
     <section
       ref={resultDivRef}
@@ -81,6 +83,7 @@ export default function ApiResult({
             ref={resultContainerRef}
             readOnly={true}
             height={height}
+            type="response"
             result={result && result}
           />
         </>

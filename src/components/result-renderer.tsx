@@ -6,6 +6,7 @@ import { useTheme } from './theme-provider'
 type PropsType = {
   result?: object | string | any[]
   height?: number
+  type?: 'response' | 'input'
   readOnly?: boolean
   defaultLanguage?: 'json' | 'javascript'
   className?: string
@@ -14,7 +15,7 @@ type PropsType = {
 
 const ResultRender = forwardRef<HTMLDivElement, PropsType>(
   function ResultRender(
-    { result, height, readOnly, setData, className }: PropsType,
+    { result, height, readOnly, setData, className, type = 'input' }: PropsType,
     ref,
   ) {
     const { theme } = useTheme()
@@ -64,6 +65,12 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    useEffect(() => {
+      if (type === 'response') {
+        setEditorValue(JSON.stringify(result, null, '\t') ?? '{}')
+      }
+    }, [type, result])
 
     useEffect(() => {
       try {
