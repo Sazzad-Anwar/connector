@@ -107,7 +107,6 @@ function updateApi(arr: FolderType[], apiId: string, updatedApiData: ApiType) {
       }
     }
   }
-
   return arr // Return the original array if no changes were made
 }
 

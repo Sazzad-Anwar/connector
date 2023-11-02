@@ -168,6 +168,7 @@ export default function Api() {
           ? api?.body
           : [{ id: uuid(), key: '', value: '', description: '' }],
       )
+      form.setValue('jsonBody', api?.jsonBody)
       form.setValue(
         'dynamicVariables',
         api?.dynamicVariables?.length
@@ -334,7 +335,7 @@ export default function Api() {
     data.pathVariables = isEmpty(form.getValues('pathVariables')!)
       ? []
       : form.getValues('pathVariables')
-
+    data.jsonBody = form.getValues('jsonBody')
     updateApi(data, api.id)
     toast({
       variant: 'success',

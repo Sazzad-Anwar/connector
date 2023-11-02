@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
-import { v4 as uuid } from 'uuid'
 
-import { arrayToObjectConversion } from '@/lib/utils'
-import { ApiType, ParamsType } from '@/types/api'
+import { ApiType } from '@/types/api'
 
 import MultipleInput from '../multiple-input'
 import ResultRender from '../result-renderer'
@@ -20,6 +18,9 @@ type PropsType = {
 export default function InputTabs({ form, api, height, className }: PropsType) {
   const jsonBodyDivRef = useRef<HTMLDivElement>(null)
   const [jsonBodyData, setJsonBodyData] = useState<any>({})
+  const [activeBodyPayloadType, setActiveBodyPayloadType] = useState<
+    'x-form-urlencoded' | 'raw-json'
+  >()
   const [jsonError, setJsonError] = useState<JSONErrorType>()
   const [defaultOpen, setDefaultOpen] = useState<string>('params')
 
@@ -27,14 +28,10 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
     try {
       setJsonBodyData(JSON.parse(data))
       const jsonData = JSON.parse(data)
-      const jsonArray = [] as ParamsType[]
 
-      Object.keys(jsonData).map((item) => {
-        const data = { key: item, value: jsonData[item] as any, id: uuid() }
-        jsonArray.push(data)
-      })
-
-      form.setValue('body', jsonArray)
+      if (activeBodyPayloadType === 'raw-json') {
+        form.setValue('jsonBody', jsonData, { shouldDirty: true })
+      }
 
       setJsonError({
         isError: false,
@@ -49,13 +46,8 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
   }
 
   useEffect(() => {
-    if (api?.id && api?.body?.length) {
-      const bodyWithoutFiles = api.body?.filter((item) => item.type !== 'file')
-      setJsonBodyData(arrayToObjectConversion(bodyWithoutFiles!))
-    } else {
-      setJsonBodyData({})
-    }
-  }, [api])
+    setJsonBodyData(form.getValues('jsonBody'))
+  }, [form])
 
   useEffect(() => {
     setDefaultOpen(
@@ -92,7 +84,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
           </TabsTrigger>
           <TabsTrigger value="body">
             Body{' '}
-            {api?.body?.length ? (
+            {api?.body?.length || api?.jsonBody ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
           </TabsTrigger>
@@ -196,14 +188,22 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               <TabsTrigger
                 value="x-www-form-urlencoded"
                 className="h-7"
+                onClick={() => setActiveBodyPayloadType('x-form-urlencoded')}
               >
-                x-www-form-urlencoded
+                x-www-form-urlencoded{' '}
+                {api?.body?.length ? (
+                  <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+                ) : null}
               </TabsTrigger>
               <TabsTrigger
                 value="raw"
                 className="h-7"
+                onClick={() => setActiveBodyPayloadType('raw-json')}
               >
-                Raw JSON
+                Raw JSON{' '}
+                {api?.jsonBody ? (
+                  <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+                ) : null}
               </TabsTrigger>
             </TabsList>
             <TabsContent

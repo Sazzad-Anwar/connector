@@ -17,6 +17,7 @@ export const ApiSchema = z.object({
   headers: z.array(ParamsSchema).optional(),
   body: z.array(ParamsSchema).optional(),
   dynamicVariables: z.array(ParamsSchema).optional(),
+  jsonBody: z.any().optional(),
 })
 
 export const FolderSchema = z.object({

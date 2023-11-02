@@ -69,7 +69,6 @@ export default function AddApi() {
       ? []
       : data.dynamicVariables
     data.pathVariables = isEmpty(data.pathVariables!) ? [] : data.pathVariables
-
     createApi(data, folderId)
     toast({
       variant: 'success',

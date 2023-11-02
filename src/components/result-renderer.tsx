@@ -46,9 +46,27 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       setEditorValue(value)
     }
 
+    // useEffect(() => {
+    //   setEditorValue(JSON.stringify(result, null, '\t') ?? '{}')
+    // }, [result])
+
     useEffect(() => {
-      setEditorValue(JSON.stringify(result, null, '\t') ?? '{}')
-    }, [result])
+      const handleEscapeKeyPress = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          // Handle the "Escape" key press here
+          // form.setValue('jsonBody', api?.jsonBody)
+          setEditorValue(JSON.stringify(result, null, '\t') ?? '{}')
+        }
+      }
+
+      // Add the event listener when the component mounts
+      document.addEventListener('keydown', handleEscapeKeyPress)
+      // Remove the event listener when the component unmounts
+      return () => {
+        document.removeEventListener('keydown', handleEscapeKeyPress)
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     useEffect(() => {
       try {
