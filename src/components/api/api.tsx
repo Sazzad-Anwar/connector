@@ -318,11 +318,15 @@ export default function Api() {
         statusText: error?.response?.statusText,
         time: (responseTime as number) + 'ms',
       })
-      toast({
-        variant: 'error',
-        title: error?.response ? error?.response?.data : error?.message,
-      })
-      // setResult(error?.response ? error?.response?.data : error?.message)
+
+      if (error?.response && error?.response?.data) {
+        setResult(error?.response ? error?.response?.data : error?.message)
+      } else {
+        toast({
+          variant: 'error',
+          title: error?.response ? error?.response?.data : error?.message,
+        })
+      }
       setIsLoading(false)
     }
   }

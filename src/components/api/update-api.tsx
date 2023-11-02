@@ -63,8 +63,9 @@ export default function UpdateApi() {
       : isEmpty(data.pathVariables!)
       ? []
       : data.pathVariables
-    data.jsonBody = form.getValues('jsonBody') ?? Object
-
+    data.jsonBody = form.getValues('jsonBody')
+      ? form.getValues('jsonBody')
+      : api.jsonBody
     updateApi(data, api.id)
     toast({
       variant: 'success',
