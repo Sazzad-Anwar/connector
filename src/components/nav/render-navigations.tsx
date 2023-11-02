@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import useApiStore from '@/store/store'
 import { ChevronRight, FolderClosed, MoreVertical } from 'lucide-react'
 import React, { useRef, useState } from 'react'

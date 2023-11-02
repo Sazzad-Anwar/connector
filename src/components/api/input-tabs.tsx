@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
@@ -19,7 +20,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
   const jsonBodyDivRef = useRef<HTMLDivElement>(null)
   const [jsonBodyData, setJsonBodyData] = useState<any>({})
   const [activeBodyPayloadType, setActiveBodyPayloadType] = useState<
-    'x-form-urlencoded' | 'raw-json'
+    'x-form-urlencoded' | 'json'
   >()
   const [jsonError, setJsonError] = useState<JSONErrorType>()
   const [defaultOpen, setDefaultOpen] = useState<string>('params')
@@ -29,7 +30,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
       setJsonBodyData(JSON.parse(data))
       const jsonData = JSON.parse(data)
 
-      if (activeBodyPayloadType === 'raw-json') {
+      if (activeBodyPayloadType === 'json') {
         form.setValue('jsonBody', jsonData, { shouldDirty: true })
       }
 
@@ -46,12 +47,12 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
   }
 
   useEffect(() => {
-    setJsonBodyData(form.getValues('jsonBody'))
-  }, [form])
+    setJsonBodyData(api?.jsonBody)
+  }, [api])
 
   useEffect(() => {
     setDefaultOpen(
-      api && api?.body?.length
+      (api && api?.body?.length) || api?.jsonBody
         ? 'body'
         : api?.headers?.length
         ? 'headers'
@@ -61,34 +62,47 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
         ? 'dynamicVariable'
         : 'params',
     )
+    setActiveBodyPayloadType(api?.body?.length ? 'x-form-urlencoded' : 'json')
   }, [api])
 
   return (
     <div className={className}>
       <Tabs
-        defaultValue={defaultOpen}
+        value={defaultOpen}
         className="w-full"
       >
         <TabsList>
-          <TabsTrigger value="params">
+          <TabsTrigger
+            onClick={() => setDefaultOpen('params')}
+            value="params"
+          >
             Params{' '}
             {api?.params?.length || api?.pathVariables?.length ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
           </TabsTrigger>
-          <TabsTrigger value="headers">
+          <TabsTrigger
+            onClick={() => setDefaultOpen('headers')}
+            value="headers"
+          >
             Headers{' '}
             {api?.headers?.length ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}{' '}
           </TabsTrigger>
-          <TabsTrigger value="body">
+          <TabsTrigger
+            onClick={() => setDefaultOpen('body')}
+            value="body"
+          >
             Body{' '}
             {api?.body?.length || api?.jsonBody ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
           </TabsTrigger>
-          <TabsTrigger value="dynamicVariable">
+          <TabsTrigger
+            onClick={() => setDefaultOpen('dynamicVariable')}
+            value="dynamicVariable"
+          >
             Set variables
             {api?.dynamicVariables?.length ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
@@ -106,7 +120,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
           }}
         >
           <Tabs
-            defaultValue="queryParams"
+            defaultValue={api?.params?.length ? 'queryParams' : 'urlParams'}
             className="w-full"
           >
             <TabsList className="px-.5 h-9">
@@ -181,14 +195,17 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
           className="animate__animated animate__fadeIn"
         >
           <Tabs
-            defaultValue="x-www-form-urlencoded"
+            value={activeBodyPayloadType}
             className="w-full"
           >
             <TabsList className="px-.5 h-9">
               <TabsTrigger
-                value="x-www-form-urlencoded"
+                value="x-form-urlencoded"
                 className="h-7"
-                onClick={() => setActiveBodyPayloadType('x-form-urlencoded')}
+                onClick={() => {
+                  setActiveBodyPayloadType('x-form-urlencoded')
+                  form.setValue('activeBody', 'x-form-urlencoded')
+                }}
               >
                 x-www-form-urlencoded{' '}
                 {api?.body?.length ? (
@@ -196,9 +213,12 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                 ) : null}
               </TabsTrigger>
               <TabsTrigger
-                value="raw"
+                value="json"
                 className="h-7"
-                onClick={() => setActiveBodyPayloadType('raw-json')}
+                onClick={() => {
+                  setActiveBodyPayloadType('json')
+                  form.setValue('activeBody', 'json')
+                }}
               >
                 Raw JSON{' '}
                 {api?.jsonBody ? (
@@ -207,7 +227,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               </TabsTrigger>
             </TabsList>
             <TabsContent
-              value="raw"
+              value="json"
               className="animate__animated animate__fadeIn"
               style={{
                 height:
@@ -241,7 +261,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               />
             </TabsContent>
             <TabsContent
-              value="x-www-form-urlencoded"
+              value="x-form-urlencoded"
               className="animate__animated animate__fadeIn relative overflow-auto"
               style={{
                 maxHeight:

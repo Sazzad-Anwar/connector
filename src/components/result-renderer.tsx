@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import MonacoEditor from '@monaco-editor/react'
 import { forwardRef, useEffect, useRef, useState } from 'react'
 import { useTheme } from './theme-provider'
@@ -45,10 +46,6 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       setData && setData(value)
       setEditorValue(value)
     }
-
-    // useEffect(() => {
-    //   setEditorValue(JSON.stringify(result, null, '\t') ?? '{}')
-    // }, [result])
 
     useEffect(() => {
       const handleEscapeKeyPress = (event: KeyboardEvent) => {

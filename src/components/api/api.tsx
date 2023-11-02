@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import useApiStore from '@/store/store'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
@@ -175,6 +176,7 @@ export default function Api() {
           ? api?.dynamicVariables
           : [{ id: uuid(), key: '', value: '', description: '' }],
       )
+      form.setValue('activeBody', api?.jsonBody ? 'json' : 'x-form-urlencoded')
       form.setValue(
         'pathVariables',
         api?.pathVariables?.length
@@ -258,11 +260,19 @@ export default function Api() {
         }
       })
 
+      const activeBody = form.getValues('activeBody')
+      const requestPayload =
+        activeBody === 'json'
+          ? form.getValues('jsonBody')
+          : files?.length
+          ? formData
+          : requestBody
+
       // this is axios call
       const response = await axios({
         method: api.method,
         url,
-        data: files?.length ? formData : requestBody,
+        data: requestPayload,
         headers: headers,
         timeout: 4000,
       })
@@ -271,7 +281,11 @@ export default function Api() {
       // This will get the response time duration
       const responseTime = endTime - startTime
       setResult(response.data)
-
+      setResponseStatus({
+        status: response?.status,
+        statusText: response?.statusText,
+        time: (responseTime as number) + 'ms',
+      })
       // auto saving the response
       const dataWithResponse = {
         ...api,
@@ -284,12 +298,6 @@ export default function Api() {
       }
 
       updateApi(dataWithResponse, api.id)
-
-      setResponseStatus({
-        status: response?.status,
-        statusText: response?.statusText,
-        time: (responseTime as number) + 'ms',
-      })
 
       // If there is any requirement to set the value of a {{dynamic_variable}} with the response, this logic will do that and update that {{dynamic_variable}}
       if (api.dynamicVariables?.length) {
@@ -310,7 +318,11 @@ export default function Api() {
         statusText: error?.response?.statusText,
         time: (responseTime as number) + 'ms',
       })
-      setResult(error?.response ? error?.response?.data : error?.message)
+      toast({
+        variant: 'error',
+        title: error?.response ? error?.response?.data : error?.message,
+      })
+      // setResult(error?.response ? error?.response?.data : error?.message)
       setIsLoading(false)
     }
   }

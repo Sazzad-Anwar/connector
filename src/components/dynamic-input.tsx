@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Plus, Trash2 } from 'lucide-react'
 import {
   FieldArrayMethodProps,
