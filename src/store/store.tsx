@@ -310,10 +310,12 @@ const useApiStore = create<Store>()((set) => ({
     } else {
       collections = [...collections, data]
     }
+
     set(() => ({
       collections,
     }))
 
+    console.log('🚀 ~ file: store.tsx:316 ~ set ~ collections:', collections)
     isLocalStorageAvailable() &&
       localStorage.setItem('collections', JSON.stringify(collections))
   },

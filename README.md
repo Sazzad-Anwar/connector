@@ -1,27 +1,13 @@
-# React + TypeScript + Vite
+<center>
+   <img src="./public/512x512.png" height="100" width="100" alt="connector-logo">
+</center>
+<h1 style="text-align:center">
+    Connector
+</h1>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Connector represents a groundbreaking advancement in the realm of web and desktop applications, providing an intuitive and efficient platform for handling API calls and constructing APIs with remarkable simplicity. This innovative solution is uniquely designed to streamline the process of API development and management.
 
-Currently, two official plugins are available:
+<img src="./public/ui_1.png">
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-   },
-```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+At its core, Connector is a lightweight yet powerful tool that significantly outperforms existing applications in terms of efficiency and ease of use. Its user-friendly interface empowers users to effortlessly create collections, add APIs, and configure a range of parameters, including query parameters, path variables, and headers.
+<img src="./public/ui_2.png">
