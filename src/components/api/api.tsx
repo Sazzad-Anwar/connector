@@ -99,6 +99,12 @@ export default function Api() {
   }, [apiId, folderId, getApi, navigate, getEnv])
 
   useEffect(() => {
+    if (apiId && folderId && !api) {
+      navigate('/')
+    }
+  }, [api, apiId, folderId, navigate])
+
+  useEffect(() => {
     if (api.id === apiId) {
       setResult(api.response ? JSON.parse(api.response!) : null)
       setResponseStatus(
@@ -272,7 +278,13 @@ export default function Api() {
       // this is axios call
       const response = await axios({
         method: api.method,
-        url: config.CORS_BYPASS_URL + url,
+        url:
+          !url.includes('http') &&
+          (url.includes('localhost') || url.includes('127.0.0.1'))
+            ? 'http://' + url
+            : url.includes('localhost') || url.includes('127.0.0.1')
+            ? url
+            : config.CORS_BYPASS_URL + url,
         data: requestPayload,
         headers,
       })
@@ -297,7 +309,7 @@ export default function Api() {
         }),
       }
 
-      updateApi(dataWithResponse, api.id)
+      updateApi(dataWithResponse, dataWithResponse.id)
 
       // If there is any requirement to set the value of a {{dynamic_variable}} with the response, this logic will do that and update that {{dynamic_variable}}
       if (api.dynamicVariables?.length) {

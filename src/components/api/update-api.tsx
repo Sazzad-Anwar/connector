@@ -193,7 +193,7 @@ export default function UpdateApi() {
                   value={field.value ?? ''}
                   className={cn(
                     setBorderColor(!!form.formState.errors.name),
-                    'w-full min-w-max',
+                    'w-full min-w-max text-base',
                   )}
                 />
               </FormControl>
@@ -280,6 +280,7 @@ export default function UpdateApi() {
                     className={cn(
                       isUrlError ? 'text-red-500' : '',
                       setBorderColor(isUrlError),
+                      'text-base',
                     )}
                   />
                 </FormControl>

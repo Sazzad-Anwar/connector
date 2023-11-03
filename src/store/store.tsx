@@ -82,32 +82,41 @@ function addApi(folders: FolderType[], id: string, api?: ApiType) {
 }
 
 // Update an API
-function updateApi(arr: FolderType[], apiId: string, updatedApiData: ApiType) {
-  for (let i = 0; i < arr.length; i++) {
-    const current = arr[i]
+function updateApi(
+  arr: FolderType[],
+  apiId: string,
+  updatedApiData: ApiType,
+): FolderType[] {
+  let updated = false // Initialize a flag to track changes
 
+  const updatedArr = arr.map((current) => {
     if (current.apis && current.apis.length > 0) {
-      for (let j = 0; j < current.apis.length; j++) {
-        const api = current.apis[j]
-
+      const updatedApis = current.apis.map((api) => {
         if (api.id === apiId) {
-          // Update the API object's properties with updatedApiData
-          Object.assign(api, updatedApiData)
-          return arr // Return the updated array
+          // If the API is found, update its properties with updatedApiData
+          updated = true // Set the flag to true as an update is made
+          return { ...api, ...updatedApiData }
         }
+        return api // Return the unchanged API if the ID doesn't match
+      })
+
+      if (updated) {
+        // If the 'apis' array was updated, return the updated object
+        return { ...current, apis: updatedApis }
       }
     }
 
     if (current.children && current.children.length > 0) {
       const updatedChildren = updateApi(current.children, apiId, updatedApiData)
       if (updatedChildren !== current.children) {
-        // If the children array was updated, return the updated object
-        current.children = updatedChildren
-        return arr
+        updated = true // Set the flag to true if 'children' array was updated
+        return { ...current, children: updatedChildren }
       }
     }
-  }
-  return arr // Return the original array if no changes were made
+
+    return current // Return the unchanged object if no updates were made
+  })
+  return updated ? updatedArr : arr // Return the original array if no changes were made
 }
 
 // Delete Api
@@ -188,12 +197,15 @@ function findParentEnvInArray(
       }
     }
   }
-
-  for (const item of folder) {
-    findParentAndCollect(item, [])
-    if (result) {
-      break // If the root parent is found, exit the loop
+  if (folder && folder.length) {
+    for (const item of folder) {
+      findParentAndCollect(item, [])
+      if (result) {
+        break // If the root parent is found, exit the loop
+      }
     }
+  } else {
+    return null
   }
 
   return result!.env!
@@ -315,7 +327,6 @@ const useApiStore = create<Store>()((set) => ({
       collections,
     }))
 
-    console.log('🚀 ~ file: store.tsx:316 ~ set ~ collections:', collections)
     isLocalStorageAvailable() &&
       localStorage.setItem('collections', JSON.stringify(collections))
   },

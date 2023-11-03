@@ -172,7 +172,10 @@ export default function AddApi() {
                   placeholder="Api Name"
                   {...field}
                   value={field.value ?? ''}
-                  className={setBorderColor(!!form.formState.errors.name)}
+                  className={cn(
+                    setBorderColor(!!form.formState.errors.name),
+                    'text-base',
+                  )}
                 />
               </FormControl>
             </FormItem>
@@ -258,6 +261,7 @@ export default function AddApi() {
                     className={cn(
                       isUrlError ? 'text-red-500' : '',
                       setBorderColor(isUrlError),
+                      'text-base',
                     )}
                   />
                 </FormControl>
