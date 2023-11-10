@@ -44,7 +44,7 @@ export function Toaster() {
                   ) : props.variant === 'error' ? (
                     <Ban
                       size={22}
-                      className="mr-2"
+                      className="mr-2 min-w-fit"
                     />
                   ) : props.variant === 'warning' ? (
                     <AlertTriangle

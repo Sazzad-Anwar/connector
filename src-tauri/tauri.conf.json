@@ -27,6 +27,11 @@
         "renameFile": true,
         "exists": true,
         "scope": ["$DOWNLOAD/*"]
+      },
+      "http": {
+        "all": true,
+        "request": true,
+        "scope": ["http://*", "https:///*"]
       }
     },
     "bundle": {

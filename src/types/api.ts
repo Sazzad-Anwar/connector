@@ -4,6 +4,7 @@ export const ParamsSchema = z.object({
   id: z.string(),
   key: z.string(),
   value: z.any(),
+  isActive: z.boolean().optional(),
   type: z.enum(['text', 'file']).optional(),
   description: z.string().optional(),
 })

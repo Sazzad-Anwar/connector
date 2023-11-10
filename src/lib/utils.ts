@@ -61,7 +61,10 @@ export function getParentIdForNthChildren(arr: FolderType[], id: string) {
 export function arrayToObjectConversion(arr: ParamsType[]) {
   const newObject = {} as { [key: string]: any }
 
-  if (!arr?.find((item) => item.key === '')) {
+  if (
+    !arr?.find((item) => item.key === '') ||
+    !arr?.find((item) => !item.isActive)
+  ) {
     for (const i in arr) {
       newObject[arr[i].key] = arr[i].value
     }
@@ -72,6 +75,10 @@ export function arrayToObjectConversion(arr: ParamsType[]) {
 
 export function isEmpty(arr: ParamsType[]) {
   return arr?.find((item) => item.key === '')
+}
+
+export function filterEmptyParams(arr: ParamsType[]) {
+  return arr?.filter((item) => item.key !== '')
 }
 
 export function getQueryString(

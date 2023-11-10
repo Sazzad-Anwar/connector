@@ -59,7 +59,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
       className={cn(
         'relative h-screen overflow-hidden border-r bg-background ',
         isLoadingInSheet ? 'w-full' : isOpen ? 'w-full' : 'w-0',
-        // isOpen ? "lg:w-[250px] xl:w-[300px]" : "hidden",
+        // isOpen ? 'lg:w-[250px] xl:w-[300px]' : 'hidden',
         // isOpen ? 'w-full ' : 'hidden',
       )}
     >

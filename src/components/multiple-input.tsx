@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import useApiStore from '@/store/store'
 import { useEffect } from 'react'
 import { UseFormReturn, useFieldArray } from 'react-hook-form'
@@ -42,6 +43,7 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
         id: uuid(),
         key: '',
         value: '',
+        isActive: true,
         type: 'text',
         description: '',
       })
@@ -94,6 +96,7 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
     <Table className="overflow-auto max-h-[calc(100vh-300px)]">
       <TableHeader>
         <TableRow className="border">
+          <TableHead className="h-[35px] w-auto resize-x border pl-2 text-accent-foreground"></TableHead>
           <TableHead className="h-[35px] w-[30%] resize-x border pl-2 text-accent-foreground">
             Key
           </TableHead>
@@ -118,6 +121,8 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
             key={index}
             field={field}
             insert={insert}
+            fieldLength={fields.length}
+            append={append}
             remove={remove}
             isErrorIndex={isErrorIndex}
             isCorrectVar={isCorrectVar}

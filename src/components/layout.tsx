@@ -69,10 +69,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const resizeWindow = () => {
-      if (window.innerWidth < 991) {
+      if (window.innerWidth <= 1024) {
         setSizes([0, window.innerWidth])
       } else {
-        setSizes([sideNavWidth, window.innerWidth - sideNavWidth])
+        if (isOpen) {
+          setSizes([sideNavWidth, window.innerWidth - sideNavWidth])
+        } else {
+          setSizes([0, window.innerWidth - sideNavWidth])
+        }
       }
     }
 

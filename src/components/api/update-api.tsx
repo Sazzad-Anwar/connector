@@ -9,9 +9,9 @@ import {
   cn,
   containsDynamicVariable,
   containsVariable,
+  filterEmptyParams,
   getBreadcrumbsForNthChildren,
   getRootParentIdForNthChildren,
-  isEmpty,
   parseURLParameters,
   parseURLQueryParameters,
 } from '@/lib/utils'
@@ -52,17 +52,14 @@ export default function UpdateApi() {
   )
   const onSubmit: SubmitHandler<ApiType> = (data) => {
     data.id = api.id
-    data.params = isEmpty(data.params!) ? [] : data.params
-    data.headers = isEmpty(data.headers!) ? [] : data.headers
-    data.dynamicVariables = isEmpty(data.dynamicVariables!)
-      ? []
-      : data.dynamicVariables
-    data.body = isEmpty(data.body!) ? [] : data.body
-    data.pathVariables = !data.url?.includes('/:')
-      ? []
-      : isEmpty(data.pathVariables!)
-      ? []
-      : data.pathVariables
+    data.params = filterEmptyParams(form.getValues('params')!)
+    data.headers = filterEmptyParams(form.getValues('headers')!)
+    data.dynamicVariables = filterEmptyParams(
+      form.getValues('dynamicVariables')!,
+    )
+    data.body = filterEmptyParams(form.getValues('body')!)
+    data.pathVariables = filterEmptyParams(form.getValues('pathVariables')!)
+    data.jsonBody = form.getValues('jsonBody')
     data.jsonBody = form.getValues('jsonBody')
       ? form.getValues('jsonBody')
       : api.jsonBody
@@ -205,7 +202,7 @@ export default function UpdateApi() {
             control={form.control}
             name="method"
             render={({ field }) => (
-              <FormItem className="mr-2">
+              <FormItem>
                 <Select
                   onValueChange={field.onChange}
                   value={field.value}
@@ -224,7 +221,7 @@ export default function UpdateApi() {
                           : field.value === 'DELETE'
                           ? 'text-destructive'
                           : 'text-foreground') +
-                        ' font-bold w-24 ' +
+                        ' font-bold w-24 border-r-0 rounded-r-none' +
                         setBorderColor(!!form.formState.errors.method)
                       }
                     >
@@ -280,7 +277,7 @@ export default function UpdateApi() {
                     className={cn(
                       isUrlError ? 'text-red-500' : '',
                       setBorderColor(isUrlError),
-                      'text-base',
+                      'text-base border-l-0 rounded-l-none pl-0',
                     )}
                   />
                 </FormControl>

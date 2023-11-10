@@ -52,17 +52,19 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
 
   useEffect(() => {
     setDefaultOpen(
-      (api && api?.body?.length) || api?.jsonBody
+      (api && api?.body?.find((item) => item.isActive)) || api?.jsonBody
         ? 'body'
-        : api?.headers?.length
+        : api?.headers?.find((item) => item.isActive)
         ? 'headers'
-        : api?.params?.length
+        : api?.params?.find((item) => item.isActive)
         ? 'params'
-        : api?.dynamicVariables?.length
+        : api?.dynamicVariables?.find((item) => item.isActive)
         ? 'dynamicVariable'
         : 'params',
     )
-    setActiveBodyPayloadType(api?.body?.length ? 'x-form-urlencoded' : 'json')
+    setActiveBodyPayloadType(
+      api?.body?.find((item) => item.isActive) ? 'x-form-urlencoded' : 'json',
+    )
   }, [api])
 
   return (
@@ -77,7 +79,8 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
             value="params"
           >
             Params{' '}
-            {api?.params?.length || api?.pathVariables?.length ? (
+            {api?.params?.find((item) => item.isActive) ||
+            api?.pathVariables?.length ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
           </TabsTrigger>
@@ -86,7 +89,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
             value="headers"
           >
             Headers{' '}
-            {api?.headers?.length ? (
+            {api?.headers?.find((item) => item.isActive) ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}{' '}
           </TabsTrigger>
@@ -95,7 +98,8 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
             value="body"
           >
             Body{' '}
-            {api?.body?.length || api?.jsonBody ? (
+            {api?.body?.find((item) => item.isActive) ||
+            (api?.jsonBody && Object.keys(api?.jsonBody).length) ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
           </TabsTrigger>
@@ -208,7 +212,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                 }}
               >
                 x-www-form-urlencoded{' '}
-                {api?.body?.length ? (
+                {api?.body?.find((item) => item.isActive) ? (
                   <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
                 ) : null}
               </TabsTrigger>
@@ -221,7 +225,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                 }}
               >
                 Raw JSON{' '}
-                {api?.jsonBody ? (
+                {api?.jsonBody && Object.keys(api?.jsonBody).length ? (
                   <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
                 ) : null}
               </TabsTrigger>

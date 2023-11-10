@@ -34,6 +34,24 @@ type PropsTypes = {
   >
   isErrorIndex: (index: number, type: 'value' | 'key') => boolean
   isCorrectVar: (index: number, type: 'value' | 'key') => boolean
+  fieldLength: number
+  append: (
+    value:
+      | {
+          id: string
+          key: string
+          value?: any
+          isActive: boolean
+          description?: string | undefined
+        }
+      | {
+          id: string
+          key: string
+          value?: any
+          isActive: boolean
+          description?: string | undefined
+        }[],
+  ) => void
   insert: (
     index: number,
     value:
@@ -41,12 +59,14 @@ type PropsTypes = {
           id: string
           key: string
           value?: any
+          isActive: boolean
           description?: string | undefined
         }
       | {
           id: string
           key: string
           value?: any
+          isActive: boolean
           description?: string | undefined
         }[],
     options?: FieldArrayMethodProps | undefined,
@@ -60,6 +80,7 @@ export default function DynamicInput({
   field,
   index,
   insert,
+  fieldLength,
   isCorrectVar,
   isErrorIndex,
   remove,
@@ -67,9 +88,25 @@ export default function DynamicInput({
   return (
     <TableRow
       key={field.id}
-      className="group border"
+      className="group border-l"
     >
-      <TableCell className="border-b border-l p-px flex justify-between m-0">
+      <TableCell className="border-b-0 group-last:border-b group-last:h-[33.5px] border-t-0 p-px">
+        <div className="flex justify-center items-center mx-2">
+          {propertyName !== 'pathVariables' &&
+          form.watch(`${propertyName}.${index}.key`) ? (
+            <input
+              type="checkbox"
+              className="dark:accent-primary-foreground dark:checked:accent-primary accent-primary bg-transparent h-4 w-4 rounded-md"
+              {...form.register(`${propertyName}.${index}.isActive` as const, {
+                value: true,
+              })}
+            />
+          ) : (
+            <span className="w-4" />
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="border border-r-0 border-b-0 group-last:border-b group-last:h-[33.5px] border-t-0 p-px flex justify-between m-0">
         <input
           disabled={propertyName === 'pathVariables'}
           autoComplete="off"
@@ -81,9 +118,30 @@ export default function DynamicInput({
               ? 'text-red-500'
               : isCorrectVar(index, 'key')
               ? 'text-cyan-500'
+              : form.watch(`${propertyName}.${index}.isActive`)
+              ? 'dark:text-white text-black'
+              : propertyName !== 'pathVariables'
+              ? 'dark:text-gray-500 text-gray-200'
               : 'text-accent-foreground',
           )}
           placeholder="Key"
+          onInput={() => {
+            if (fieldLength === index + 1)
+              insert(
+                index + 1,
+                {
+                  id: uuid(),
+                  key: '',
+                  value: '',
+                  isActive: true,
+                  description: '',
+                },
+                {
+                  focusIndex: index,
+                  focusName: `${propertyName}.${index}.key`,
+                },
+              )
+          }}
         />
         {propertyName === 'body' && (
           <Select
@@ -122,9 +180,21 @@ export default function DynamicInput({
           className={cn(
             'h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none',
             isErrorIndex(index, 'value')
-              ? 'text-red-500'
+              ? `text-red-500 ${
+                  form.watch(`${propertyName}.${index}.isActive`)
+                    ? 'text-opacity-100'
+                    : 'text-opacity-30'
+                }`
               : isCorrectVar(index, 'value')
-              ? 'text-cyan-500'
+              ? `text-cyan-500 ${
+                  form.watch(`${propertyName}.${index}.isActive`)
+                    ? 'text-opacity-100'
+                    : 'text-opacity-30'
+                }`
+              : form.watch(`${propertyName}.${index}.isActive`)
+              ? 'dark:text-white text-black'
+              : propertyName !== 'pathVariables'
+              ? 'dark:text-gray-500 text-gray-200'
               : 'text-accent-foreground',
             form.watch(`${propertyName}.${index}.type`) === 'file'
               ? ' file:bg-primary-foreground file:border-none file:text-secondary-foreground file:rounded file:m-0 file:py-1 file:mr-2'
@@ -133,7 +203,7 @@ export default function DynamicInput({
           placeholder="Value"
         />
       </TableCell>
-      <TableCell className="border border-r-0 p-0">
+      <TableCell className="border p-0">
         <div className="flex items-center justify-between">
           <input
             autoComplete="off"
@@ -150,6 +220,7 @@ export default function DynamicInput({
                   id: uuid(),
                   key: '',
                   value: '',
+                  isActive: true,
                   description: '',
                 })
               }

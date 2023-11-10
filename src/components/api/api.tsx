@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import useApiStore from '@/store/store'
 import { zodResolver } from '@hookform/resolvers/zod'
-import axios from 'axios'
 import copy from 'copy-to-clipboard'
-import { ChevronsRight, Copy } from 'lucide-react'
+import { Check, ChevronsRight, Copy } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { v4 as uuid } from 'uuid'
@@ -13,6 +12,7 @@ import {
   checkAndReplaceWithDynamicVariable,
   containsDynamicVariable,
   extractVariable,
+  filterEmptyParams,
   generateURLFromParams,
   getBreadcrumbsForNthChildren,
   getQueryString,
@@ -25,7 +25,7 @@ import { ApiSchema, ApiType } from '@/types/api'
 
 import { useNavigate, useParams } from 'react-router-dom'
 import SplitPane, { Pane } from 'split-pane-react'
-import { config } from '../../config/confit'
+import fetcher from '../../lib/fetcher'
 import Breadcrumbs from '../breadcrumb'
 import Loading from '../loading'
 import SideNavToggler from '../nav/sidenav-toggler'
@@ -40,14 +40,13 @@ import {
 import { toast } from '../ui/use-toast'
 import ApiResult from './api-result'
 import InputTabs from './input-tabs'
-
 export type JSONErrorType = {
   isError: boolean
   error: string
 }
 
 export type ResponseStatus = {
-  status: number
+  status?: number
   statusText: string
   time: string
 }
@@ -58,6 +57,7 @@ export default function Api() {
   const params = useParams()
   const navigate = useNavigate()
   const [result, setResult] = useState<any>()
+  const [isUrlCopied, setIsUrlCopied] = useState<boolean>(false)
   const [splitPanelHeight, setSplitPanelHeight] = useState<number>()
   const [heightOfBreadcrumbUrl, setHeightOfBreadcrumbUrl] = useState<number>()
   const breadCrumbDivRef = useRef<HTMLDivElement>(null)
@@ -268,43 +268,38 @@ export default function Api() {
       })
 
       const activeBody = form.getValues('activeBody')
-      const requestPayload =
-        activeBody === 'json'
-          ? form.getValues('jsonBody')
-          : files?.length
-          ? formData
-          : requestBody
 
       // this is axios call
-      const response = await axios({
+      const response = await fetcher({
         method: api.method,
         url:
           !url.includes('http') &&
           (url.includes('localhost') || url.includes('127.0.0.1'))
             ? 'http://' + url
-            : url.includes('localhost') || url.includes('127.0.0.1')
-            ? url
-            : config.CORS_BYPASS_URL + url,
-        data: requestPayload,
+            : url,
+        submitDataBody: submitData.body,
+        isUpload: files?.length ? true : false,
         headers,
+        requestBody:
+          activeBody === 'json' ? form.getValues('jsonBody') : requestBody,
       })
       const endTime = Date.now()
 
       // This will get the response time duration
       const responseTime = endTime - startTime
-      setResult(response.data)
+      setResult(response && response.data)
       setResponseStatus({
-        status: response?.status,
-        statusText: response?.statusText,
+        status: response && response?.status,
+        statusText: 'ok',
         time: (responseTime as number) + 'ms',
       })
       // auto saving the response
       const dataWithResponse = {
         ...api,
-        response: JSON.stringify(response.data),
+        response: JSON.stringify(response && response.data),
         responseStatus: JSON.stringify({
           status: response?.status,
-          statusText: response?.statusText,
+          statusText: 'ok',
           time: (responseTime as number) + 'ms',
         }),
       }
@@ -316,7 +311,7 @@ export default function Api() {
         const updatedEnv = updateEnvWithDynamicVariableValue(
           submitData.dynamicVariables!,
           env,
-          response.data,
+          response && response.data,
         )
         updateEnv(collections, folderId, updatedEnv)
       }
@@ -325,19 +320,24 @@ export default function Api() {
     } catch (error: any) {
       const endTime = Date.now()
       const responseTime = endTime - startTime
-      setResponseStatus({
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        time: (responseTime as number) + 'ms',
-      })
-
       if (error?.response && error?.response?.data) {
+        setResponseStatus({
+          status: error?.response?.status,
+          statusText: error?.response?.statusText,
+          time: (responseTime as number) + 'ms',
+        })
         setResult(error?.response ? error?.response?.data : error?.message)
       } else {
         toast({
           variant: 'error',
-          title: error?.response ? error?.response?.data : error?.message,
+          title:
+            typeof error !== 'string'
+              ? error?.response?.data
+                ? error?.response?.data
+                : error?.message
+              : error,
         })
+        setResult(null)
       }
       setIsLoading(false)
     }
@@ -350,19 +350,13 @@ export default function Api() {
   const saveUpdate = () => {
     const data: ApiType = {} as ApiType
     data.id = api.id
-    data.params = isEmpty(form.getValues('params')!)
-      ? []
-      : form.getValues('params')
-    data.headers = isEmpty(form.getValues('headers')!)
-      ? []
-      : form.getValues('headers')
-    data.dynamicVariables = isEmpty(form.getValues('dynamicVariables')!)
-      ? []
-      : form.getValues('dynamicVariables')
-    data.body = isEmpty(form.getValues('body')!) ? [] : form.getValues('body')
-    data.pathVariables = isEmpty(form.getValues('pathVariables')!)
-      ? []
-      : form.getValues('pathVariables')
+    data.params = filterEmptyParams(form.getValues('params')!)
+    data.headers = filterEmptyParams(form.getValues('headers')!)
+    data.dynamicVariables = filterEmptyParams(
+      form.getValues('dynamicVariables')!,
+    )
+    data.body = filterEmptyParams(form.getValues('body')!)
+    data.pathVariables = filterEmptyParams(form.getValues('pathVariables')!)
     data.jsonBody = form.getValues('jsonBody')
     updateApi(data, api.id)
     toast({
@@ -374,6 +368,7 @@ export default function Api() {
   }
 
   const copyUrl = () => {
+    setIsUrlCopied(true)
     const params = isEmpty(form.getValues('params')!)
       ? getQueryString(arrayToObjectConversion(api.params!), env)
       : getQueryString(arrayToObjectConversion(form.getValues('params')!), env)
@@ -396,6 +391,9 @@ export default function Api() {
       variant: 'success',
       title: 'Url is copied',
     })
+    setTimeout(() => {
+      setIsUrlCopied(false)
+    }, 2000)
   }
 
   if (
@@ -530,14 +528,24 @@ export default function Api() {
                   size="sm"
                   onClick={() => copyUrl()}
                 >
-                  <Copy size={18} />
+                  {isUrlCopied ? (
+                    <Check
+                      className="animate__animated animate__fadeIn"
+                      size={18}
+                    />
+                  ) : (
+                    <Copy
+                      className="animate__animated animate__fadeIn"
+                      size={18}
+                    />
+                  )}
                 </Button>
                 <Button
                   onClick={() => callApi()}
-                  className="text-white p-1 rounded-l-none"
+                  className="p-1 rounded-l-none"
                   size="icon"
                 >
-                  <i className="bi bi-plugin text-2xl" />
+                  <i className="bi bi-plugin text-2xl font-bold" />
                 </Button>
               </div>
             </div>
