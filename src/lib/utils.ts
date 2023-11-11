@@ -378,7 +378,22 @@ function searchInCollection(
 ) {
   for (const item of collection) {
     if (item.name.toLowerCase().includes(query.toLowerCase())) {
-      results.push(item)
+      const existingIndex = results.findIndex(
+        (resultItem) => resultItem.id === item.id,
+      )
+
+      if (existingIndex !== -1) {
+        // Replace the existing item with the new one
+        results[existingIndex] = {
+          ...item,
+          apis: item?.apis?.filter((api) =>
+            api.name.toLowerCase().includes(query.toLowerCase()),
+          ),
+        }
+      } else {
+        // Add the item if it doesn't exist in the results array
+        results.push(item)
+      }
     }
 
     if (item.children) {
@@ -391,12 +406,23 @@ function searchInCollection(
       )
 
       if (matchingAPIs.length > 0) {
-        // Include the matching API and its parent folder
-        results.push({
-          ...item,
-          apis: matchingAPIs,
-          // Add other necessary properties from the folder if needed
-        })
+        const existingIndex = results.findIndex(
+          (resultItem) => resultItem.id === item.id,
+        )
+
+        if (existingIndex !== -1) {
+          // Replace the existing item with the new one
+          results[existingIndex] = {
+            ...item,
+            apis: matchingAPIs,
+          }
+        } else {
+          // Add the item if it doesn't exist in the results array
+          results.push({
+            ...item,
+            apis: matchingAPIs,
+          })
+        }
       }
     }
   }
@@ -406,7 +432,8 @@ export function search(collection: FolderType[], query: string) {
   const results: any[] = []
   if (query) {
     searchInCollection(collection, query, results)
+    return results
+  } else {
+    return collection
   }
-
-  return query ? results : collection
 }

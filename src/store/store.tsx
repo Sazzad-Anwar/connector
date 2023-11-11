@@ -262,7 +262,7 @@ const useApiStore = create<Store>()((set) => ({
     let collections: FolderType[] = JSON.parse(
       isLocalStorageAvailable() ? localStorage.getItem('collections')! : '[]',
     )
-    collections = search(collections!, name)
+    collections = search(collections, name)
     set(() => ({
       collections,
     }))
