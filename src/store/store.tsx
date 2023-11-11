@@ -1,13 +1,13 @@
 import { create } from 'zustand'
 
 import { ApiType, FolderType, ParamsType } from '@/types/api'
-import { getParentIdForNthChildren } from '../lib/utils'
+import { getParentIdForNthChildren, search } from '../lib/utils'
 
 type Store = {
   collections: FolderType[]
   api: ApiType
   env: ParamsType[]
-  findOneFolder: (id: string) => void
+  searchApi: (id: string) => void
   createFolder: (data: FolderType, id?: string) => void
   createApi: (data: ApiType, id: string) => void
   updateFolder: (data: FolderType, id: string) => void
@@ -258,16 +258,11 @@ const useApiStore = create<Store>()((set) => ({
     }))
   },
 
-  findOneFolder: (name) => {
+  searchApi: (name) => {
     let collections: FolderType[] = JSON.parse(
       isLocalStorageAvailable() ? localStorage.getItem('collections')! : '[]',
     )
-    collections =
-      name !== ''
-        ? collections.filter((item) =>
-            item.name.toLowerCase().includes(name.toLowerCase()),
-          )
-        : collections
+    collections = search(collections!, name)
     set(() => ({
       collections,
     }))

@@ -1,3 +1,5 @@
+/* eslint-disable no-dupe-else-if */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import QueryString from 'qs'
 import { twMerge } from 'tailwind-merge'
 
@@ -367,4 +369,44 @@ export function filterURLWithParams(url: string, params: ParamsType[]) {
   }
 
   return url
+}
+
+function searchInCollection(
+  collection: FolderType[],
+  query: string,
+  results: any[],
+) {
+  for (const item of collection) {
+    if (item.name.toLowerCase().includes(query.toLowerCase())) {
+      results.push(item)
+    }
+
+    if (item.children) {
+      searchInCollection(item.children, query, results)
+    }
+
+    if (item.apis) {
+      const matchingAPIs = item.apis.filter((api) =>
+        api.name.toLowerCase().includes(query.toLowerCase()),
+      )
+
+      if (matchingAPIs.length > 0) {
+        // Include the matching API and its parent folder
+        results.push({
+          ...item,
+          apis: matchingAPIs,
+          // Add other necessary properties from the folder if needed
+        })
+      }
+    }
+  }
+}
+
+export function search(collection: FolderType[], query: string) {
+  const results: any[] = []
+  if (query) {
+    searchInCollection(collection, query, results)
+  }
+
+  return query ? results : collection
 }

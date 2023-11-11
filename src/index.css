@@ -60,12 +60,24 @@
     @apply bg-background text-foreground;
     font-feature-settings: 'rlig' 1, 'calt' 1;
   }
-  /* .dark tr:last-child td:last-child,
-  tr:last-child td:last-child {
-    @apply border-b border-r;
-  } */
-  /* :not(:root):fullscreen::backdrop {
-    background: transparent;
-    backdrop-filter: blur(30px);
-  } */
+  /* width */
+  ::-webkit-scrollbar {
+    width: 5px;
+    border-radius: 7px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    @apply bg-accent rounded-3xl;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-accent rounded-3xl;
+  }
 }
