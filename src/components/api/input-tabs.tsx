@@ -19,6 +19,7 @@ type PropsType = {
 export default function InputTabs({ form, api, height, className }: PropsType) {
   const jsonBodyDivRef = useRef<HTMLDivElement>(null)
   const [jsonBodyData, setJsonBodyData] = useState<any>({})
+  const [interactiveQueryData, setInteractiveQueryData] = useState<any>({})
   const [activeBodyPayloadType, setActiveBodyPayloadType] = useState<
     'x-form-urlencoded' | 'json'
   >()
@@ -46,18 +47,42 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
     }
   }
 
+  const setInteractiveQuery = (data: string) => {
+    try {
+      const jsonData = JSON.parse(data)
+      setInteractiveQueryData(jsonData)
+      form.setValue('interactiveQuery', jsonData, { shouldDirty: true })
+
+      setJsonError({
+        isError: false,
+        error: '',
+      })
+    } catch (error: any) {
+      setJsonError({
+        isError: true,
+        error: error.message,
+      })
+    }
+  }
+
   useEffect(() => {
-    setJsonBodyData(api?.jsonBody)
+    if (api) {
+      setJsonBodyData(api?.jsonBody)
+      setInteractiveQueryData(api?.interactiveQuery)
+    }
   }, [api])
 
   useEffect(() => {
     setDefaultOpen(
-      (api && api?.body?.find((item) => item.isActive)) || api?.jsonBody
+      (api && api?.body?.find((item) => item.isActive)) ||
+        (typeof api?.jsonBody === 'object' && Object.keys(api?.jsonBody).length)
         ? 'body'
+        : api?.params?.find((item) => item.isActive) ||
+          (typeof api?.interactiveQuery === 'object' &&
+            Object.keys(api?.interactiveQuery).length)
+        ? 'params'
         : api?.headers?.find((item) => item.isActive)
         ? 'headers'
-        : api?.params?.find((item) => item.isActive)
-        ? 'params'
         : api?.dynamicVariables?.find((item) => item.isActive)
         ? 'dynamicVariable'
         : 'params',
@@ -80,7 +105,9 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
           >
             Params{' '}
             {api?.params?.find((item) => item.isActive) ||
-            api?.pathVariables?.length ? (
+            api?.pathVariables?.length ||
+            (typeof api?.interactiveQuery === 'object' &&
+              Object.keys(api?.interactiveQuery).length) ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
           </TabsTrigger>
@@ -124,16 +151,37 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
           }}
         >
           <Tabs
-            defaultValue={api?.params?.length ? 'queryParams' : 'urlParams'}
+            defaultValue={
+              api?.params?.find((item) => item.isActive)
+                ? 'queryParams'
+                : typeof api?.interactiveQuery === 'object' &&
+                  Object.keys(api?.interactiveQuery).length
+                ? 'interactiveQuery'
+                : 'urlParams'
+            }
             className="w-full"
           >
             <TabsList className="px-.5 h-9">
               <TabsTrigger
+                onClick={() => form.setValue('activeQuery', 'query-params')}
                 value="queryParams"
                 className="h-7"
               >
                 Query
-                {api?.params?.length ? (
+                {api?.params?.find((item) => item.isActive) ? (
+                  <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+                ) : null}
+              </TabsTrigger>
+              <TabsTrigger
+                onClick={() =>
+                  form.setValue('activeQuery', 'interactive-query')
+                }
+                value="interactiveQuery"
+                className="h-7"
+              >
+                JSON Query
+                {typeof api?.interactiveQuery === 'object' &&
+                Object.keys(api?.interactiveQuery).length ? (
                   <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
                 ) : null}
               </TabsTrigger>
@@ -175,6 +223,40 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               <MultipleInput
                 propertyName="pathVariables"
                 form={form}
+              />
+            </TabsContent>
+            <TabsContent
+              value="interactiveQuery"
+              className="animate__animated animate__fadeIn"
+              style={{
+                height:
+                  (height as number) >= 300
+                    ? (height as number) - 300
+                    : (height as number),
+              }}
+            >
+              <div className="flex items-center justify-between">
+                {jsonError?.isError ? (
+                  <div className="h-4 text-xs font-bold text-red-500">
+                    {jsonError.error}
+                  </div>
+                ) : (
+                  <div className="h-4"></div>
+                )}
+              </div>
+              <ResultRender
+                ref={jsonBodyDivRef}
+                result={interactiveQueryData}
+                height={
+                  height && (height as number) >= 300
+                    ? (height as number) - 230
+                    : !height
+                    ? window.innerHeight - 320
+                    : (height as number)
+                }
+                readOnly={false}
+                setData={setInteractiveQuery}
+                className="border-t pt-3"
               />
             </TabsContent>
           </Tabs>
@@ -224,8 +306,9 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                   form.setValue('activeBody', 'json')
                 }}
               >
-                Raw JSON{' '}
-                {api?.jsonBody && Object.keys(api?.jsonBody).length ? (
+                JSON{' '}
+                {typeof api?.jsonBody === 'object' &&
+                Object.keys(api?.jsonBody).length ? (
                   <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
                 ) : null}
               </TabsTrigger>

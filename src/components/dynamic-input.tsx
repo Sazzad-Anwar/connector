@@ -117,7 +117,7 @@ export default function DynamicInput({
               ) : (
                 <Square
                   size={18}
-                  className="animate__animated animate__fadeIn text-accent-foreground"
+                  className="animate__animated animate__fadeIn text-accent-foreground/50"
                 />
               )}
             </label>

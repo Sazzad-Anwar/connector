@@ -23,6 +23,7 @@ import {
 } from '@/lib/utils'
 import { ApiSchema, ApiType } from '@/types/api'
 
+import QueryString from 'qs'
 import { useNavigate, useParams } from 'react-router-dom'
 import SplitPane, { Pane } from 'split-pane-react'
 import fetcher from '../../lib/fetcher'
@@ -77,14 +78,20 @@ export default function Api() {
   })
   const customParams = form.watch('params')
   const pathVariables = form.watch('pathVariables')
+  const interactiveQuery = form.watch('interactiveQuery')
   let url = form.watch('url')
   url = generateURLFromParams(url, pathVariables!)
-
   url =
     filterEmptyParams(customParams!)?.length > 0 &&
     customParams?.filter((item) => item.isActive).length &&
+    form.getValues('activeQuery') === 'query-params' &&
     !url?.includes('?')
       ? url + '?' + getQueryString(arrayToObjectConversion(customParams!), env)
+      : typeof interactiveQuery === 'object' &&
+        Object.keys(interactiveQuery)?.length
+      ? url +
+        '?' +
+        QueryString.stringify(interactiveQuery, { encodeValuesOnly: true })
       : url
   const apiId = params.apiId as string
   const folderId = params.folderId as string
@@ -192,6 +199,7 @@ export default function Api() {
           ? api?.pathVariables
           : [{ id: uuid(), key: '', value: '', description: '' }],
       )
+      form.setValue('interactiveQuery', api?.interactiveQuery ?? {})
     }
 
     const handleEscapeKeyPress = (event: KeyboardEvent) => {
@@ -360,6 +368,7 @@ export default function Api() {
     data.body = filterEmptyParams(form.getValues('body')!)
     data.pathVariables = filterEmptyParams(form.getValues('pathVariables')!)
     data.jsonBody = form.getValues('jsonBody')
+    data.interactiveQuery = form.getValues('interactiveQuery')
     updateApi(data, api.id)
     toast({
       variant: 'success',
@@ -371,9 +380,17 @@ export default function Api() {
 
   const copyUrl = () => {
     setIsUrlCopied(true)
-    const params = isEmpty(form.getValues('params')!)
-      ? getQueryString(arrayToObjectConversion(api.params!), env)
-      : getQueryString(arrayToObjectConversion(form.getValues('params')!), env)
+    const params =
+      isEmpty(form.getValues('params')!) &&
+      form.getValues('activeQuery') === 'query-params'
+        ? getQueryString(
+            arrayToObjectConversion(form.getValues('params')!),
+            env,
+          )
+        : typeof interactiveQuery === 'object' &&
+          Object.keys(interactiveQuery)?.length
+        ? getQueryString(form.getValues('interactiveQuery'))
+        : ''
     let url = form.getValues('pathVariables')?.find((item) => item.key !== '')
       ? updateUrlWithPathVariables(
           generateURLFromParams(
