@@ -60,12 +60,8 @@ export function getParentIdForNthChildren(arr: FolderType[], id: string) {
 
 export function arrayToObjectConversion(arr: ParamsType[]) {
   const newObject = {} as { [key: string]: any }
-
-  if (
-    !arr?.find((item) => item.key === '') ||
-    !arr?.find((item) => !item.isActive)
-  ) {
-    for (const i in arr) {
+  for (const i in filterEmptyParams(arr)) {
+    if (arr[i].isActive) {
       newObject[arr[i].key] = arr[i].value
     }
   }

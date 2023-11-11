@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Plus, Trash2 } from 'lucide-react'
+import { CheckSquare, Plus, Square, Trash2 } from 'lucide-react'
 import {
   FieldArrayMethodProps,
   FieldArrayWithId,
@@ -94,13 +94,33 @@ export default function DynamicInput({
         <div className="flex justify-center items-center mx-2">
           {propertyName !== 'pathVariables' &&
           form.watch(`${propertyName}.${index}.key`) ? (
-            <input
-              type="checkbox"
-              className="dark:accent-primary-foreground dark:checked:accent-primary accent-primary bg-transparent h-4 w-4 rounded-md"
-              {...form.register(`${propertyName}.${index}.isActive` as const, {
-                value: true,
-              })}
-            />
+            <label
+              htmlFor={`${propertyName}.${index}.isActive`}
+              className="cursor-pointer"
+            >
+              <input
+                id={`${propertyName}.${index}.isActive`}
+                type="checkbox"
+                className="hidden"
+                {...form.register(
+                  `${propertyName}.${index}.isActive` as const,
+                  {
+                    value: true,
+                  },
+                )}
+              />
+              {form.watch(`${propertyName}.${index}.isActive`) ? (
+                <CheckSquare
+                  size={18}
+                  className="animate__animated animate__fadeIn"
+                />
+              ) : (
+                <Square
+                  size={18}
+                  className="animate__animated animate__fadeIn text-accent-foreground"
+                />
+              )}
+            </label>
           ) : (
             <span className="w-4" />
           )}
@@ -121,7 +141,7 @@ export default function DynamicInput({
               : form.watch(`${propertyName}.${index}.isActive`)
               ? 'dark:text-white text-black'
               : propertyName !== 'pathVariables'
-              ? 'dark:text-gray-500 text-gray-200'
+              ? 'dark:text-gray-500 text-gray-400'
               : 'text-accent-foreground',
           )}
           placeholder="Key"
@@ -194,7 +214,7 @@ export default function DynamicInput({
               : form.watch(`${propertyName}.${index}.isActive`)
               ? 'dark:text-white text-black'
               : propertyName !== 'pathVariables'
-              ? 'dark:text-gray-500 text-gray-200'
+              ? 'dark:text-gray-500 text-gray-400'
               : 'text-accent-foreground',
             form.watch(`${propertyName}.${index}.type`) === 'file'
               ? ' file:bg-primary-foreground file:border-none file:text-secondary-foreground file:rounded file:m-0 file:py-1 file:mr-2'
@@ -208,7 +228,14 @@ export default function DynamicInput({
           <input
             autoComplete="off"
             {...form.register(`${propertyName}.${index}.description` as const)}
-            className="h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none"
+            className={cn(
+              'h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none',
+              form.watch(`${propertyName}.${index}.isActive`)
+                ? 'dark:text-white text-black'
+                : propertyName !== 'pathVariables'
+                ? 'dark:text-gray-500 text-gray-400'
+                : 'text-accent-foreground',
+            )}
             placeholder="Description"
           />
 

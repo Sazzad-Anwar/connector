@@ -81,7 +81,9 @@ export default function Api() {
   url = generateURLFromParams(url, pathVariables!)
 
   url =
-    !isEmpty(customParams!) && !url?.includes('?')
+    filterEmptyParams(customParams!)?.length > 0 &&
+    customParams?.filter((item) => item.isActive).length &&
+    !url?.includes('?')
       ? url + '?' + getQueryString(arrayToObjectConversion(customParams!), env)
       : url
   const apiId = params.apiId as string
@@ -517,7 +519,7 @@ export default function Api() {
                   ) : (
                     url
                   )}
-                  {url.split('}}')[1]}
+                  {url?.split('}}')[1]}
                 </div>
               </div>
               <div className="flex items-center justify-end">
