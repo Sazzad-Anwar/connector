@@ -49,12 +49,6 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
     }
 
     useEffect(() => {
-      if (result) {
-        setEditorValue(JSON.stringify(result, null, '\t') ?? '{}')
-      }
-    }, [result])
-
-    useEffect(() => {
       const handleEscapeKeyPress = (event: KeyboardEvent) => {
         if (event.key === 'Escape') {
           // Handle the "Escape" key press here

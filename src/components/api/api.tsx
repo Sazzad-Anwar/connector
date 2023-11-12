@@ -23,7 +23,6 @@ import {
 } from '@/lib/utils'
 import { ApiSchema, ApiType } from '@/types/api'
 
-import QueryString from 'qs'
 import { useNavigate, useParams } from 'react-router-dom'
 import SplitPane, { Pane } from 'split-pane-react'
 import fetcher from '../../lib/fetcher'
@@ -84,14 +83,12 @@ export default function Api() {
   url =
     filterEmptyParams(customParams!)?.length > 0 &&
     customParams?.filter((item) => item.isActive).length &&
-    form.getValues('activeQuery') === 'query-params' &&
+    form.watch('activeQuery') === 'query-params' &&
     !url?.includes('?')
       ? url + '?' + getQueryString(arrayToObjectConversion(customParams!), env)
       : typeof interactiveQuery === 'object' &&
         Object.keys(interactiveQuery)?.length
-      ? url +
-        '?' +
-        QueryString.stringify(interactiveQuery, { encodeValuesOnly: true })
+      ? url + '?' + getQueryString(interactiveQuery)
       : url
   const apiId = params.apiId as string
   const folderId = params.folderId as string
@@ -233,9 +230,15 @@ export default function Api() {
       setIsLoading(true)
 
       // get the params in querystring from an array
-      const params = isEmpty(submitData.params!)
-        ? getQueryString(arrayToObjectConversion(api.params!), env)
-        : getQueryString(arrayToObjectConversion(submitData.params!), env)
+      const params =
+        form.watch('activeQuery') === 'query-params'
+          ? getQueryString(
+              arrayToObjectConversion(form.getValues('params')!),
+              env,
+            )
+          : typeof form.getValues('interactiveQuery') === 'object'
+          ? getQueryString(form.getValues('interactiveQuery'))
+          : ''
 
       // This will update the url with given path variable  and will generate if user input something
       let url = submitData.pathVariables?.find((item) => item.key !== '')
@@ -278,7 +281,6 @@ export default function Api() {
       })
 
       const activeBody = form.getValues('activeBody')
-
       // this is axios call
       const response = await fetcher({
         method: api.method,

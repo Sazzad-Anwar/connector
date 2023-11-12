@@ -1,6 +1,6 @@
 [package]
 name = "connector"
-version = "1.5.6"
+version = "1.5.67"
 description = "A platform for building and using API"
 authors = ["you"]
 license = ""

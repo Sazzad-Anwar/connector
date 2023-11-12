@@ -4,6 +4,8 @@ import { UseFormReturn } from 'react-hook-form'
 
 import { ApiType } from '@/types/api'
 
+import { useNavigate } from 'react-router-dom'
+import Loading from '../loading'
 import MultipleInput from '../multiple-input'
 import ResultRender from '../result-renderer'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
@@ -20,9 +22,11 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
   const jsonBodyDivRef = useRef<HTMLDivElement>(null)
   const [jsonBodyData, setJsonBodyData] = useState<any>({})
   const [interactiveQueryData, setInteractiveQueryData] = useState<any>({})
+  const [isTimedOut, setTimedOut] = useState<boolean>(false)
   const [activeBodyPayloadType, setActiveBodyPayloadType] = useState<
     'x-form-urlencoded' | 'json'
   >()
+  const navigate = useNavigate()
   const [jsonError, setJsonError] = useState<JSONErrorType>()
   const [defaultOpen, setDefaultOpen] = useState<string>('params')
 
@@ -66,11 +70,19 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
   }
 
   useEffect(() => {
+    let timer: any
     if (api) {
-      setJsonBodyData(api?.jsonBody)
-      setInteractiveQueryData(api?.interactiveQuery)
+      timer = setTimeout(() => {
+        setTimedOut(true)
+        setJsonBodyData(api?.jsonBody)
+        setInteractiveQueryData(api?.interactiveQuery)
+      }, 100)
     }
-  }, [api])
+    return () => {
+      clearTimeout(timer)
+      setTimedOut(false)
+    }
+  }, [api, navigate])
 
   useEffect(() => {
     setDefaultOpen(
@@ -244,20 +256,24 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                   <div className="h-4"></div>
                 )}
               </div>
-              <ResultRender
-                ref={jsonBodyDivRef}
-                result={interactiveQueryData}
-                height={
-                  height && (height as number) >= 300
-                    ? (height as number) - 230
-                    : !height
-                    ? window.innerHeight - 320
-                    : (height as number)
-                }
-                readOnly={false}
-                setData={setInteractiveQuery}
-                className="border-t pt-3"
-              />
+              {isTimedOut ? (
+                <ResultRender
+                  ref={jsonBodyDivRef}
+                  result={interactiveQueryData}
+                  height={
+                    height && (height as number) >= 300
+                      ? (height as number) - 230
+                      : !height
+                      ? window.innerHeight - 320
+                      : (height as number)
+                  }
+                  readOnly={false}
+                  setData={setInteractiveQuery}
+                  className="border-t pt-3"
+                />
+              ) : (
+                <Loading />
+              )}
             </TabsContent>
           </Tabs>
         </TabsContent>
@@ -332,20 +348,24 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                   <div className="h-4"></div>
                 )}
               </div>
-              <ResultRender
-                ref={jsonBodyDivRef}
-                result={jsonBodyData}
-                height={
-                  height && (height as number) >= 300
-                    ? (height as number) - 230
-                    : !height
-                    ? window.innerHeight - 320
-                    : (height as number)
-                }
-                readOnly={false}
-                setData={setJsonBody}
-                className="border-t pt-3"
-              />
+              {isTimedOut ? (
+                <ResultRender
+                  ref={jsonBodyDivRef}
+                  result={jsonBodyData}
+                  height={
+                    height && (height as number) >= 300
+                      ? (height as number) - 230
+                      : !height
+                      ? window.innerHeight - 320
+                      : (height as number)
+                  }
+                  readOnly={false}
+                  setData={setJsonBody}
+                  className="border-t pt-3"
+                />
+              ) : (
+                <Loading />
+              )}
             </TabsContent>
             <TabsContent
               value="x-form-urlencoded"
