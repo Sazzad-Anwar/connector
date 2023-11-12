@@ -1,6 +1,6 @@
 import useApiStore from '@/store/store'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ChevronsRight } from 'lucide-react'
+import { ChevronsRight, Info } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { v4 as uuid } from 'uuid'
@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { toast } from '../ui/use-toast'
 import InputTabs from './input-tabs'
 
@@ -58,7 +59,9 @@ export default function UpdateApi() {
       form.getValues('dynamicVariables')!,
     )
     data.body = filterEmptyParams(form.getValues('body')!)
-    data.pathVariables = filterEmptyParams(form.getValues('pathVariables')!)
+    data.pathVariables = form.getValues('url').includes('/:')
+      ? filterEmptyParams(form.getValues('pathVariables')!)
+      : []
     data.jsonBody = form.getValues('jsonBody')
     data.jsonBody = form.getValues('jsonBody')
       ? form.getValues('jsonBody')
@@ -101,13 +104,8 @@ export default function UpdateApi() {
   useEffect(() => {
     const urlParams = parseURLParameters(url)
     const queryParams = parseURLQueryParameters(url!)
-    if (urlParams.length) {
-      form.setValue('pathVariables', urlParams)
-    }
-
-    if (queryParams.length) {
-      form.setValue('params', queryParams)
-    }
+    form.setValue('pathVariables', urlParams)
+    form.setValue('params', queryParams)
   }, [form, url])
 
   useEffect(() => {
@@ -222,7 +220,9 @@ export default function UpdateApi() {
                           ? 'text-destructive'
                           : 'text-foreground') +
                         ' font-bold w-24 border-r-0 rounded-r-none' +
-                        setBorderColor(!!form.formState.errors.method)
+                        setBorderColor(
+                          !!form.formState.errors.method || isUrlError,
+                        )
                       }
                     >
                       <SelectValue placeholder="Method" />
@@ -275,12 +275,22 @@ export default function UpdateApi() {
                       field.onChange(e)
                     }}
                     className={cn(
-                      isUrlError ? 'text-red-500' : '',
+                      isUrlError ? 'text-red-500 border-l' : 'border-l-0',
                       setBorderColor(isUrlError),
-                      'text-base border-l-0 rounded-l-none pl-0',
+                      'text-base rounded-l-none pl-1',
                     )}
                   />
                 </FormControl>
+                <Tooltip>
+                  <TooltipTrigger>
+                    {isUrlError && (
+                      <Info className="mb-2 ml-2 text-destructive" />
+                    )}
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>It is not a valid variable</p>
+                  </TooltipContent>
+                </Tooltip>
               </FormItem>
             )}
           />

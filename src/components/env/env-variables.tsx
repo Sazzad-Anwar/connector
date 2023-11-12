@@ -107,7 +107,7 @@ export default function EnvVariables() {
     form.reset()
   }
 
-  const onSubmnt: SubmitHandler<FolderType> = (data) => {
+  const onSubmit: SubmitHandler<FolderType> = (data) => {
     const folder = {
       ...collection,
       env: data.env?.filter((item) => item.key !== ''),
@@ -136,7 +136,7 @@ export default function EnvVariables() {
       </div>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmnt)}
+          onSubmit={form.handleSubmit(onSubmit)}
           className="max-h-[calc(100vh-70px)] overflow-auto"
         >
           <Table className="animate__animated animate__fadeIn mt-5 w-full">
@@ -150,7 +150,7 @@ export default function EnvVariables() {
                 </TableHead>
                 <TableHead
                   colSpan={2}
-                  className="h-[35px] w-[40%] resize-x pl-2 text-accent-foreground"
+                  className="h-[35px] w-[50%] resize-x pl-2 text-accent-foreground"
                 >
                   Description
                 </TableHead>
@@ -188,7 +188,7 @@ export default function EnvVariables() {
                       placeholder="Description"
                     />
                   </TableCell>
-                  <TableCell className="flex h-[30px] w-full items-center justify-end py-1">
+                  <TableCell className="group-last:border-b group-last:border-r flex w-full group-last:h-[31.5px] items-center justify-end py-1">
                     <Button
                       onClick={() =>
                         insert(index + 1, {

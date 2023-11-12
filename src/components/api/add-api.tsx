@@ -30,12 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '../ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { toast } from '../ui/use-toast'
 import InputTabs from './input-tabs'
 
@@ -101,13 +96,8 @@ export default function AddApi() {
   useEffect(() => {
     const urlParams = parseURLParameters(url)
     const queryParams = parseURLQueryParameters(url!)
-    if (urlParams.length) {
-      form.setValue('pathVariables', urlParams)
-    }
-
-    if (queryParams.length) {
-      form.setValue('params', queryParams)
-    }
+    form.setValue('pathVariables', urlParams)
+    form.setValue('params', queryParams)
   }, [form, url])
 
   useEffect(() => {
@@ -207,7 +197,9 @@ export default function AddApi() {
                           ? 'text-destructive'
                           : 'text-foreground') +
                         ' font-bold w-24 border-r-0 rounded-r-none' +
-                        setBorderColor(!!form.formState.errors.method)
+                        setBorderColor(
+                          !!form.formState.errors.method || isUrlError,
+                        )
                       }
                     >
                       <SelectValue placeholder="Method" />
@@ -260,24 +252,22 @@ export default function AddApi() {
                       field.onChange(e)
                     }}
                     className={cn(
-                      isUrlError ? 'text-red-500' : '',
+                      isUrlError ? 'text-red-500 border-l' : 'border-l-0',
                       setBorderColor(isUrlError),
-                      'text-base border-l-0 rounded-l-none pl-0',
+                      'text-base rounded-l-none pl-1',
                     )}
                   />
                 </FormControl>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      {isUrlError && (
-                        <Info className="mb-2 ml-2 text-destructive" />
-                      )}
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>It is not a valid variable</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    {isUrlError && (
+                      <Info className="mb-2 ml-2 text-destructive" />
+                    )}
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>It is not a valid variable</p>
+                  </TooltipContent>
+                </Tooltip>
               </FormItem>
             )}
           />

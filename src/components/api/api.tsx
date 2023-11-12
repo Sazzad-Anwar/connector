@@ -31,12 +31,7 @@ import Loading from '../loading'
 import SideNavToggler from '../nav/sidenav-toggler'
 import NotFound from '../notFound'
 import { Button } from '../ui/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '../ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { toast } from '../ui/use-toast'
 import ApiResult from './api-result'
 import InputTabs from './input-tabs'
@@ -81,7 +76,7 @@ export default function Api() {
   let url = form.watch('url')
   url = generateURLFromParams(url, pathVariables!)
   url =
-    filterEmptyParams(customParams!)?.length > 0 &&
+    filterEmptyParams(customParams!)?.length &&
     customParams?.filter((item) => item.isActive).length &&
     form.watch('activeQuery') === 'query-params' &&
     !url?.includes('?')
@@ -197,6 +192,7 @@ export default function Api() {
           : [{ id: uuid(), key: '', value: '', description: '' }],
       )
       form.setValue('interactiveQuery', api?.interactiveQuery ?? {})
+      form.setValue('activeQuery', 'query-params')
     }
 
     const handleEscapeKeyPress = (event: KeyboardEvent) => {
@@ -380,6 +376,8 @@ export default function Api() {
     getApi(api?.id)
   }
 
+  console.log(form.watch('url'))
+
   const copyUrl = () => {
     setIsUrlCopied(true)
     const params =
@@ -503,38 +501,36 @@ export default function Api() {
                 </span>
                 <div className=" max-w-[12rem] overflow-hidden truncate px-2 md:max-w-[34rem] lg:max-w-[45rem] xl:max-w-4xl 2xl:max-w-7xl">
                   {containsDynamicVariable(api.url) ? (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="text-cyan-500">{`{{${extractVariable(
-                            url,
-                          )}}}`}</span>
-                        </TooltipTrigger>
-                        <TooltipContent className="flex items-center text-base">
-                          {replaceVariables(`{{${extractVariable(url)}}}`, env)}
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="ml-2 flex h-4 w-4 justify-self-end p-0"
-                            size="xs"
-                            onClick={() => {
-                              copy(
-                                replaceVariables(
-                                  `{{${extractVariable(url)}}}`,
-                                  env,
-                                ),
-                              )
-                              toast({
-                                variant: 'success',
-                                title: 'Env value is copied!',
-                              })
-                            }}
-                          >
-                            <Copy size={16} />
-                          </Button>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-cyan-500">{`{{${extractVariable(
+                          url,
+                        )}}}`}</span>
+                      </TooltipTrigger>
+                      <TooltipContent className="flex items-center text-base">
+                        {replaceVariables(`{{${extractVariable(url)}}}`, env)}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="ml-2 flex h-4 w-4 justify-self-end p-0"
+                          size="xs"
+                          onClick={() => {
+                            copy(
+                              replaceVariables(
+                                `{{${extractVariable(url)}}}`,
+                                env,
+                              ),
+                            )
+                            toast({
+                              variant: 'success',
+                              title: 'Env value is copied!',
+                            })
+                          }}
+                        >
+                          <Copy size={16} />
+                        </Button>
+                      </TooltipContent>
+                    </Tooltip>
                   ) : (
                     url
                   )}
