@@ -1,7 +1,7 @@
 {
   "name": "connector",
   "private": true,
-  "version": "1.5.7",
+  "version": "1.6.0",
   "type": "module",
   "scripts": {
     "dev": "vite --port 2255",
@@ -37,6 +37,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "copy-to-clipboard": "^3.3.3",
+    "dayjs": "^1.11.10",
     "firebase": "^10.5.0",
     "lucide-react": "^0.288.0",
     "qs": "^6.11.2",
