@@ -1,11 +1,17 @@
 import useApiStore from '@/store/store'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ChevronsRight, Plus, Trash2 } from 'lucide-react'
+import { ChevronsRight, Copy, Plus, Trash2 } from 'lucide-react'
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form'
 import { v4 as uuid } from 'uuid'
 
 import { FolderSchema, FolderType } from '@/types/api'
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@radix-ui/react-tooltip'
+import copy from 'copy-to-clipboard'
 import { useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import SideNavToggler from '../nav/sidenav-toggler'
@@ -173,12 +179,26 @@ export default function EnvVariables() {
                     />
                   </TableCell>
                   <TableCell className="border p-0">
-                    <input
-                      autoComplete="off"
-                      {...form.register(`env.${index}.value` as const)}
-                      className="h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none"
-                      placeholder="Value"
-                    />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <input
+                          autoComplete="off"
+                          {...form.register(`env.${index}.value` as const)}
+                          className="h-[30px] w-full rounded-none border-0 bg-transparent pl-2 placeholder:text-accent focus:outline-none"
+                          placeholder="Value"
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[600px] w-full break-words relative pl-2 py-1 pr-5 rounded-md bg-secondary">
+                        <span className="text-xs w-full">
+                          {field.value}
+                          <Copy
+                            onClick={() => copy(field.value)}
+                            className="animate__animated animate__fadeIn cursor-pointer absolute right-1 top-1"
+                            size={16}
+                          />
+                        </span>
+                      </TooltipContent>
+                    </Tooltip>
                   </TableCell>
                   <TableCell className="border border-r-0 p-0">
                     <input

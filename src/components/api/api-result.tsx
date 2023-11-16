@@ -126,7 +126,8 @@ export default function ApiResult({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {typeof headers === 'object' ? (
+                    {typeof headers === 'object' &&
+                    Object.keys(headers).length > 0 ? (
                       <>
                         {Object.keys(headers!).map((item) => {
                           if (item !== 'set-cookie') {
@@ -155,7 +156,7 @@ export default function ApiResult({
                       <TableRow>
                         <TableCell
                           colSpan={2}
-                          className="text-center border h-96 text-sm text-primary"
+                          className="text-center border h-40 text-sm text-primary"
                         >
                           Not found
                         </TableCell>
@@ -172,9 +173,15 @@ export default function ApiResult({
                       <TableHead className="border">Value</TableHead>
                       <TableHead className="border">Path</TableHead>
                       <TableHead className="border">Expires</TableHead>
-                      <TableHead className="border">HttpOnly</TableHead>
-                      <TableHead className="border">Secure</TableHead>
-                      <TableHead className="border">SameSite</TableHead>
+                      <TableHead className="border text-center">
+                        HttpOnly
+                      </TableHead>
+                      <TableHead className="border text-center">
+                        Secure
+                      </TableHead>
+                      <TableHead className="border text-center">
+                        SameSite
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -234,7 +241,7 @@ export default function ApiResult({
                                   )}
                                 </span>
                               </TableCell>
-                              <TableCell className="border">
+                              <TableCell className="border text-center">
                                 {sameSite}
                               </TableCell>
                             </TableRow>
@@ -245,7 +252,7 @@ export default function ApiResult({
                       <TableRow>
                         <TableCell
                           colSpan={7}
-                          className="text-center border h-96 text-sm text-primary"
+                          className="text-center border h-40 text-sm text-primary"
                         >
                           Not found
                         </TableCell>
