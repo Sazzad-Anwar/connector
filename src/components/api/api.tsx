@@ -77,12 +77,16 @@ export default function Api() {
   const pathVariables = form.watch('pathVariables')
   const interactiveQuery = form.watch('interactiveQuery')
   let url = form.watch('url')
+  const hasActiveCustomParams = !!customParams?.filter((item) => item.isActive)
+    .length
   url = generateURLFromParams(url, pathVariables!)
   url =
-    filterEmptyParams(customParams!)?.length &&
-    customParams?.filter((item) => item.isActive).length &&
+    !!filterEmptyParams(customParams!)?.length &&
+    hasActiveCustomParams &&
     form.watch('activeQuery') === 'query-params'
-      ? url + '?' + getQueryString(arrayToObjectConversion(customParams!), env)
+      ? url +
+        (hasActiveCustomParams ? '?' : '') +
+        getQueryString(arrayToObjectConversion(customParams!), env)
       : typeof interactiveQuery === 'object' &&
         Object.keys(interactiveQuery)?.length &&
         form.watch('activeQuery') === 'interactive-query'
