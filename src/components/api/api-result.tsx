@@ -1,11 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { cn } from '@/lib/utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@radix-ui/react-tooltip'
 import copy from 'copy-to-clipboard'
-import { Check, Copy } from 'lucide-react'
+import { Check, Copy, X } from 'lucide-react'
 import { useRef, useState } from 'react'
+import { v4 as uuid } from 'uuid'
+import { cn, parseCookie } from '../../lib/utils'
 import Loading from '../loading'
 import ResultRender from '../result-renderer'
 import { Button } from '../ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { toast } from '../ui/use-toast'
 import { ResponseStatus } from './api'
 
@@ -14,6 +29,9 @@ type PropsType = {
   result: any
   height?: number
   responseStatus: ResponseStatus
+  headers?: {
+    [key: string]: any
+  }
 }
 
 export default function ApiResult({
@@ -21,6 +39,7 @@ export default function ApiResult({
   result,
   height,
   responseStatus,
+  headers,
 }: PropsType) {
   const resultDivRef = useRef<HTMLDivElement>(null)
   const resultContainerRef = useRef<HTMLDivElement>(null)
@@ -59,9 +78,184 @@ export default function ApiResult({
       {isLoading && <Loading height={height! - 300} />}
       {!isLoading && result ? (
         <>
-          <div className="flex items-center justify-between py-3 pl-5 pr-0 text-sm">
-            <h1 className="text-base">Response</h1>
-            <div className="flex items-center">
+          <div className="relative pt-1 pb-3 pl-5 pr-0 text-sm">
+            <Tabs
+              defaultValue="response"
+              className="w-full"
+            >
+              <TabsList>
+                <TabsTrigger value="response">Response</TabsTrigger>
+                <TabsTrigger value="headers">
+                  Headers{' '}
+                  {typeof headers === 'object' &&
+                    Object.keys(headers).length > 0 && (
+                      <span className="text-green-500 ml-2">
+                        ({Object.keys(headers).length - 1})
+                      </span>
+                    )}
+                </TabsTrigger>
+                <TabsTrigger value="cookies">
+                  Cookies
+                  {typeof headers === 'object' &&
+                    headers['set-cookie']?.length > 0 && (
+                      <span className="text-green-500 ml-2">
+                        ({headers['set-cookie']?.length})
+                      </span>
+                    )}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent
+                value="response"
+                className="w-full"
+              >
+                <ResultRender
+                  ref={resultContainerRef}
+                  readOnly={true}
+                  height={height}
+                  type="response"
+                  result={result && result}
+                />
+              </TabsContent>
+              <TabsContent value="headers">
+                <Table>
+                  <TableHeader className="border">
+                    <TableRow className="w-full">
+                      <TableHead className="border w-1/2">Key</TableHead>
+                      <TableHead className="border w-1/2">Value</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {typeof headers === 'object' ? (
+                      <>
+                        {Object.keys(headers!).map((item) => {
+                          if (item !== 'set-cookie') {
+                            return (
+                              <TableRow key={uuid()}>
+                                <TableCell
+                                  key={uuid()}
+                                  className="border"
+                                >
+                                  {item}
+                                </TableCell>
+                                <TableCell
+                                  key={uuid()}
+                                  className="border"
+                                >
+                                  {headers[item]}
+                                </TableCell>
+                              </TableRow>
+                            )
+                          } else {
+                            return null
+                          }
+                        })}
+                      </>
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={2}
+                          className="text-center border h-96 text-sm text-primary"
+                        >
+                          Not found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TabsContent>
+              <TabsContent value="cookies">
+                <Table>
+                  <TableHeader className="border">
+                    <TableRow className="w-full">
+                      <TableHead className="border">Key</TableHead>
+                      <TableHead className="border">Value</TableHead>
+                      <TableHead className="border">Path</TableHead>
+                      <TableHead className="border">Expires</TableHead>
+                      <TableHead className="border">HttpOnly</TableHead>
+                      <TableHead className="border">Secure</TableHead>
+                      <TableHead className="border">SameSite</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {typeof headers === 'object' &&
+                    headers['set-cookie']?.length ? (
+                      <>
+                        {headers['set-cookie']?.map((item: string) => {
+                          const {
+                            customKey,
+                            customValue,
+                            expires,
+                            path,
+                            secure,
+                            httpOnly,
+                            sameSite,
+                          } = parseCookie(item)
+
+                          return (
+                            <TableRow key={uuid()}>
+                              <TableCell className="border">
+                                {customKey}
+                              </TableCell>
+                              <TableCell className="border">
+                                <Tooltip>
+                                  <TooltipTrigger>{customValue}</TooltipTrigger>
+                                  <TooltipContent className="max-w-[600px] w-full break-words relative p-2 pr-5 rounded-md bg-secondary">
+                                    <span className="text-xs w-full">
+                                      {customValue}
+                                      <Copy
+                                        onClick={() => copy(customValue)}
+                                        className="animate__animated animate__fadeIn cursor-pointer absolute right-1 top-1"
+                                        size={16}
+                                      />
+                                    </span>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TableCell>
+                              <TableCell className="border">{path}</TableCell>
+                              <TableCell className="border">
+                                {expires}
+                              </TableCell>
+                              <TableCell className="border">
+                                <span className="flex justify-center items-center">
+                                  {httpOnly ? (
+                                    <Check size={14} />
+                                  ) : (
+                                    <X size={14} />
+                                  )}
+                                </span>
+                              </TableCell>
+                              <TableCell className="border">
+                                <span className="flex justify-center items-center">
+                                  {secure ? (
+                                    <Check size={14} />
+                                  ) : (
+                                    <X size={14} />
+                                  )}
+                                </span>
+                              </TableCell>
+                              <TableCell className="border">
+                                {sameSite}
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                      </>
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={7}
+                          className="text-center border h-96 text-sm text-primary"
+                        >
+                          Not found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TabsContent>
+            </Tabs>
+            <div className="flex items-center absolute top-1 right-1">
               {responseStatus?.status ? (
                 <>
                   <Button
@@ -71,17 +265,24 @@ export default function ApiResult({
                     size="sm"
                     onClick={() => copyResponse()}
                   >
-                    {isCopiedResponse ? (
-                      <Check
-                        className="animate__animated animate__fadeIn"
-                        size={18}
-                      />
-                    ) : (
-                      <Copy
-                        className="animate__animated animate__fadeIn"
-                        size={18}
-                      />
-                    )}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        {isCopiedResponse ? (
+                          <Check
+                            className="animate__animated animate__fadeIn"
+                            size={18}
+                          />
+                        ) : (
+                          <Copy
+                            className="animate__animated animate__fadeIn"
+                            size={18}
+                          />
+                        )}
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Copy the response</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </Button>
                   <p>
                     Status
@@ -112,13 +313,6 @@ export default function ApiResult({
               ) : null}
             </div>
           </div>
-          <ResultRender
-            ref={resultContainerRef}
-            readOnly={true}
-            height={height}
-            type="response"
-            result={result && result}
-          />
         </>
       ) : null}
     </section>

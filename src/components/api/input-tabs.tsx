@@ -4,7 +4,7 @@ import { UseFormReturn } from 'react-hook-form'
 
 import { ApiType } from '@/types/api'
 
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Loading from '../loading'
 import MultipleInput from '../multiple-input'
 import ResultRender from '../result-renderer'
@@ -19,6 +19,7 @@ type PropsType = {
 }
 
 export default function InputTabs({ form, api, height, className }: PropsType) {
+  const [searchParams] = useSearchParams()
   const jsonBodyDivRef = useRef<HTMLDivElement>(null)
   const [jsonBodyData, setJsonBodyData] = useState<any>({})
   const [interactiveQueryData, setInteractiveQueryData] = useState<any>({})
@@ -164,19 +165,28 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
         >
           <Tabs
             defaultValue={
-              api?.params?.find((item) => item.isActive)
-                ? 'queryParams'
+              searchParams.get('activeQuery') !== null
+                ? (searchParams.get('activeQuery') as
+                    | 'query-params'
+                    | 'interactive-query')
+                : api?.params?.find((item) => item.isActive)
+                ? 'query-params'
                 : typeof api?.interactiveQuery === 'object' &&
                   Object.keys(api?.interactiveQuery).length
-                ? 'interactiveQuery'
-                : 'urlParams'
+                ? 'interactive-query'
+                : api?.pathVariables?.find((item) => item.key === '')
+                ? 'url-params'
+                : 'query-params'
             }
             className="w-full"
           >
             <TabsList className="px-.5 h-9">
               <TabsTrigger
-                onClick={() => form.setValue('activeQuery', 'query-params')}
-                value="queryParams"
+                onClick={() => {
+                  form.setValue('activeQuery', 'query-params')
+                  navigate({ search: 'activeQuery=query-params' })
+                }}
+                value="query-params"
                 className="h-7"
               >
                 Query
@@ -185,10 +195,11 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                 ) : null}
               </TabsTrigger>
               <TabsTrigger
-                onClick={() =>
+                onClick={() => {
                   form.setValue('activeQuery', 'interactive-query')
-                }
-                value="interactiveQuery"
+                  navigate({ search: 'activeQuery=interactive-query' })
+                }}
+                value="interactive-query"
                 className="h-7"
               >
                 JSON Query
@@ -198,7 +209,10 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                 ) : null}
               </TabsTrigger>
               <TabsTrigger
-                value="urlParams"
+                onClick={() => {
+                  navigate({ search: 'activeQuery=url-params' })
+                }}
+                value="url-params"
                 className="h-7"
               >
                 Path
@@ -208,7 +222,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               </TabsTrigger>
             </TabsList>
             <TabsContent
-              value="queryParams"
+              value="query-params"
               className="animate__animated animate__fadeIn"
               style={{
                 height:
@@ -223,7 +237,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               />
             </TabsContent>
             <TabsContent
-              value="urlParams"
+              value="url-params"
               className="animate__animated animate__fadeIn relative overflow-auto"
               style={{
                 maxHeight:
@@ -238,7 +252,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               />
             </TabsContent>
             <TabsContent
-              value="interactiveQuery"
+              value="interactive-query"
               className="animate__animated animate__fadeIn"
               style={{
                 height:

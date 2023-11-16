@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import useApiStore from '@/store/store'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { platform } from '@tauri-apps/api/os'
 import copy from 'copy-to-clipboard'
 import { Check, ChevronsRight, Copy } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -23,7 +24,7 @@ import {
 } from '@/lib/utils'
 import { ApiSchema, ApiType } from '@/types/api'
 
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import SplitPane, { Pane } from 'split-pane-react'
 import fetcher from '../../lib/fetcher'
 import Breadcrumbs from '../breadcrumb'
@@ -59,6 +60,7 @@ export default function Api() {
   const urlDivRef = useRef<HTMLDivElement>(null)
   const updateButtonRef = useRef<HTMLButtonElement>(null)
   const [sizes, setSizes] = useState([200, 300])
+  const [headers, setHeaders] = useState<{ [key: string]: any }>()
   const [responseStatus, setResponseStatus] = useState<ResponseStatus>({
     status: 0,
     statusText: '',
@@ -70,6 +72,7 @@ export default function Api() {
     mode: 'onChange',
     resolver: zodResolver(ApiSchema),
   })
+  const [searchParams] = useSearchParams()
   const customParams = form.watch('params')
   const pathVariables = form.watch('pathVariables')
   const interactiveQuery = form.watch('interactiveQuery')
@@ -78,11 +81,11 @@ export default function Api() {
   url =
     filterEmptyParams(customParams!)?.length &&
     customParams?.filter((item) => item.isActive).length &&
-    form.watch('activeQuery') === 'query-params' &&
-    !url?.includes('?')
+    form.watch('activeQuery') === 'query-params'
       ? url + '?' + getQueryString(arrayToObjectConversion(customParams!), env)
       : typeof interactiveQuery === 'object' &&
-        Object.keys(interactiveQuery)?.length
+        Object.keys(interactiveQuery)?.length &&
+        form.watch('activeQuery') === 'interactive-query'
       ? url + '?' + getQueryString(interactiveQuery)
       : url
   const apiId = params.apiId as string
@@ -97,6 +100,7 @@ export default function Api() {
     }
     setResponseStatus({ status: 0, statusText: '', time: '' })
     setResult(null)
+    setHeaders({})
   }, [apiId, folderId, getApi, navigate, getEnv])
 
   useEffect(() => {
@@ -107,7 +111,11 @@ export default function Api() {
 
   useEffect(() => {
     if (api.id === apiId) {
-      setResult(api.response ? JSON.parse(api.response!) : null)
+      try {
+        setResult(api.response ? JSON.parse(api.response!) : null)
+      } catch (error) {
+        setResult(api.response ? api.response! : null)
+      }
       setResponseStatus(
         api.responseStatus
           ? JSON.parse(api.responseStatus!)
@@ -192,7 +200,19 @@ export default function Api() {
           : [{ id: uuid(), key: '', value: '', description: '' }],
       )
       form.setValue('interactiveQuery', api?.interactiveQuery ?? {})
-      form.setValue('activeQuery', 'query-params')
+      form.setValue(
+        'activeQuery',
+        searchParams.get('activeQuery')
+          ? (searchParams.get('activeQuery')! as
+              | 'query-params'
+              | 'interactive-query')
+          : api?.params?.filter((item) => item.isActive)?.length
+          ? 'query-params'
+          : typeof api?.interactiveQuery === 'object' &&
+            Object.keys(api?.interactiveQuery).length
+          ? 'interactive-query'
+          : undefined,
+      )
     }
 
     const handleEscapeKeyPress = (event: KeyboardEvent) => {
@@ -216,7 +236,7 @@ export default function Api() {
     return () => {
       document.removeEventListener('keydown', handleEscapeKeyPress)
     }
-  }, [form, api, getApi])
+  }, [form, api, getApi, searchParams])
 
   // this is making the API call
   const onSubmit: SubmitHandler<ApiType> = async (submitData) => {
@@ -295,7 +315,36 @@ export default function Api() {
 
       // This will get the response time duration
       const responseTime = endTime - startTime
-      setResult(response && response.data)
+      let resultText: string = ''
+
+      // setting up headers
+      try {
+        await platform()
+        setHeaders({
+          ...response?.headers,
+          'set-cookie':
+            response && (response as any).rawHeaders['set-cookie']
+              ? (response as any).rawHeaders['set-cookie']
+              : '',
+        })
+        const arrayBuffer = new Uint8Array(response && response.data).buffer
+        resultText = new TextDecoder('utf-8').decode(arrayBuffer)
+        try {
+          setResult(JSON.parse(resultText))
+        } catch (error) {
+          setResult(resultText)
+        }
+      } catch (error) {
+        setHeaders({
+          ...response?.headers,
+          'set-cookie':
+            response && response.headers['set-cookie']
+              ? response.headers['set-cookie']
+              : '',
+        })
+        setResult(response && response.data)
+      }
+
       setResponseStatus({
         status: response && response?.status,
         statusText: 'ok',
@@ -304,7 +353,7 @@ export default function Api() {
       // auto saving the response
       const dataWithResponse = {
         ...api,
-        response: JSON.stringify(response && response.data),
+        response: resultText,
         responseStatus: JSON.stringify({
           status: response?.status,
           statusText: 'ok',
@@ -376,8 +425,6 @@ export default function Api() {
     getApi(api?.id)
   }
 
-  console.log(form.watch('url'))
-
   const copyUrl = () => {
     setIsUrlCopied(true)
     const params =
@@ -404,7 +451,11 @@ export default function Api() {
 
     // This will replace the {{dynamic_variable}} withe the variable's value
     url = containsDynamicVariable(url) ? replaceVariables(url, env) : url
-
+    url =
+      !url.includes('http') &&
+      (url.includes('localhost') || url.includes('127.0.0.1'))
+        ? 'http://' + url
+        : url
     copy(url)
     toast({
       variant: 'success',
@@ -545,24 +596,38 @@ export default function Api() {
                   size="sm"
                   onClick={() => copyUrl()}
                 >
-                  {isUrlCopied ? (
-                    <Check
-                      className="animate__animated animate__fadeIn"
-                      size={18}
-                    />
-                  ) : (
-                    <Copy
-                      className="animate__animated animate__fadeIn"
-                      size={18}
-                    />
-                  )}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {isUrlCopied ? (
+                        <Check
+                          className="animate__animated animate__fadeIn"
+                          size={18}
+                        />
+                      ) : (
+                        <Copy
+                          className="animate__animated animate__fadeIn"
+                          size={18}
+                        />
+                      )}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Copy the url</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </Button>
                 <Button
                   onClick={() => callApi()}
                   className="p-1 rounded-l-none"
                   size="icon"
                 >
-                  <i className="bi bi-plugin text-2xl font-bold" />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <i className="bi bi-plugin text-2xl font-bold" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Send request</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </Button>
               </div>
             </div>
@@ -582,6 +647,7 @@ export default function Api() {
               height={splitPanelHeight!}
               isLoading={isLoading}
               result={result}
+              headers={headers}
               responseStatus={responseStatus}
             />
           </Pane>

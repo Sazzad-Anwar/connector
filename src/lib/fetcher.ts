@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getClient } from '@tauri-apps/api/http'
+import { ResponseType, getClient } from '@tauri-apps/api/http'
 import axios from 'axios'
 import { ParamsType } from '../types/api'
 
@@ -49,6 +49,7 @@ const fetcher = async ({
             { payload: requestBody, type: 'Json' },
             {
               headers,
+              responseType: ResponseType.Binary,
             },
           )
         case 'PUT':
@@ -57,11 +58,13 @@ const fetcher = async ({
             { payload: requestBody, type: 'Json' },
             {
               headers,
+              responseType: ResponseType.Binary,
             },
           )
         case 'DELETE':
           return await client.delete(url, {
             headers,
+            responseType: ResponseType.Binary,
           })
         case 'PATCH':
           return await client.patch(url, {
@@ -70,10 +73,12 @@ const fetcher = async ({
               type: 'Json',
             },
             headers,
+            responseType: ResponseType.Binary,
           })
         default:
           return await client.get(url, {
             headers,
+            responseType: ResponseType.Binary,
           })
       }
     }

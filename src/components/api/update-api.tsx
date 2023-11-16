@@ -104,8 +104,13 @@ export default function UpdateApi() {
   useEffect(() => {
     const urlParams = parseURLParameters(url)
     const queryParams = parseURLQueryParameters(url!)
-    form.setValue('pathVariables', urlParams)
-    form.setValue('params', queryParams)
+    if (urlParams.length) {
+      form.setValue('pathVariables', urlParams)
+    }
+
+    if (queryParams.length) {
+      form.setValue('params', queryParams)
+    }
   }, [form, url])
 
   useEffect(() => {

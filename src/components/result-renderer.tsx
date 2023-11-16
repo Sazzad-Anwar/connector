@@ -103,7 +103,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       <div ref={ref}>
         <MonacoEditor
           beforeMount={setEditorTheme}
-          language="json"
+          language={isErrorResult ? 'text' : 'json'}
           value={editorValue}
           options={{
             automaticLayout: true,

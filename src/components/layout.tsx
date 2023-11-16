@@ -84,7 +84,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       resizeWindow()
     })
     resizeWindow()
-  }, [])
+  }, [isOpen])
 
   return (
     <main className={cn('min-h-screen bg-background font-sans antialiased')}>

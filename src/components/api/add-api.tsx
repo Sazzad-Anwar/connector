@@ -96,8 +96,13 @@ export default function AddApi() {
   useEffect(() => {
     const urlParams = parseURLParameters(url)
     const queryParams = parseURLQueryParameters(url!)
-    form.setValue('pathVariables', urlParams)
-    form.setValue('params', queryParams)
+    if (urlParams.length) {
+      form.setValue('pathVariables', urlParams)
+    }
+
+    if (queryParams.length) {
+      form.setValue('params', queryParams)
+    }
   }, [form, url])
 
   useEffect(() => {
@@ -116,7 +121,7 @@ export default function AddApi() {
       if ((event.metaKey || event.ctrlKey) && event.key === 's') {
         event.preventDefault()
         saveButtonRef.current?.click()
-        form.reset()
+        // form.reset()
       }
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here

@@ -5,8 +5,8 @@ import { twMerge } from 'tailwind-merge'
 
 import { FolderType, ParamsType } from '@/types/api'
 import clsx, { ClassValue } from 'clsx'
+import dayjs from 'dayjs'
 import { v4 as uuid } from 'uuid'
-
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -435,5 +435,57 @@ export function search(collection: FolderType[], query: string) {
     return results
   } else {
     return collection
+  }
+}
+
+export function parseCookie(cookie: string) {
+  const getCookieData = (cookieKey: string) => {
+    if (
+      cookie.split(';').find((item) => item.includes(cookieKey)) &&
+      cookie
+        .split(';')
+        .find((item) => item.includes(cookieKey))
+        ?.trim()
+        .split('=')[1]
+    ) {
+      return cookie
+        .split(';')
+        .find((item) => item.includes(cookieKey))
+        ?.trim()
+        .split('=')[1]
+    } else if (
+      cookie.split(';').find((item) => item.includes(cookieKey)) &&
+      !cookie
+        .split(';')
+        .find((item) => item.includes(cookieKey))
+        ?.trim()
+        ?.includes('=')
+    ) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  const customKey = cookie.split(';')[0]?.split('=')[0]
+  const customValue = cookie.split(';')[0]?.split('=')[1]
+  const maxAge = getCookieData('Max-Age')
+  const expires = dayjs(getCookieData('Expires') as string).format(
+    'DD ddd MMM YYYY HH:mm:ss',
+  )
+  const path = getCookieData('Path')
+  const secure = getCookieData('Secure')
+  const httpOnly = getCookieData('HttpOnly')
+  const sameSite = getCookieData('SameSite')
+
+  return {
+    customKey,
+    customValue,
+    maxAge,
+    expires,
+    path,
+    secure,
+    httpOnly,
+    sameSite,
   }
 }
