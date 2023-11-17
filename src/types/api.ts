@@ -21,7 +21,9 @@ export const ApiSchema = z.object({
   jsonBody: z.any().optional(),
   interactiveQuery: z.any().optional(),
   activeBody: z.enum(['x-form-urlencoded', 'json']).optional(),
-  activeQuery: z.enum(['interactive-query', 'query-params']).optional(),
+  activeQuery: z
+    .enum(['interactive-query', 'query-params', 'url-params'])
+    .optional(),
 })
 
 export const FolderSchema = z.object({
