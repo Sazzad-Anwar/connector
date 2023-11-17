@@ -78,6 +78,10 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
         setJsonBodyData(api?.jsonBody)
         setInteractiveQueryData(api?.interactiveQuery)
       }, 100)
+    } else {
+      setJsonBodyData({})
+      setInteractiveQueryData({})
+      setTimedOut(true)
     }
     return () => {
       clearTimeout(timer)
