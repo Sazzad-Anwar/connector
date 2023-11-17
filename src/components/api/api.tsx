@@ -3,7 +3,7 @@ import useApiStore from '@/store/store'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { platform } from '@tauri-apps/api/os'
 import copy from 'copy-to-clipboard'
-import { Check, ChevronsRight, Copy } from 'lucide-react'
+import { Check, ChevronsRight, Copy, Settings } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { v4 as uuid } from 'uuid'
@@ -77,8 +77,9 @@ export default function Api() {
   const pathVariables = form.watch('pathVariables')
   const interactiveQuery = form.watch('interactiveQuery')
   let url = form.watch('url')
-  const hasActiveCustomParams = !!customParams?.filter((item) => item.isActive)
-    .length
+  const hasActiveCustomParams = !!customParams?.filter(
+    (item) => item.isActive && item.key !== '',
+  ).length
   url = generateURLFromParams(url, pathVariables!)
   url =
     !!filterEmptyParams(customParams!)?.length &&
@@ -593,15 +594,15 @@ export default function Api() {
                 </div>
               </div>
               <div className="flex items-center justify-end">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="mr-2 flex h-8 w-8 justify-self-end p-0"
-                  size="sm"
-                  onClick={() => copyUrl()}
-                >
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="mr-2 flex h-8 w-8 justify-self-end p-0"
+                      size="sm"
+                      onClick={() => copyUrl()}
+                    >
                       {isUrlCopied ? (
                         <Check
                           className="animate__animated animate__fadeIn"
@@ -613,26 +614,47 @@ export default function Api() {
                           size={18}
                         />
                       )}
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Copy the url</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </Button>
-                <Button
-                  onClick={() => callApi()}
-                  className="p-1 rounded-l-none"
-                  size="icon"
-                >
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Copy url</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="mr-2 flex h-8 w-8 justify-self-end p-0"
+                      size="sm"
+                      onClick={() =>
+                        navigate(`/api/${folderId}/${apiId}/update`)
+                      }
+                    >
+                      <Settings
+                        className="animate__animated animate__fadeIn"
+                        size={18}
+                      />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Edit</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={() => callApi()}
+                      className="p-1 rounded-l-none"
+                      size="icon"
+                    >
                       <i className="bi bi-plugin text-2xl font-bold" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Send request</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </Button>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Send request</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
             <InputTabs

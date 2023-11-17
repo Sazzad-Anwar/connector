@@ -14,6 +14,7 @@ import { FolderType } from '../../types/api'
 import AddCollectionDialog from '../collections/add-collection-dialog'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { toast } from '../ui/use-toast'
 import RenderNavigation from './render-navigations'
 import { SideNavHeader } from './sidenav-header'
@@ -81,7 +82,12 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
               size="xs"
               className="p-1"
             >
-              <Plus size={16} />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Plus size={16} />
+                </TooltipTrigger>
+                <TooltipContent>Create Collection</TooltipContent>
+              </Tooltip>
             </Button>
           </AddCollectionDialog>
           <Input
@@ -97,7 +103,12 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
             size="xs"
             className="p-1"
           >
-            <Braces size={16} />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Braces size={16} />
+              </TooltipTrigger>
+              <TooltipContent>Import JSON</TooltipContent>
+            </Tooltip>
           </InputFile>
         </div>
         <div className="max-h-[calc(100vh-106px)] overflow-auto pb-5">
