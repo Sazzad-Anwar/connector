@@ -117,7 +117,10 @@ export default function ApiResult({
                   result={result && result}
                 />
               </TabsContent>
-              <TabsContent value="headers">
+              <TabsContent
+                value="headers"
+                className="max-h-fit overflow-auto"
+              >
                 <Table>
                   <TableHeader className="border">
                     <TableRow className="w-full">
