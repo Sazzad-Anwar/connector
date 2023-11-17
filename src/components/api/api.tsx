@@ -215,7 +215,7 @@ export default function Api() {
           : typeof api?.interactiveQuery === 'object' &&
             Object.keys(api?.interactiveQuery).length
           ? 'interactive-query'
-          : undefined,
+          : 'query-params',
       )
     }
 
@@ -372,7 +372,7 @@ export default function Api() {
         const updatedEnv = updateEnvWithDynamicVariableValue(
           submitData.dynamicVariables!,
           env,
-          response && response.data,
+          JSON.parse(resultText),
         )
         updateEnv(collections, folderId, updatedEnv)
       }
