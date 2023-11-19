@@ -44,6 +44,7 @@ export default function RenderNavigation({
   const { InputFile } = useImportJSON()
   const [apiDetails, setApiDetails] = useState<ApiType>()
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const navWidthRef = useRef<HTMLDivElement>(null)
   const deleteButtonRef = useRef<HTMLButtonElement>(null)
   const addFolderButtonRef = useRef<HTMLButtonElement>(null)
   const { updateFolder, deleteFolder, createFolder, deleteApi } = useApiStore()
@@ -214,6 +215,7 @@ export default function RenderNavigation({
   return (
     <>
       <div
+        ref={navWidthRef}
         className={cn(
           buttonVariants({ variant: 'ghost', size: 'xs' }),
           'group relative w-full cursor-pointer items-center justify-between rounded-none',
@@ -288,13 +290,13 @@ export default function RenderNavigation({
               onClick={() => navigate(`/api/${collection.id}/${api.id}`)}
               className={cn(
                 buttonVariants({ variant: 'ghost', size: 'xs' }),
-                'group relative w-full cursor-pointer items-center justify-between rounded-none',
+                'group relative w-full cursor-pointer items-center justify-between rounded-none truncate',
                 params.apiId && params.apiId === api.id
                   ? 'border-l-2 border-primary bg-secondary'
                   : '',
               )}
             >
-              <div className="flex items-center ">
+              <div className="flex items-center">
                 <span
                   className={
                     (api.method === 'GET'
@@ -310,7 +312,14 @@ export default function RenderNavigation({
                 >
                   {api.method}
                 </span>
-                <span className="line-clamp-1 w-full md:max-w-[160px] lg:max-w-[130px] xl:max-w-[180px]">
+                <span
+                  style={{
+                    width:
+                      navWidthRef?.current?.clientWidth &&
+                      navWidthRef.current?.clientWidth - 120,
+                  }}
+                  className="truncate"
+                >
                   {api.name}
                 </span>
               </div>

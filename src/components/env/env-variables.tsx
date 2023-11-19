@@ -179,7 +179,7 @@ export default function EnvVariables() {
                     />
                   </TableCell>
                   <TableCell className="border p-0">
-                    <Tooltip>
+                    <Tooltip disableHoverableContent={!!field.value.length}>
                       <TooltipTrigger asChild>
                         <input
                           autoComplete="off"
@@ -188,16 +188,18 @@ export default function EnvVariables() {
                           placeholder="Value"
                         />
                       </TooltipTrigger>
-                      <TooltipContent className="max-w-[600px] w-full break-words relative pl-2 py-1 pr-5 rounded-md bg-secondary">
-                        <span className="text-xs w-full">
-                          {field.value}
-                          <Copy
-                            onClick={() => copy(field.value)}
-                            className="animate__animated animate__fadeIn cursor-pointer absolute right-1 top-1"
-                            size={16}
-                          />
-                        </span>
-                      </TooltipContent>
+                      {!!field.value.length && (
+                        <TooltipContent className="max-w-[600px] w-full break-words relative pl-2 py-1 pr-5 rounded-md bg-secondary">
+                          <span className="text-xs w-full">
+                            {field.value}
+                            <Copy
+                              onClick={() => copy(field.value)}
+                              className="animate__animated animate__fadeIn cursor-pointer absolute right-1 top-1"
+                              size={16}
+                            />
+                          </span>
+                        </TooltipContent>
+                      )}
                     </Tooltip>
                   </TableCell>
                   <TableCell className="border border-r-0 p-0">

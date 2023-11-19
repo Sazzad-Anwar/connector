@@ -223,9 +223,11 @@ export default function Api() {
     const handleEscapeKeyPress = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key === 's') {
         event.preventDefault()
-        updateButtonRef.current?.click()
-        form.reset()
-        getApi(api?.id)
+        if (form.formState.isDirty) {
+          updateButtonRef.current?.click()
+          form.reset()
+          getApi(api?.id)
+        }
       }
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
@@ -245,6 +247,12 @@ export default function Api() {
 
   // this is making the API call
   const onSubmit: SubmitHandler<ApiType> = async (submitData) => {
+    let responseData = null
+    let responseStatusData = {
+      status: 0,
+      statusText: '',
+      time: '',
+    }
     // track the time to get the duration of api call
     const startTime = Date.now()
     try {
@@ -335,9 +343,11 @@ export default function Api() {
         const arrayBuffer = new Uint8Array(response && response.data).buffer
         resultText = new TextDecoder('utf-8').decode(arrayBuffer)
         try {
-          setResult(JSON.parse(resultText))
+          responseData = JSON.parse(resultText)
+          setResult(responseData)
         } catch (error) {
-          setResult(resultText)
+          responseData = resultText
+          setResult(responseData)
         }
       } catch (error) {
         setHeaders({
@@ -347,26 +357,15 @@ export default function Api() {
               ? response.headers['set-cookie']
               : '',
         })
-        setResult(response && response.data)
+        responseData = response && response.data
+        setResult(responseData)
       }
-
-      setResponseStatus({
+      responseStatusData = {
         status: response && response?.status,
         statusText: 'ok',
         time: (responseTime as number) + 'ms',
-      })
-      // auto saving the response
-      const dataWithResponse = {
-        ...api,
-        response: resultText,
-        responseStatus: JSON.stringify({
-          status: response?.status,
-          statusText: 'ok',
-          time: (responseTime as number) + 'ms',
-        }),
       }
-
-      updateApi(dataWithResponse, dataWithResponse.id)
+      setResponseStatus(responseStatusData)
 
       // If there is any requirement to set the value of a {{dynamic_variable}} with the response, this logic will do that and update that {{dynamic_variable}}
       if (api.dynamicVariables?.length) {
@@ -383,12 +382,14 @@ export default function Api() {
       const endTime = Date.now()
       const responseTime = endTime - startTime
       if (error?.response && error?.response?.data) {
-        setResponseStatus({
+        responseStatusData = {
           status: error?.response?.status,
           statusText: error?.response?.statusText,
           time: (responseTime as number) + 'ms',
-        })
-        setResult(error?.response ? error?.response?.data : error?.message)
+        }
+        setResponseStatus(responseStatusData)
+        responseData = error?.response ? error?.response?.data : error?.message
+        setResult(responseData)
       } else {
         toast({
           variant: 'error',
@@ -400,9 +401,18 @@ export default function Api() {
               : error,
         })
         setResult(null)
+        responseData = null
       }
       setIsLoading(false)
     }
+
+    // auto saving the response
+    const dataWithResponse = {
+      ...api,
+      response: JSON.stringify(responseData),
+      responseStatus: JSON.stringify(responseStatusData),
+    }
+    updateApi(dataWithResponse, dataWithResponse.id)
   }
 
   const callApi = async () => {
@@ -421,6 +431,8 @@ export default function Api() {
     data.pathVariables = filterEmptyParams(form.getValues('pathVariables')!)
     data.jsonBody = form.getValues('jsonBody')
     data.interactiveQuery = form.getValues('interactiveQuery')
+    data.response = result
+    data.responseStatus = JSON.stringify(responseStatus)
     updateApi(data, api.id)
     toast({
       variant: 'success',

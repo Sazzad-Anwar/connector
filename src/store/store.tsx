@@ -7,6 +7,7 @@ type Store = {
   collections: FolderType[]
   api: ApiType
   env: ParamsType[]
+  getCollections: () => void
   searchApi: (id: string) => void
   createFolder: (data: FolderType, id?: string) => void
   createApi: (data: ApiType, id: string) => void
@@ -113,7 +114,6 @@ function updateApi(
         return { ...current, children: updatedChildren }
       }
     }
-
     return current // Return the unchanged object if no updates were made
   })
   return updated ? updatedArr : arr // Return the original array if no changes were made
@@ -212,11 +212,17 @@ function findParentEnvInArray(
 }
 
 const useApiStore = create<Store>()((set) => ({
-  collections: JSON.parse(
-    isLocalStorageAvailable() ? localStorage.getItem('collections')! : '[]',
-  ),
+  collections: [],
   api: {} as ApiType,
   env: [],
+  getCollections: () => {
+    const collections = JSON.parse(
+      isLocalStorageAvailable() ? localStorage.getItem('collections')! : '[]',
+    )
+    set(() => ({
+      collections,
+    }))
+  },
   createFolder: (data, id) => {
     let collections = JSON.parse(
       isLocalStorageAvailable() ? localStorage.getItem('collections')! : '[]',
@@ -321,7 +327,6 @@ const useApiStore = create<Store>()((set) => ({
     set(() => ({
       collections,
     }))
-
     isLocalStorageAvailable() &&
       localStorage.setItem('collections', JSON.stringify(collections))
   },
