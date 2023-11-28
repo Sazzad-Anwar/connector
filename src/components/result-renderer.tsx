@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import MonacoEditor from '@monaco-editor/react'
+import copy from 'copy-to-clipboard'
+import { Check, Copy } from 'lucide-react'
 import { forwardRef, useEffect, useRef, useState } from 'react'
 import { useTheme } from './theme-provider'
+import { Button } from './ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
+import { toast } from './ui/use-toast'
 
 type PropsType = {
   result?: object | string | any[]
@@ -20,6 +25,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
   ) {
     const { theme } = useTheme()
     const editorRef = useRef<any>(null)
+    const [isCopiedResponse, setIsCopiedResponse] = useState<boolean>(false)
     const [isErrorResult, setIsErrorResult] = useState<boolean>(false)
     const [editorValue, setEditorValue] = useState<string>(
       JSON.stringify(result, null, '\t') ?? '{}',
@@ -99,8 +105,49 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       }
     }, [editorValue])
 
+    const copyResponse = () => {
+      setIsCopiedResponse(true)
+      copy(JSON.stringify(result))
+      toast({
+        variant: 'success',
+        title: 'Data is copied',
+      })
+      setTimeout(() => {
+        setIsCopiedResponse(false)
+      }, 2000)
+    }
+
     return (
-      <div ref={ref}>
+      <div
+        ref={ref}
+        className="relative"
+      >
+        <Button
+          type="button"
+          variant="ghost"
+          className="mr-2 flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
+          size="sm"
+          onClick={() => copyResponse()}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {isCopiedResponse ? (
+                <Check
+                  className="animate__animated animate__fadeIn"
+                  size={18}
+                />
+              ) : (
+                <Copy
+                  className="animate__animated animate__fadeIn"
+                  size={18}
+                />
+              )}
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Copy data</p>
+            </TooltipContent>
+          </Tooltip>
+        </Button>
         <MonacoEditor
           beforeMount={setEditorTheme}
           language={isErrorResult ? 'text' : 'json'}
@@ -118,8 +165,9 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
             fontLigatures: true,
             fontSize: 15,
             wordWrap: 'on',
+            wordBreak: 'normal',
             wrappingIndent: 'indent',
-            wrappingStrategy: 'simple',
+            wrappingStrategy: 'advanced',
             foldingStrategy: 'indentation',
             matchBrackets: 'always',
             fontWeight: '400',

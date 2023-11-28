@@ -161,10 +161,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
           value="params"
           className="animate__animated animate__fadeIn"
           style={{
-            maxHeight:
-              (height as number) >= 300
-                ? (height as number) - 200
-                : (height as number),
+            maxHeight: height as number,
           }}
         >
           <Tabs
@@ -188,7 +185,13 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               <TabsTrigger
                 onClick={() => {
                   form.setValue('activeQuery', 'query-params')
-                  navigate({ search: 'activeQuery=query-params' })
+                  navigate({
+                    search: searchParams.get('view')
+                      ? `activeQuery=query-params&view=${searchParams.get(
+                          'view',
+                        )}`
+                      : `activeQuery=query-params`,
+                  })
                 }}
                 value="query-params"
                 className="h-7"
@@ -201,7 +204,13 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               <TabsTrigger
                 onClick={() => {
                   form.setValue('activeQuery', 'interactive-query')
-                  navigate({ search: 'activeQuery=interactive-query' })
+                  navigate({
+                    search: searchParams.get('view')
+                      ? `activeQuery=interactive-query&view=${searchParams.get(
+                          'view',
+                        )}`
+                      : `activeQuery=interactive-query`,
+                  })
                 }}
                 value="interactive-query"
                 className="h-7"
@@ -214,7 +223,13 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               </TabsTrigger>
               <TabsTrigger
                 onClick={() => {
-                  navigate({ search: 'activeQuery=url-params' })
+                  navigate({
+                    search: searchParams.get('view')
+                      ? `activeQuery=url-params&view=${searchParams.get(
+                          'view',
+                        )}`
+                      : `activeQuery=url-params`,
+                  })
                 }}
                 value="url-params"
                 className="h-7"
@@ -229,10 +244,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               value="query-params"
               className="animate__animated animate__fadeIn"
               style={{
-                height:
-                  (height as number) >= 300
-                    ? (height as number) - 300
-                    : (height as number),
+                height: height as number,
               }}
             >
               <MultipleInput
@@ -244,10 +256,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               value="url-params"
               className="animate__animated animate__fadeIn relative overflow-auto"
               style={{
-                maxHeight:
-                  (height as number) >= 300
-                    ? (height as number) - 230
-                    : (height as number),
+                maxHeight: height as number,
               }}
             >
               <MultipleInput
@@ -259,10 +268,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               value="interactive-query"
               className="animate__animated animate__fadeIn"
               style={{
-                height:
-                  (height as number) >= 300
-                    ? (height as number) - 300
-                    : (height as number),
+                height: height as number,
               }}
             >
               <div className="flex items-center justify-between">
@@ -278,13 +284,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                 <ResultRender
                   ref={jsonBodyDivRef}
                   result={interactiveQueryData}
-                  height={
-                    height && (height as number) >= 300
-                      ? (height as number) - 230
-                      : !height
-                      ? window.innerHeight - 320
-                      : (height as number)
-                  }
+                  height={height as number}
                   readOnly={false}
                   setData={setInteractiveQuery}
                   className="border-t pt-3"
@@ -299,10 +299,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
           value="headers"
           className="animate__animated animate__fadeIn overflow-auto"
           style={{
-            maxHeight:
-              (height as number) >= 300
-                ? (height as number) - 200
-                : (height as number),
+            maxHeight: height as number,
           }}
         >
           <MultipleInput
@@ -351,10 +348,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               value="json"
               className="animate__animated animate__fadeIn"
               style={{
-                height:
-                  (height as number) >= 300
-                    ? (height as number) - 300
-                    : (height as number),
+                height: height as number,
               }}
             >
               <div className="flex items-center justify-between">
@@ -370,13 +364,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                 <ResultRender
                   ref={jsonBodyDivRef}
                   result={jsonBodyData}
-                  height={
-                    height && (height as number) >= 300
-                      ? (height as number) - 230
-                      : !height
-                      ? window.innerHeight - 320
-                      : (height as number)
-                  }
+                  height={height as number}
                   readOnly={false}
                   setData={setJsonBody}
                   className="border-t pt-3"
@@ -389,10 +377,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
               value="x-form-urlencoded"
               className="animate__animated animate__fadeIn relative overflow-auto"
               style={{
-                maxHeight:
-                  (height as number) >= 300
-                    ? (height as number) - 230
-                    : (height as number),
+                maxHeight: height as number,
               }}
             >
               <MultipleInput
@@ -406,10 +391,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
           value="dynamicVariable"
           className="animate__animated animate__fadeIn overflow-auto my-5"
           style={{
-            maxHeight:
-              (height as number) >= 300
-                ? (height as number) - 200
-                : (height as number),
+            maxHeight: height as number,
           }}
         >
           <MultipleInput

@@ -55,11 +55,10 @@ export default function Api() {
   const [result, setResult] = useState<any>()
   const [isUrlCopied, setIsUrlCopied] = useState<boolean>(false)
   const [splitPanelHeight, setSplitPanelHeight] = useState<number>()
-  const [heightOfBreadcrumbUrl, setHeightOfBreadcrumbUrl] = useState<number>()
   const breadCrumbDivRef = useRef<HTMLDivElement>(null)
   const urlDivRef = useRef<HTMLDivElement>(null)
   const updateButtonRef = useRef<HTMLButtonElement>(null)
-  const [sizes, setSizes] = useState([200, 300])
+  const [sizes, setSizes] = useState<number[]>([])
   const [headers, setHeaders] = useState<{ [key: string]: any }>()
   const [responseStatus, setResponseStatus] = useState<ResponseStatus>({
     status: 0,
@@ -143,25 +142,26 @@ export default function Api() {
   useEffect(() => {
     setTimeout(() => {
       if (breadCrumbDivRef?.current && urlDivRef?.current) {
-        setSplitPanelHeight(
-          window.innerHeight -
-            (breadCrumbDivRef.current?.clientHeight +
-              urlDivRef.current?.clientHeight),
-        )
-        setSizes([
-          200,
-          window.innerHeight -
-            (breadCrumbDivRef.current?.clientHeight +
-              urlDivRef.current?.clientHeight) -
-            600,
-        ])
-        setHeightOfBreadcrumbUrl(
-          breadCrumbDivRef.current?.clientHeight +
-            urlDivRef.current?.clientHeight,
-        )
+        if (searchParams.get('view') === 'horizontal') {
+          setSplitPanelHeight(window.innerHeight)
+          setSizes([window.innerWidth / 2, window.innerWidth / 2])
+        } else {
+          setSplitPanelHeight(
+            window.innerHeight -
+              (breadCrumbDivRef.current?.clientHeight +
+                urlDivRef.current?.clientHeight),
+          )
+          setSizes([
+            200,
+            (window.innerHeight -
+              (breadCrumbDivRef.current?.clientHeight +
+                urlDivRef.current?.clientHeight)) /
+              2,
+          ])
+        }
       }
     }, 100)
-  }, [])
+  }, [searchParams])
 
   useEffect(() => {
     const setAllParams = () => {
@@ -503,186 +503,197 @@ export default function Api() {
         className="overflow-hidden"
         style={{ height: window.innerHeight }}
       >
+        <div
+          ref={breadCrumbDivRef}
+          className="flex items-center p-5"
+        >
+          <SideNavToggler />
+          <Breadcrumbs
+            breadcrumbs={getBreadcrumbsForNthChildren(collections, folderId!)}
+          />
+          <ChevronsRight
+            size={13}
+            className="mx-2"
+          />
+          {api.name}
+          {form.formState.isDirty && (
+            <Button
+              ref={updateButtonRef}
+              onClick={() => saveUpdate()}
+              type="button"
+              size="xs"
+              className="py-.5 px-1 ml-2 text-xs"
+            >
+              Save
+            </Button>
+          )}
+        </div>
+        <div
+          ref={urlDivRef}
+          className="mx-auto flex w-[calc(100%-40px)] items-center justify-between rounded border p-0"
+          onDoubleClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
+        >
+          <div className="flex items-center">
+            <span
+              className={
+                (api.method === 'GET'
+                  ? 'text-green-500'
+                  : api.method === 'POST'
+                  ? 'text-yellow-500'
+                  : api.method === 'PUT'
+                  ? 'text-blue-500'
+                  : api.method === 'PATCH'
+                  ? 'text-purple-500'
+                  : api.method === 'DELETE'
+                  ? 'text-destructive'
+                  : 'text-foreground') + ' font-bold px-2 border-r'
+              }
+            >
+              {api.method}
+            </span>
+            <div className=" max-w-[12rem] overflow-hidden truncate px-2 md:max-w-[34rem] lg:max-w-[45rem] xl:max-w-4xl 2xl:max-w-7xl">
+              {containsDynamicVariable(api.url) ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-cyan-500">{`{{${extractVariable(
+                      url,
+                    )}}}`}</span>
+                  </TooltipTrigger>
+                  <TooltipContent className="flex items-center text-base">
+                    {replaceVariables(`{{${extractVariable(url)}}}`, env)}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="ml-2 flex h-4 w-4 justify-self-end p-0"
+                      size="xs"
+                      onClick={() => {
+                        copy(
+                          replaceVariables(`{{${extractVariable(url)}}}`, env),
+                        )
+                        toast({
+                          variant: 'success',
+                          title: 'Env value is copied!',
+                        })
+                      }}
+                    >
+                      <Copy size={16} />
+                    </Button>
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                url
+              )}
+              {url?.split('}}')[1]}
+            </div>
+          </div>
+          <div className="flex items-center justify-end">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="mr-2 flex h-8 w-8 justify-self-end p-0"
+                  size="sm"
+                  onClick={() => copyUrl()}
+                >
+                  {isUrlCopied ? (
+                    <Check
+                      className="animate__animated animate__fadeIn"
+                      size={18}
+                    />
+                  ) : (
+                    <Copy
+                      className="animate__animated animate__fadeIn"
+                      size={18}
+                    />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Copy url</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="mr-2 flex h-8 w-8 justify-self-end p-0"
+                  size="sm"
+                  onClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
+                >
+                  <Settings
+                    className="animate__animated animate__fadeIn"
+                    size={18}
+                  />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Edit</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => callApi()}
+                  className="p-1 rounded-l-none"
+                  size="icon"
+                >
+                  <i className="bi bi-plugin text-2xl font-bold" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Send request</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
         <SplitPane
           sashRender={() => <></>}
-          split="horizontal"
+          split={
+            (searchParams.get('view') === 'horizontal'
+              ? 'vertical'
+              : searchParams.get('view') === 'vertical'
+              ? 'horizontal'
+              : 'horizontal') as 'vertical' | 'horizontal'
+          }
           sizes={sizes}
           onChange={(sizes) => setSizes(sizes)}
         >
           <Pane
-            minSize={120}
+            minSize={
+              searchParams.get('view') === 'horizontal'
+                ? window.innerWidth / 3
+                : 5
+            }
             maxSize="100%"
-            style={{
-              top: heightOfBreadcrumbUrl,
-            }}
           >
-            <div
-              ref={breadCrumbDivRef}
-              className="flex items-center p-5"
-            >
-              <SideNavToggler />
-              <Breadcrumbs
-                breadcrumbs={getBreadcrumbsForNthChildren(
-                  collections,
-                  folderId!,
-                )}
-              />
-              <ChevronsRight
-                size={13}
-                className="mx-2"
-              />
-              {api.name}
-              {form.formState.isDirty && (
-                <Button
-                  ref={updateButtonRef}
-                  onClick={() => saveUpdate()}
-                  type="button"
-                  size="xs"
-                  className="py-.5 px-1 ml-2 text-xs"
-                >
-                  Save
-                </Button>
-              )}
-            </div>
-            <div
-              ref={urlDivRef}
-              className="mx-auto flex w-[calc(100%-40px)] items-center justify-between rounded border p-0"
-              onDoubleClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
-            >
-              <div className="flex items-center">
-                <span
-                  className={
-                    (api.method === 'GET'
-                      ? 'text-green-500'
-                      : api.method === 'POST'
-                      ? 'text-yellow-500'
-                      : api.method === 'PUT'
-                      ? 'text-blue-500'
-                      : api.method === 'PATCH'
-                      ? 'text-purple-500'
-                      : api.method === 'DELETE'
-                      ? 'text-destructive'
-                      : 'text-foreground') + ' font-bold px-2 border-r'
-                  }
-                >
-                  {api.method}
-                </span>
-                <div className=" max-w-[12rem] overflow-hidden truncate px-2 md:max-w-[34rem] lg:max-w-[45rem] xl:max-w-4xl 2xl:max-w-7xl">
-                  {containsDynamicVariable(api.url) ? (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="text-cyan-500">{`{{${extractVariable(
-                          url,
-                        )}}}`}</span>
-                      </TooltipTrigger>
-                      <TooltipContent className="flex items-center text-base">
-                        {replaceVariables(`{{${extractVariable(url)}}}`, env)}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="ml-2 flex h-4 w-4 justify-self-end p-0"
-                          size="xs"
-                          onClick={() => {
-                            copy(
-                              replaceVariables(
-                                `{{${extractVariable(url)}}}`,
-                                env,
-                              ),
-                            )
-                            toast({
-                              variant: 'success',
-                              title: 'Env value is copied!',
-                            })
-                          }}
-                        >
-                          <Copy size={16} />
-                        </Button>
-                      </TooltipContent>
-                    </Tooltip>
-                  ) : (
-                    url
-                  )}
-                  {url?.split('}}')[1]}
-                </div>
-              </div>
-              <div className="flex items-center justify-end">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="mr-2 flex h-8 w-8 justify-self-end p-0"
-                      size="sm"
-                      onClick={() => copyUrl()}
-                    >
-                      {isUrlCopied ? (
-                        <Check
-                          className="animate__animated animate__fadeIn"
-                          size={18}
-                        />
-                      ) : (
-                        <Copy
-                          className="animate__animated animate__fadeIn"
-                          size={18}
-                        />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Copy url</p>
-                  </TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="mr-2 flex h-8 w-8 justify-self-end p-0"
-                      size="sm"
-                      onClick={() =>
-                        navigate(`/api/${folderId}/${apiId}/update`)
-                      }
-                    >
-                      <Settings
-                        className="animate__animated animate__fadeIn"
-                        size={18}
-                      />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Edit</TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={() => callApi()}
-                      className="p-1 rounded-l-none"
-                      size="icon"
-                    >
-                      <i className="bi bi-plugin text-2xl font-bold" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Send request</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </div>
             <InputTabs
-              className="px-5 pt-5"
-              height={sizes[0]}
+              className="px-5 pt-2"
+              height={
+                searchParams.get('view') === 'horizontal'
+                  ? window.innerHeight
+                  : sizes[0]
+              }
               form={form}
               api={api}
             />
           </Pane>
 
           <Pane
-            minSize={50}
+            minSize={
+              searchParams.get('view') === 'horizontal'
+                ? window.innerWidth / 3
+                : 160
+            }
             maxSize="100%"
           >
             <ApiResult
-              height={splitPanelHeight!}
+              height={
+                searchParams.get('view') === 'horizontal'
+                  ? window.innerHeight
+                  : splitPanelHeight!
+              }
               isLoading={isLoading}
               result={result}
               headers={headers}
