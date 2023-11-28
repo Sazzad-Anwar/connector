@@ -81,3 +81,17 @@
     @apply bg-accent rounded-3xl;
   }
 }
+
+.dark .react-split__sash--vertical:hover,
+.dark .react-split__sash--vertical:active,
+.dark .react-split__sash--horizontal:hover,
+.dark .react-split__sash--horizontal:active {
+  background: hsl(217.2 32.6% 17.5%);
+}
+
+.react-split__sash--vertical:hover,
+.react-split__sash--vertical:active,
+.react-split__sash--horizontal:hover,
+.react-split__sash--horizontal:active {
+  background: hsl(214.3 31.8% 91.4%);
+}
