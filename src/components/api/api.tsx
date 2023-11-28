@@ -27,6 +27,7 @@ import { ApiSchema, ApiType } from '@/types/api'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import SplitPane, { Pane } from 'split-pane-react'
 import fetcher from '../../lib/fetcher'
+import useSidePanelToggleStore from '../../store/sidePanelToggle'
 import Breadcrumbs from '../breadcrumb'
 import Loading from '../loading'
 import SideNavToggler from '../nav/sidenav-toggler'
@@ -51,14 +52,16 @@ export default function Api() {
   const { api, getApi, updateApi, collections, env, getEnv, updateEnv } =
     useApiStore()
   const params = useParams()
+  const { isOpen } = useSidePanelToggleStore()
+  const [urlWidth, setUrlWidth] = useState<number>()
   const navigate = useNavigate()
   const [result, setResult] = useState<any>()
   const [isUrlCopied, setIsUrlCopied] = useState<boolean>(false)
-  const [splitPanelHeight, setSplitPanelHeight] = useState<number>()
   const breadCrumbDivRef = useRef<HTMLDivElement>(null)
   const urlDivRef = useRef<HTMLDivElement>(null)
   const updateButtonRef = useRef<HTMLButtonElement>(null)
-  const [sizes, setSizes] = useState<number[]>([])
+  const [sizes, setSizes] = useState<number[]>([200, 400])
+  const [splitPanelHeight, setSplitPanelHeight] = useState<number>()
   const [headers, setHeaders] = useState<{ [key: string]: any }>()
   const [responseStatus, setResponseStatus] = useState<ResponseStatus>({
     status: 0,
@@ -161,7 +164,22 @@ export default function Api() {
         }
       }
     }, 100)
-  }, [searchParams])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (urlDivRef?.current) {
+        setUrlWidth(urlDivRef?.current?.offsetWidth - 180)
+      }
+    }, 100)
+
+    window.addEventListener('resize', () => {
+      if (urlDivRef?.current) {
+        setUrlWidth(urlDivRef?.current?.offsetWidth - 180)
+      }
+    })
+  }, [isOpen])
 
   useEffect(() => {
     const setAllParams = () => {
@@ -530,7 +548,7 @@ export default function Api() {
         </div>
         <div
           ref={urlDivRef}
-          className="mx-auto flex w-[calc(100%-40px)] items-center justify-between rounded border p-0"
+          className="mx-auto flex w-[calc(100%-40px)] items-center justify-between rounded overflow-hidden border p-0"
           onDoubleClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
         >
           <div className="flex items-center">
@@ -551,7 +569,13 @@ export default function Api() {
             >
               {api.method}
             </span>
-            <div className=" max-w-[12rem] overflow-hidden truncate px-2 md:max-w-[34rem] lg:max-w-[45rem] xl:max-w-4xl 2xl:max-w-7xl">
+            <div
+              style={{
+                width: urlWidth,
+                maxWidth: '100%',
+              }}
+              className="overflow-hidden truncate px-2"
+            >
               {containsDynamicVariable(api.url) ? (
                 <Tooltip>
                   <TooltipTrigger asChild>
