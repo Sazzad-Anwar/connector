@@ -201,7 +201,6 @@ export default function RenderNavigation({
       onClick: (e) => {
         e?.stopPropagation()
       },
-      isHidden: collection.type === 'folder',
     },
     {
       name: 'Delete',
@@ -316,7 +315,7 @@ export default function RenderNavigation({
                   style={{
                     width:
                       navWidthRef?.current?.clientWidth &&
-                      navWidthRef.current?.clientWidth - 120,
+                      navWidthRef.current?.clientWidth - 130,
                   }}
                   className="truncate"
                 >
