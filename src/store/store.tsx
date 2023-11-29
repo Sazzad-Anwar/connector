@@ -92,7 +92,7 @@ function updateApi(
 
   const updatedArr = arr.map((current) => {
     if (current.apis && current.apis.length > 0) {
-      const updatedApis = current.apis.map((api) => {
+      const updatedApis = current.apis.map((api: ApiType) => {
         if (api.id === apiId) {
           // If the API is found, update its properties with updatedApiData
           updated = true // Set the flag to true as an update is made
@@ -227,8 +227,8 @@ const useApiStore = create<Store>()((set) => ({
     let collections = JSON.parse(
       isLocalStorageAvailable() ? localStorage.getItem('collections')! : '[]',
     )
-    if (id) {
-      collections = actionsInNestedFolder(collections, id, 'create', data)
+    if (typeof id !== 'undefined') {
+      collections = actionsInNestedFolder(collections, id!, 'create', data)
     } else {
       collections = collections?.length ? [...collections, data] : [data]
     }

@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import useApiStore from '@/store/store'
-import { ChevronRight, FolderClosed, MoreVertical } from 'lucide-react'
+import {
+  ChevronRight,
+  FileDown,
+  FolderClosed,
+  MoreVertical,
+} from 'lucide-react'
 import React, { useRef, useState } from 'react'
 import { SubmitHandler } from 'react-hook-form'
 import { v4 as uuid } from 'uuid'
@@ -29,6 +34,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { toast } from '../ui/use-toast'
 import { CollectionSchema } from './nav'
 
@@ -185,27 +191,17 @@ export default function RenderNavigation({
 
     {
       name: 'Export',
-      onClick: (e) => {
-        e?.stopPropagation()
-      },
-    },
-    {
-      name: (
-        <InputFile
-          collectionId={collection.id !== 'undefined' ? collection.id : ''}
-          className="w-full h-5 text-secondary-foreground justify-start border-0 bg-transparent py-0 pl-0 text-left hover:bg-secondary"
-        >
-          Import
-        </InputFile>
-      ),
-      onClick: (e) => {
-        e?.stopPropagation()
+      onClick: () => {
+        downloadFile({
+          data: collection,
+          fileName: collection.name + '.json',
+          fileType: 'text/json',
+        })
       },
     },
     {
       name: 'Delete',
-      onClick: (e) => {
-        e?.stopPropagation()
+      onClick: () => {
         deleteButtonRef.current?.click()
       },
     },
@@ -219,14 +215,16 @@ export default function RenderNavigation({
           buttonVariants({ variant: 'ghost', size: 'xs' }),
           'group relative w-full cursor-pointer items-center justify-between rounded-none',
         )}
-        onClick={() => {
-          updateFolder(
-            { ...collection, isOpen: !collection.isOpen },
-            collection.id,
-          )
-        }}
       >
-        <div className="flex h-7 items-center">
+        <button
+          onClick={() => {
+            updateFolder(
+              { ...collection, isOpen: !collection.isOpen },
+              collection.id,
+            )
+          }}
+          className="flex flex-1 h-7 items-center"
+        >
           <ChevronRight
             size={15}
             className={
@@ -239,40 +237,52 @@ export default function RenderNavigation({
             className="mr-2"
           />
           {collection.name}
+        </button>
+        <div className="flex items-center">
+          <InputFile
+            id={uuid()}
+            importOn="collection"
+            variant="link"
+            size="xs"
+            className="p-1 opacity-20 group-hover:opacity-100"
+            collectionId={collection.id}
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <FileDown size={16} />
+              </TooltipTrigger>
+              <TooltipContent>
+                Import in {collection.name} collection
+              </TooltipContent>
+            </Tooltip>
+          </InputFile>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <MoreVertical
+                className="opacity-20 group-hover:opacity-100"
+                size={18}
+              />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {folderDropDownMenu.map((item) => {
+                if (!item.isHidden) {
+                  return (
+                    <DropdownMenuItem
+                      key={uuid()}
+                      onClick={(e) => {
+                        item.onClick(e)
+                      }}
+                    >
+                      {item.name}
+                    </DropdownMenuItem>
+                  )
+                } else {
+                  return null
+                }
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <MoreVertical
-              className="opacity-20 group-hover:opacity-100"
-              size={18}
-            />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {folderDropDownMenu.map((item) => {
-              if (!item.isHidden) {
-                return (
-                  <DropdownMenuItem
-                    key={uuid()}
-                    onClick={(e) => {
-                      item.onClick(e)
-                      if (item.name === 'Export') {
-                        downloadFile({
-                          data: collection,
-                          fileName: collection.name + '.json',
-                          fileType: 'text/json',
-                        })
-                      }
-                    }}
-                  >
-                    {item.name}
-                  </DropdownMenuItem>
-                )
-              } else {
-                return null
-              }
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
       {collection.isOpen && (

@@ -99,6 +99,8 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
             }}
           />
           <InputFile
+            id={uuid()}
+            importOn="root"
             variant="outline"
             size="xs"
             className="p-1"
@@ -107,7 +109,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
               <TooltipTrigger asChild>
                 <Braces size={16} />
               </TooltipTrigger>
-              <TooltipContent>Import JSON</TooltipContent>
+              <TooltipContent>Import Collection</TooltipContent>
             </Tooltip>
           </InputFile>
         </div>

@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import useApiStore from '@/store/store'
-import React, { useEffect } from 'react'
+import React from 'react'
 import { v4 as uuid } from 'uuid'
 
 import { buttonVariants } from '@/components/ui/button'
@@ -10,9 +11,11 @@ import { FolderType } from '@/types/api'
 export type InputFileType = {
   children: React.ReactNode
   className?: string
-  collectionId?: string
   variant?: 'ghost' | 'secondary' | 'link' | 'outline' | 'success'
   size?: 'lg' | 'sm' | 'xs' | 'icon'
+  importOn?: 'root' | 'collection'
+  collectionId?: string
+  id: string
 }
 
 export default function useImportJSON() {
@@ -47,49 +50,48 @@ export default function useImportJSON() {
         title: 'Imported Successfully',
       })
     }
+
+    e.target.value = ''
   }
 
   const InputFile = ({
     children,
     className,
-    collectionId,
     variant,
     size,
+    importOn,
+    collectionId,
+    id,
   }: InputFileType) => {
-    useEffect(() => {
-      if (!collectionId || collectionId !== 'undefined') {
-        localStorage.setItem('collectionId', collectionId!)
-      }
-    }, [collectionId])
-
-    if (localStorage.getItem('collectionId')) {
-      return (
-        <label
-          className={cn(
-            buttonVariants({
-              variant: variant ?? 'default',
-              size: size ?? 'default',
-            }),
-            'cursor-pointer px-2 py-1',
-            className,
-          )}
-          htmlFor="input"
-        >
-          <input
-            id="input"
-            className="hidden"
-            type="file"
-            accept="application/JSON"
-            onChange={(e) =>
-              onFileChange(e, localStorage.getItem('collectionId') ?? '')
+    return (
+      <label
+        className={cn(
+          buttonVariants({
+            variant: variant ?? 'default',
+            size: size ?? 'default',
+          }),
+          'cursor-pointer px-2 py-1',
+          className,
+        )}
+        htmlFor={id}
+      >
+        <input
+          id={id}
+          className="hidden"
+          type="file"
+          accept="application/JSON"
+          onChange={(e) => {
+            if (importOn === 'collection') {
+              onFileChange(e, collectionId)
+            } else {
+              onFileChange(e)
             }
-          />
+          }}
+        />
 
-          {children}
-        </label>
-      )
-    }
-    return null
+        {children}
+      </label>
+    )
   }
 
   return { onFileChange, InputFile }
