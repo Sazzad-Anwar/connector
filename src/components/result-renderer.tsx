@@ -185,7 +185,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
               : 'light'
           }
           loading={<></>}
-          height={height}
+          height={height ?? window.innerHeight - 320}
           width="100%"
           defaultLanguage={isErrorResult ? 'html' : 'json'}
           onChange={handleEditorChange}

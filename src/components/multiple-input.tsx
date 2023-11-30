@@ -93,7 +93,10 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
   }
 
   return (
-    <Table className="overflow-auto max-h-[calc(100vh-300px)]">
+    <Table
+      style={{ maxHeight: window.innerHeight - 300 }}
+      className="overflow-auto block"
+    >
       <TableHeader>
         <TableRow className="border">
           <TableHead className="h-[35px] w-auto resize-x border pl-2 text-accent-foreground"></TableHead>
