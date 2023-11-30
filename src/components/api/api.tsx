@@ -147,7 +147,7 @@ export default function Api() {
       if (breadCrumbDivRef?.current && urlDivRef?.current) {
         if (searchParams.get('view') === 'horizontal') {
           setSplitPanelHeight(window.innerHeight)
-          setSizes([window.innerWidth / 2, window.innerWidth / 2])
+          setSizes([window.innerWidth / 2, window.innerWidth / 3])
         } else {
           setSplitPanelHeight(
             window.innerHeight -
@@ -548,7 +548,7 @@ export default function Api() {
         </div>
         <div
           ref={urlDivRef}
-          className="mx-auto flex w-[calc(100%-40px)] items-center justify-between rounded overflow-hidden border p-0"
+          className="mx-auto relative h-10 flex w-[calc(100%-40px)] items-center justify-between rounded overflow-hidden border p-0"
           onDoubleClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
         >
           <div className="flex items-center">
@@ -610,7 +610,7 @@ export default function Api() {
               {url?.split('}}')[1]}
             </div>
           </div>
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end absolute right-0 h-auto bg-background pl-1">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
