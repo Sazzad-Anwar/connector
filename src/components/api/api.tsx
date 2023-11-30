@@ -687,7 +687,7 @@ export default function Api() {
           <Pane
             minSize={
               searchParams.get('view') === 'horizontal'
-                ? window.innerWidth / 3
+                ? window.innerWidth / 2
                 : 5
             }
             maxSize="100%"
