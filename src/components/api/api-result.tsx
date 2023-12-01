@@ -67,6 +67,7 @@ export default function ApiResult({
       ref={resultDivRef}
       className={cn(
         resultRenderView === 'horizontal' ? 'border-l py-1' : 'border-t py-1',
+        'bg-background',
       )}
       style={{
         height,
