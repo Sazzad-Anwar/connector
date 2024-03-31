@@ -55,6 +55,8 @@ export default function RenderNavigation({
   const addFolderButtonRef = useRef<HTMLButtonElement>(null)
   const { updateFolder, deleteFolder, createFolder, deleteApi } = useApiStore()
 
+  console.log(collection.type)
+
   // Rename collection
   const renameCollectionName: SubmitHandler<
     z.infer<typeof CollectionSchema>

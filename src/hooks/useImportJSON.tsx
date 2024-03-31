@@ -39,7 +39,7 @@ export default function useImportJSON() {
     if (e.target?.files) {
       const parsedData = (await readJsonFile(e.target.files[0])) as FolderType
       parsedData.id = uuid()
-      parsedData.type = 'folder'
+      parsedData.type = parsedData?.type ?? 'folder'
       if (id) {
         createFolder(parsedData, id)
       } else {
