@@ -28,7 +28,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
     'x-form-urlencoded' | 'json'
   >()
   const navigate = useNavigate()
-  const [jsonError, setJsonError] = useState<JSONErrorType>()
+  const [jsonError, setJsonError] = useState<JSONErrorType | undefined>()
   const [defaultOpen, setDefaultOpen] = useState<string>('params')
 
   const setJsonBody = (data: string) => {
@@ -45,10 +45,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
         error: '',
       })
     } catch (error: any) {
-      setJsonError({
-        isError: true,
-        error: error.message,
-      })
+      console.log(error)
     }
   }
 
@@ -63,10 +60,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
         error: '',
       })
     } catch (error: any) {
-      setJsonError({
-        isError: true,
-        error: error.message,
-      })
+      console.log(error)
     }
   }
 
@@ -287,6 +281,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                   height={height as number}
                   readOnly={false}
                   setData={setInteractiveQuery}
+                  setError={setJsonError}
                   className="border-t pt-3"
                 />
               ) : (
@@ -368,6 +363,7 @@ export default function InputTabs({ form, api, height, className }: PropsType) {
                   readOnly={false}
                   setData={setJsonBody}
                   className="border-t pt-3"
+                  setError={setJsonError}
                 />
               ) : (
                 <Loading />

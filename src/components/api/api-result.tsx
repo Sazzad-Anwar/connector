@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import copy from 'copy-to-clipboard'
-import {
-  Check,
-  Copy,
-  SplitSquareHorizontal,
-  SplitSquareVertical,
-  X,
-} from 'lucide-react'
+import { Check, Columns2, Copy, Rows2, X } from 'lucide-react'
 import { useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { v4 as uuid } from 'uuid'
@@ -284,12 +278,12 @@ export default function ApiResult({
               <Tooltip>
                 <TooltipTrigger asChild>
                   {resultRenderView === 'horizontal' ? (
-                    <SplitSquareVertical
+                    <Columns2
                       size={18}
                       className="animate__animated animate__fadeIn"
                     />
                   ) : (
-                    <SplitSquareHorizontal
+                    <Rows2
                       size={18}
                       className="animate__animated animate__fadeIn"
                     />

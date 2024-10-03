@@ -62,10 +62,9 @@ export default function Api() {
   const urlDivRef = useRef<HTMLDivElement>(null)
   const updateButtonRef = useRef<HTMLButtonElement>(null)
   const [sizes, setSizes] = useState<number[]>([
-    (window.innerHeight - 320) / 3,
-    (window.innerHeight - 320) / 3,
+    (window.innerHeight - 320) / 2,
+    (window.innerHeight - 320) / 2,
   ])
-  const [splitPanelHeight, setSplitPanelHeight] = useState<number>()
   const [headers, setHeaders] = useState<{ [key: string]: any }>()
   const [responseStatus, setResponseStatus] = useState<ResponseStatus>({
     status: 0,
@@ -154,23 +153,20 @@ export default function Api() {
         formDivRef?.current
       ) {
         if (searchParams.get('view') === 'horizontal') {
-          setSplitPanelHeight(window.innerHeight)
           setSizes([
-            formDivRef.current.clientWidth / 3,
-            formDivRef.current.clientWidth / 3,
+            formDivRef.current.clientWidth / 2,
+            formDivRef.current.clientWidth / 2,
           ])
         } else {
-          setSplitPanelHeight(
-            window.innerHeight -
-              (breadCrumbDivRef.current?.clientHeight +
-                urlDivRef.current?.clientHeight),
-          )
           setSizes([
-            200,
             (window.innerHeight -
               (breadCrumbDivRef.current?.clientHeight +
                 urlDivRef.current?.clientHeight)) /
-              2,
+              1.8,
+            (window.innerHeight -
+              (breadCrumbDivRef.current?.clientHeight +
+                urlDivRef.current?.clientHeight)) /
+              1.8,
           ])
         }
       }
@@ -710,9 +706,9 @@ export default function Api() {
           <InputTabs
             className="px-5 pt-2"
             height={
-              searchParams.get('view') === 'horizontal'
+              (searchParams.get('view') === 'horizontal'
                 ? window.innerHeight
-                : sizes[0]
+                : sizes[0]) - 115
             }
             form={form}
             api={api}
@@ -730,9 +726,9 @@ export default function Api() {
         >
           <ApiResult
             height={
-              searchParams.get('view') === 'horizontal'
+              (searchParams.get('view') === 'horizontal'
                 ? window.innerHeight
-                : splitPanelHeight!
+                : sizes[1]!) - 160
             }
             isLoading={isLoading}
             result={result}
