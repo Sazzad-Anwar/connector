@@ -261,9 +261,10 @@ export default function RenderNavigation({
               <MoreVertical
                 className="opacity-20 group-hover:opacity-100"
                 size={18}
+                startOffset={30}
               />
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent align="end">
               {folderDropDownMenu.map((item) => {
                 if (!item.isHidden) {
                   return (
@@ -302,35 +303,27 @@ export default function RenderNavigation({
                 'group relative w-full cursor-pointer items-center justify-between rounded-none truncate',
                 params.apiId && params.apiId === api.id
                   ? 'border-l-2 border-primary bg-secondary'
-                  : '',
+                  : 'border-l-2 border-transparent',
               )}
             >
-              <div className="flex items-center">
+              <div className="w-full truncate">
                 <span
-                  className={
-                    (api.method === 'GET'
-                      ? 'text-green-500'
+                  className={cn(
+                    api.method === 'GET'
+                      ? ' bg-green-700 border border-green-500'
                       : api.method === 'POST'
-                      ? 'text-yellow-500'
+                      ? 'bg-yellow-700 border-yellow-500'
                       : api.method === 'PUT'
-                      ? 'text-blue-500'
+                      ? 'bg-cyan-700 border-cyan-500'
                       : api.method === 'PATCH'
-                      ? 'text-purple-500'
-                      : 'text-destructive') + ' font-bold mr-2 text-xs'
-                  }
+                      ? 'bg-purple-700 border-purple-500'
+                      : 'bg-red-700 border-red-500',
+                    'font-medium text-white mr-2 text-xs px-1 py-0.5 rounded-md',
+                  )}
                 >
                   {api.method}
                 </span>
-                <span
-                  style={{
-                    width:
-                      navWidthRef?.current?.clientWidth &&
-                      navWidthRef.current?.clientWidth - 130,
-                  }}
-                  className="truncate"
-                >
-                  {api.name}
-                </span>
+                <span className="truncate text-sm">{api.name}</span>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -339,7 +332,7 @@ export default function RenderNavigation({
                     size={18}
                   />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     onClick={(e) => {
                       setApiDetails(api)
