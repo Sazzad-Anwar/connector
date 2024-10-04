@@ -29,7 +29,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
   const [search, setSearch] = useState<string>('')
   const [isCreatingFolder, setIsCreatingFolder] = useState(false)
   const { collections, createFolder, searchApi } = useApiStore()
-  const debouncedValue = useDebounce(search, 700)
+  const debouncedValue = useDebounce(search, 1000)
   const form = useForm<z.infer<typeof CollectionSchema>>({
     mode: 'onChange',
     resolver: zodResolver(CollectionSchema),
@@ -47,7 +47,8 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
     form.reset()
     toast({
       variant: 'success',
-      title: 'Collection is saved',
+      title: 'Success',
+      description: 'Collection is saved successfully',
     })
   }
 

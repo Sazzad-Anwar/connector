@@ -50,12 +50,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           if (error) {
             toast({
               variant: 'error',
-              title: error,
+              title: 'Error',
+              description: error,
             })
           } else {
             toast({
               variant: 'success',
-              title: 'Connection is updated!',
+              title: 'Success',
+              description: 'Update available',
             })
           }
         })

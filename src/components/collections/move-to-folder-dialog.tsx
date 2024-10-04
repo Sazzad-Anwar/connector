@@ -1,33 +1,33 @@
 import { Dispatch, SetStateAction } from 'react'
+import { findRootCollection } from '../../lib/utils'
 import useApiStore from '../../store/store'
 import { ApiType } from '../../types/api'
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../ui/alert-dialog'
+import MoveToFolder from './move-to-folder'
 
 type Props = {
   apis: ApiType[]
   isDialogOpen: boolean
   setIsDialogOpen: Dispatch<SetStateAction<boolean>>
-  setApis: Dispatch<SetStateAction<ApiType[]>>
-  collectionId: string
+  setSelectedApis: Dispatch<SetStateAction<ApiType[]>>
+  folderId: string
 }
 
 export default function MoveToFolderDialog({
   apis,
   isDialogOpen,
   setIsDialogOpen,
-  collectionId,
+  folderId,
+  setSelectedApis,
 }: Props) {
   const { collections } = useApiStore()
-
+  const collection = findRootCollection(collections, folderId)
   return (
     <AlertDialog
       open={isDialogOpen}
@@ -35,16 +35,22 @@ export default function MoveToFolderDialog({
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogTitle>Move APIs To Folder</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
+            You've selected{' '}
+            <b className="text-primary">
+              {apis?.map((api) => api.name).join(', ')}
+            </b>{' '}
+            apis to move.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction>Continue</AlertDialogAction>
-        </AlertDialogFooter>
+        <MoveToFolder
+          apis={apis}
+          folders={collection?.children ?? []}
+          folderId={folderId}
+          setIsDialogOpen={setIsDialogOpen}
+          setSelectedApis={setSelectedApis}
+        />
       </AlertDialogContent>
     </AlertDialog>
   )

@@ -14,7 +14,7 @@ import {
 import React, { useEffect, useRef } from 'react'
 import { v4 as uuid } from 'uuid'
 
-import { cn } from '@/lib/utils'
+import { cn, findRootCollection } from '@/lib/utils'
 import { FolderType } from '@/types/api'
 
 import { useNavigate, useParams } from 'react-router-dom'
@@ -27,7 +27,10 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from '../ui/alert-dialog'
 import { buttonVariants } from '../ui/button'
@@ -47,7 +50,7 @@ export default function RenderNavigation({
   collection,
 }: RenderNavigationProps): JSX.Element {
   const navigate = useNavigate()
-  const { updateFolder } = useApiStore()
+  const { updateFolder, collections } = useApiStore()
   const navWidthRef = useRef<HTMLDivElement>(null)
   const params = useParams()
   const {
@@ -61,7 +64,6 @@ export default function RenderNavigation({
     folderDropDownMenu,
     deleteApiHandler,
     selectedApis,
-    setSelectedApis,
     collectionId,
     setCollectionId,
     isCreatingFolder,
@@ -71,6 +73,7 @@ export default function RenderNavigation({
     isMoveToFolderDialogOpen,
     setIsMoveToFolderDialogOpen,
     handleClickApi,
+    setSelectedApis,
   } = useRenderNav({ collection })
 
   useEffect(() => {
@@ -80,6 +83,7 @@ export default function RenderNavigation({
         setIsFolderNameUpdating(false)
         setCollectionId('')
         setIsCreatingFolder(false)
+        setSelectedApis([])
       }
     }
 
@@ -279,25 +283,31 @@ export default function RenderNavigation({
                       >
                         Delete
                       </DropdownMenuItem>
-                      <DropdownMenuItem>Move</DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedApis([...selectedApis, api])
+                          setIsMoveToFolderDialogOpen(true)
+                        }}
+                      >
+                        Move
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
               </ContextMenuTrigger>
               <ContextMenuContent>
-                {!selectedApis
-                  .map((apiType) => apiType.id)
-                  .includes(api.id) && (
-                  <ContextMenuItem
-                    onClick={(e) => {
-                      setApiDetails(api)
-                      e.stopPropagation()
-                      navigate(`/api/${collection.id}/${api.id}/update`)
-                    }}
-                  >
-                    Update
-                  </ContextMenuItem>
-                )}
+                {selectedApis.length > 1 &&
+                  selectedApis.map((item) => item.id).includes(api.id) && (
+                    <ContextMenuItem
+                      onClick={(e) => {
+                        setApiDetails(api)
+                        e.stopPropagation()
+                        navigate(`/api/${collection.id}/${api.id}/update`)
+                      }}
+                    >
+                      Update
+                    </ContextMenuItem>
+                  )}
                 <ContextMenuItem
                   onClick={(e) => {
                     setApiDetails(api)
@@ -308,7 +318,12 @@ export default function RenderNavigation({
                   Delete
                 </ContextMenuItem>
                 <ContextMenuItem
-                  onClick={() => setIsMoveToFolderDialogOpen(true)}
+                  onClick={() => {
+                    setIsMoveToFolderDialogOpen(true)
+                    if (!selectedApis.map((a) => a.id).includes(api.id)) {
+                      setSelectedApis([...selectedApis, api])
+                    }
+                  }}
                 >
                   Move
                 </ContextMenuItem>
@@ -320,27 +335,6 @@ export default function RenderNavigation({
 
       {/* ---------- All dialogs --------- */}
 
-      {/* Update folder Dialog */}
-      {/* <div className="hidden">
-        <AddCollectionDialog
-          name={collection.name}
-          type={collection.type}
-          onSubmit={renameCollectionName}
-        >
-          <button ref={buttonRef}>click</button>
-        </AddCollectionDialog>
-      </div> */}
-
-      {/* Add folder Dialog
-      <div className="hidden">
-        <AddCollectionDialog
-          type="folder"
-          onSubmit={addFolder}
-        >
-          <button ref={addFolderButtonRef}>click</button>
-        </AddCollectionDialog>
-      </div> */}
-
       {/* Delete Dialog */}
       <AlertDialog>
         <AlertDialogTrigger
@@ -350,9 +344,15 @@ export default function RenderNavigation({
           Delete
         </AlertDialogTrigger>
         <AlertDialogContent>
-          <h1 className="text-xl">
-            Are you sure you want to delete this item?
-          </h1>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to delete this item?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              item and remove your data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
           <AlertDialogFooter className="mt-5">
             <AlertDialogCancel
               type="button"
@@ -383,8 +383,12 @@ export default function RenderNavigation({
         apis={selectedApis}
         isDialogOpen={isMoveToFolderDialogOpen}
         setIsDialogOpen={setIsMoveToFolderDialogOpen}
-        setApis={setSelectedApis}
-        collectionId={collection?.id}
+        folderId={
+          collection.type === 'folder'
+            ? collection.id
+            : findRootCollection(collections, collection.id)?.id || ''
+        }
+        setSelectedApis={setSelectedApis}
       />
     </>
   )

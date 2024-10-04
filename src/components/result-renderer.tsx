@@ -121,7 +121,8 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       copy(JSON.stringify(result))
       toast({
         variant: 'success',
-        title: 'Data is copied',
+        title: 'Success',
+        description: 'Data is copied to clipboard',
       })
       setTimeout(() => {
         setIsCopiedResponse(false)

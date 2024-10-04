@@ -425,7 +425,8 @@ export default function Api() {
       } else {
         toast({
           variant: 'error',
-          title:
+          title: 'Error',
+          description:
             typeof error !== 'string'
               ? error?.response?.data
                 ? error?.response?.data
@@ -468,7 +469,8 @@ export default function Api() {
     updateApi(data, api.id)
     toast({
       variant: 'success',
-      title: 'Api is updated',
+      title: 'Success',
+      description: 'Api is updated successfully',
     })
     form.reset()
     getApi(api?.id)
@@ -508,7 +510,8 @@ export default function Api() {
     copy(url)
     toast({
       variant: 'success',
-      title: 'Url is copied',
+      title: 'Success',
+      description: 'Url is copied to clipboard',
     })
     setTimeout(() => {
       setIsUrlCopied(false)
@@ -609,7 +612,8 @@ export default function Api() {
                       copy(replaceVariables(`{{${extractVariable(url)}}}`, env))
                       toast({
                         variant: 'success',
-                        title: 'Env value is copied!',
+                        title: 'Success',
+                        description: 'Env value is copied to clipboard',
                       })
                     }}
                   >

@@ -3,7 +3,7 @@
 import QueryString from 'qs'
 import { twMerge } from 'tailwind-merge'
 
-import { FolderType, ParamsType } from '@/types/api'
+import { ApiType, FolderType, ParamsType } from '@/types/api'
 import clsx, { ClassValue } from 'clsx'
 import dayjs from 'dayjs'
 import { v4 as uuid } from 'uuid'
@@ -434,7 +434,7 @@ export function search(collection: FolderType[], query: string) {
     searchInCollection(collection, query, results)
     return results
   } else {
-    return collection
+    return collection ?? []
   }
 }
 
@@ -488,4 +488,150 @@ export function parseCookie(cookie: string) {
     httpOnly,
     sameSite,
   }
+}
+
+export const findParentFolderById = (
+  structure: any,
+  folderId: string,
+): FolderType | null => {
+  // If the current node has children, search recursively in each child
+  if (structure.children && structure.children.length > 0) {
+    for (const child of structure.children) {
+      // Base case: check if one of the children matches the folder ID
+      if (child.id === folderId && child.type === 'folder') {
+        return structure // Return the current folder as the parent
+      }
+
+      // Recursive search in the child's children
+      const result = findParentFolderById(child, folderId)
+      if (result) {
+        return result // Return the found parent
+      }
+    }
+  }
+
+  // Return null if no matching folder or parent is found
+  return null
+}
+
+export const moveApisToFolder = (
+  structure: FolderType,
+  targetFolderId: string,
+  apiIds: string[],
+): FolderType | null => {
+  // Store found APIs and remove them from their original location
+  let foundApis: ApiType[] = []
+
+  const removeApisFromFolder = (folder: FolderType) => {
+    // Remove APIs from the current folder
+    if (folder?.apis) {
+      folder.apis = folder.apis.filter((api: ApiType) => {
+        if (apiIds.includes(api.id)) {
+          foundApis.push(api)
+          return false // Remove this ApiType from the folder
+        }
+        return true // Keep this ApiType in the folder
+      })
+    }
+
+    // Recursively check child folders
+    if (folder?.children && folder.children.length > 0) {
+      folder.children.forEach(removeApisFromFolder)
+    }
+  }
+
+  // Remove APIs from their original locations
+  removeApisFromFolder(structure)
+
+  // Function to find the target folder by its ID and move APIs there
+  const addApisToTargetFolder = (folder: FolderType): boolean => {
+    if (folder?.id === targetFolderId && folder.type === 'folder') {
+      // Add the found APIs to the target folder's apis array
+      folder.apis = folder?.apis?.concat(foundApis)
+      return true
+    }
+
+    // Recursively search in child folders
+    if (folder?.children && folder.children.length > 0) {
+      for (const child of folder.children) {
+        if (addApisToTargetFolder(child)) {
+          return true // Stop search once folder is found
+        }
+      }
+    }
+
+    return false
+  }
+
+  // Add APIs to the target folder
+  const success = addApisToTargetFolder(structure)
+
+  if (success) {
+    return structure // Return the updated jsonData if successful
+  } else {
+    return {} as FolderType // Return null if the operation failed
+  }
+}
+
+export const findFolderByIdInCollections = (
+  collections: FolderType[],
+  folderId: string,
+): { folder: FolderType; parent?: FolderType } | null => {
+  for (const collection of collections) {
+    const result = findFolderById(collection, folderId)
+    if (result) {
+      return result
+    }
+  }
+  return null
+}
+
+export const findFolderById = (
+  structure: FolderType,
+  folderId: string,
+): { folder: FolderType; parent?: FolderType } | null => {
+  // Base case: if the folder with folderId is found
+  if (structure.id === folderId) {
+    return { folder: structure }
+  }
+
+  // If it has children, search recursively
+  if (structure.children && structure.children.length > 0) {
+    for (const child of structure.children) {
+      const result = findFolderById(child, folderId)
+      if (result) {
+        return { folder: result.folder, parent: structure }
+      }
+    }
+  }
+
+  return null // If no matching folder is found
+}
+
+export const findRootCollection = (
+  collections: FolderType[],
+  folderId: string,
+): FolderType | null => {
+  // Find the folder by its ID in the array of collections
+  const folderData = findFolderByIdInCollections(collections, folderId)
+
+  if (!folderData) {
+    console.log('Folder not found')
+    return null
+  }
+
+  // Traverse upwards until we find the root collection
+  let currentFolder = folderData.parent || folderData.folder
+
+  while (currentFolder && currentFolder.type !== 'collection') {
+    const parentData = findFolderByIdInCollections(
+      collections,
+      currentFolder.id,
+    )
+    currentFolder = parentData?.parent || currentFolder
+  }
+
+  return currentFolder && currentFolder.type === 'collection'
+    ? currentFolder
+    : null
 }

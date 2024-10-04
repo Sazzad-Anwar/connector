@@ -7,6 +7,7 @@ type Store = {
   collections: FolderType[]
   api: ApiType
   env: ParamsType[]
+  updateCollection: (data: FolderType, id: string) => void
   getCollections: () => void
   searchApi: (id: string) => void
   createFolder: (data: FolderType, id?: string) => void
@@ -222,6 +223,22 @@ const useApiStore = create<Store>()((set) => ({
     set(() => ({
       collections,
     }))
+  },
+  updateCollection: (data, id) => {
+    let collections: FolderType[] = JSON.parse(
+      isLocalStorageAvailable() ? localStorage.getItem('collections')! : '[]',
+    )
+    collections = collections.map((collection) => {
+      if (collection.id === id) {
+        return data
+      }
+      return collection
+    })
+    set(() => ({
+      collections,
+    }))
+    isLocalStorageAvailable() &&
+      localStorage.setItem('collections', JSON.stringify(collections))
   },
   createFolder: (data, id) => {
     let collections = JSON.parse(

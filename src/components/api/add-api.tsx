@@ -68,7 +68,8 @@ export default function AddApi() {
     createApi(data, folderId)
     toast({
       variant: 'success',
-      title: 'Api is created',
+      title: 'Success',
+      description: 'Api is created successfully',
     })
     navigate(`/api/${folderId}/${data.id}`)
   }

@@ -38,7 +38,8 @@ export default function useRenderNav({
 
     toast({
       variant: 'success',
-      title: 'Folder is renamed',
+      title: 'Success',
+      description: `${data.collectionName} is renamed successfully`,
     })
   }
 
@@ -47,7 +48,8 @@ export default function useRenderNav({
     deleteFolder(id)
     toast({
       variant: 'success',
-      title: `${collection.type} is deleted`,
+      title: `Success`,
+      description: `${collection.type} is deleted successfully`,
     })
     navigate('/')
   }
@@ -59,6 +61,8 @@ export default function useRenderNav({
       id: uuid(),
       isOpen: true,
       type: 'folder',
+      children: [],
+      apis: [],
     }
     createFolder(folder, collection.id)
     setIsCreatingFolder(false)
@@ -72,7 +76,8 @@ export default function useRenderNav({
     deleteApi(id)
     toast({
       variant: 'success',
-      title: `Api is deleted`,
+      title: `Success`,
+      description: `Api is deleted successfully`,
     })
     if (params.apiId === id) {
       navigate('/')
@@ -112,19 +117,21 @@ export default function useRenderNav({
         platformName === 'linux' ||
         platformName === 'win32'
       ) {
-        await writeTextFile(`${fileName}.json`, JSON.stringify(data), {
+        await writeTextFile(`${fileName}`, JSON.stringify(data), {
           dir: BaseDirectory.Download,
         })
         toast({
           variant: 'success',
-          title: `${fileName} is saved to Downloads`,
+          title: `Success`,
+          description: `${fileName} is saved to Downloads`,
         })
       }
     } catch (error: any) {
       downloadFromBrowser()
       toast({
         variant: 'success',
-        title: `${fileName} is saved to Downloads`,
+        title: `Success`,
+        description: `${fileName} is saved to Downloads`,
       })
     }
   }
