@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import copy from 'copy-to-clipboard'
-import { Check, Columns2, Copy, Rows2, X } from 'lucide-react'
+import { Check, Columns2, Copy, Info, Rows2, X } from 'lucide-react'
 import { useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { v4 as uuid } from 'uuid'
@@ -8,6 +8,13 @@ import { cn, parseCookie } from '../../lib/utils'
 import Loading from '../loading'
 import ResultRender from '../result-renderer'
 import { Button } from '../ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu'
 import {
   Table,
   TableBody,
@@ -17,7 +24,12 @@ import {
   TableRow,
 } from '../ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../ui/tooltip'
 import { ResponseStatus } from './api'
 
 type PropsType = {
@@ -70,7 +82,7 @@ export default function ApiResult({
       {isLoading ? (
         <Loading height={height! - 300} />
       ) : (
-        <div className="relative pt-1 pb-3 pl-5 pr-0 text-sm">
+        <div className="relative flex justify-between pt-1 pb-3 pl-5 pr-0 text-sm">
           <Tabs
             defaultValue="response"
             className="w-full"
@@ -104,7 +116,7 @@ export default function ApiResult({
               <ResultRender
                 ref={resultContainerRef}
                 readOnly={true}
-                height={height}
+                height={height! - 160}
                 type="response"
                 result={result ?? {}}
               />
@@ -278,12 +290,12 @@ export default function ApiResult({
               <Tooltip>
                 <TooltipTrigger asChild>
                   {resultRenderView === 'horizontal' ? (
-                    <Columns2
+                    <Rows2
                       size={18}
                       className="animate__animated animate__fadeIn"
                     />
                   ) : (
-                    <Rows2
+                    <Columns2
                       size={18}
                       className="animate__animated animate__fadeIn"
                     />
@@ -299,33 +311,73 @@ export default function ApiResult({
               </Tooltip>
             </Button>
             {responseStatus?.status ? (
-              <>
-                <p className="text-xs">
-                  Status
-                  <span
-                    className={cn(
-                      responseStatus.status?.toString().startsWith('2', 0)
-                        ? 'ml-1 font-medium text-green-600 dark:font-normal dark:text-green-400'
-                        : 'ml-1 font-medium text-red-500 dark:font-normal',
-                      'mr-2',
-                    )}
-                  >
-                    {responseStatus.status}
-                  </span>
-                </p>
-                <p className="mr-4 text-xs">
-                  Time:
-                  <span className={'pl-1 text-green-500'}>
-                    {responseStatus.time}
-                  </span>
-                </p>
-                <p className="mr-2 text-xs">
-                  Size:
-                  <span className={'ml-1 text-green-500'}>
-                    {payloadSize(result)}
-                  </span>
-                </p>
-              </>
+              <DropdownMenu>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className={cn(
+                            'mr-2 flex h-8 w-8 justify-self-end p-0',
+                            responseStatus.status?.toString().startsWith('2', 0)
+                              ? 'text-green-600 dark:font-normal dark:text-green-400'
+                              : 'font-medium text-red-500',
+                          )}
+                          size="sm"
+                        >
+                          <Info size={20} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      See{' '}
+                      {responseStatus.status?.toString().startsWith('2', 0)
+                        ? 'success'
+                        : 'failed'}{' '}
+                      response status
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <DropdownMenuContent>
+                  <DropdownMenuItem>
+                    <p className="text-xs">
+                      Status
+                      <span
+                        className={cn(
+                          responseStatus.status?.toString().startsWith('2', 0)
+                            ? 'ml-1 font-medium text-green-600 dark:font-normal dark:text-green-400'
+                            : 'ml-1 font-medium text-red-500 dark:font-normal',
+                          'mr-2',
+                        )}
+                      >
+                        {responseStatus.status}
+                      </span>
+                    </p>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <p className="mr-4 text-xs">
+                      Time:
+                      <span className={'pl-1 text-green-500'}>
+                        {responseStatus.time}
+                      </span>
+                    </p>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <p className="mr-2 text-xs">
+                      Size:
+                      <span className={'ml-1 text-green-500'}>
+                        {payloadSize(result)}
+                      </span>
+                    </p>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : null}
           </div>
         </div>

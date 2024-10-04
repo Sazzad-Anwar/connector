@@ -67,7 +67,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
 
     useEffect(() => {
       const handleEscapeKeyPress = (event: KeyboardEvent) => {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && !readOnly) {
           // Handle the "Escape" key press here
           // form.setValue('jsonBody', api?.jsonBody)
           setEditorValue(JSON.stringify(result, null, '\t') ?? '{}')
@@ -173,7 +173,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
             scrollType: 'smooth',
             tabSize: 8,
             scrollBeyondLastLine: false,
-            lineNumbersMinChars: 2,
+            lineNumbersMinChars: 10,
             autoIndent: 'brackets',
             copyWithSyntaxHighlighting: true,
             fontLigatures: true,

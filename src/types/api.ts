@@ -1,5 +1,11 @@
 import * as z from 'zod'
 
+export const CollectionSchema = z.object({
+  collectionName: z
+    .string()
+    .min(3, { message: 'Collection name should be more than 3 characters' }),
+})
+
 export const ParamsSchema = z.object({
   id: z.string(),
   key: z.string(),

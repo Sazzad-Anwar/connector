@@ -11,6 +11,7 @@ import { v4 as uuid } from 'uuid'
 import {
   arrayToObjectConversion,
   checkAndReplaceWithDynamicVariable,
+  cn,
   containsDynamicVariable,
   extractVariable,
   filterEmptyParams,
@@ -399,10 +400,11 @@ export default function Api() {
 
       // If there is any requirement to set the value of a {{dynamic_variable}} with the response, this logic will do that and update that {{dynamic_variable}}
       if (api.dynamicVariables?.length) {
+        console.log(resultText)
         const updatedEnv = updateEnvWithDynamicVariableValue(
           submitData.dynamicVariables!,
           env,
-          JSON.parse(resultText),
+          responseData,
         )
         updateEnv(collections, folderId, updatedEnv)
       }
@@ -561,23 +563,24 @@ export default function Api() {
       <div
         ref={urlDivRef}
         className="mx-auto relative h-10 flex w-[calc(100%-40px)] items-center justify-between rounded overflow-hidden border p-0"
-        onDoubleClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
       >
-        <div className="flex items-center">
+        <div
+          onClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
+          className="flex items-center"
+        >
           <span
-            className={
-              (api.method === 'GET'
-                ? 'text-green-500'
+            className={cn(
+              api.method === 'GET'
+                ? ' bg-green-700 border border-green-500'
                 : api.method === 'POST'
-                ? 'text-yellow-500'
+                ? 'bg-yellow-700 border-yellow-500'
                 : api.method === 'PUT'
-                ? 'text-blue-500'
+                ? 'bg-cyan-700 border-cyan-500'
                 : api.method === 'PATCH'
-                ? 'text-purple-500'
-                : api.method === 'DELETE'
-                ? 'text-destructive'
-                : 'text-foreground') + ' font-bold px-2 border-r'
-            }
+                ? 'bg-purple-700 border-purple-500'
+                : 'bg-red-700 border-red-500',
+              'font-medium text-white ml-2 text-xs px-1 py-0.5 rounded-md',
+            )}
           >
             {api.method}
           </span>
@@ -707,8 +710,8 @@ export default function Api() {
             className="px-5 pt-2"
             height={
               (searchParams.get('view') === 'horizontal'
-                ? window.innerHeight
-                : sizes[0]) - 115
+                ? window.innerHeight - 120
+                : sizes[0]) - 60
             }
             form={form}
             api={api}
@@ -726,9 +729,9 @@ export default function Api() {
         >
           <ApiResult
             height={
-              (searchParams.get('view') === 'horizontal'
+              searchParams.get('view') === 'horizontal'
                 ? window.innerHeight
-                : sizes[1]!) - 160
+                : sizes[1]!
             }
             isLoading={isLoading}
             result={result}

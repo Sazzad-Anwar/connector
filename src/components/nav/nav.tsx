@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import useImportJSON from '@/hooks/useImportJSON'
 import { cn } from '@/lib/utils'
@@ -10,8 +10,8 @@ import { SubmitHandler, useForm } from 'react-hook-form'
 import { v4 as uuid } from 'uuid'
 import * as z from 'zod'
 import { useDebounce } from '../../hooks/useDebounce'
-import { FolderType } from '../../types/api'
-import AddCollectionDialog from '../collections/add-collection-dialog'
+import { CollectionSchema, FolderType } from '../../types/api'
+import CreateFolder from '../collections/create-folder'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
@@ -19,21 +19,15 @@ import { toast } from '../ui/use-toast'
 import RenderNavigation from './render-navigations'
 import { SideNavHeader } from './sidenav-header'
 
-export const CollectionSchema = z.object({
-  collectionName: z
-    .string()
-    .min(3, { message: 'Collection name should be more than 3 characters' }),
-})
-
 type PropsType = {
   isLoadingInSheet?: boolean
 }
 
 export default function SideNav({ isLoadingInSheet }: PropsType) {
-  const buttonRef = useRef<HTMLButtonElement>(null)
   const { InputFile } = useImportJSON()
   const { isOpen } = useSidePanelToggleStore()
   const [search, setSearch] = useState<string>('')
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false)
   const { collections, createFolder, searchApi } = useApiStore()
   const debouncedValue = useDebounce(search, 700)
   const form = useForm<z.infer<typeof CollectionSchema>>({
@@ -49,7 +43,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
       id: uuid(),
     }
     createFolder(folder)
-    buttonRef.current?.click()
+    setIsCreatingFolder(false)
     form.reset()
     toast({
       variant: 'success',
@@ -61,35 +55,46 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
     searchApi(debouncedValue)
   }, [debouncedValue, searchApi])
 
+  useEffect(() => {
+    const handleEscapeKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        // Handle the "Escape" key press here
+        setIsCreatingFolder(false)
+      }
+    }
+
+    // Add the event listener when the component mounts
+    document.addEventListener('keydown', handleEscapeKeyPress)
+    // Remove the event listener when the component unmounts
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKeyPress)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <aside
       className={cn(
         'relative min-h-screen overflow-hidden border-r bg-background ',
         isLoadingInSheet ? 'w-full' : isOpen ? 'w-full' : 'w-0',
-        // isOpen ? 'lg:w-[250px] xl:w-[300px]' : 'hidden',
-        // isOpen ? 'w-full ' : 'hidden',
       )}
     >
       <div className="h-full overflow-auto">
         <SideNavHeader />
         <div className="mb-3 flex items-center px-4 pb-0 pt-2">
-          <AddCollectionDialog
-            type="collection"
-            onSubmit={onSubmit}
+          <Button
+            variant="outline"
+            size="xs"
+            className="p-1"
+            onClick={() => setIsCreatingFolder(true)}
           >
-            <Button
-              variant="outline"
-              size="xs"
-              className="p-1"
-            >
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Plus size={16} />
-                </TooltipTrigger>
-                <TooltipContent>Create Collection</TooltipContent>
-              </Tooltip>
-            </Button>
-          </AddCollectionDialog>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Plus size={16} />
+              </TooltipTrigger>
+              <TooltipContent>Create Collection</TooltipContent>
+            </Tooltip>
+          </Button>
           <Input
             className="mx-2 h-7 rounded"
             value={search}
@@ -125,6 +130,14 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
               collection={collection}
             />
           ))}
+          {isCreatingFolder && (
+            <CreateFolder
+              name={''}
+              onSubmit={onSubmit}
+              type="collection"
+              actionType={'create'}
+            />
+          )}
         </div>
       </div>
     </aside>

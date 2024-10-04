@@ -38,6 +38,7 @@ export default function UpdateApi() {
   const navigate = useNavigate()
   const params = useParams()
   const updateButtonRef = useRef<HTMLButtonElement>(null)
+  const inputDivRef = useRef<HTMLDivElement>(null)
   const folderId = params.folderId as string
   const apiId = params.apiId as string
   const { collections, updateApi, api, getApi } = useApiStore()
@@ -301,9 +302,11 @@ export default function UpdateApi() {
           />
         </div>
         <InputTabs
+          ref={inputDivRef}
           className="p-5 overflow-auto"
           form={form}
           api={api}
+          height={window?.innerHeight - 262}
         />
         <div className="mr-5 flex justify-end">
           <Button
