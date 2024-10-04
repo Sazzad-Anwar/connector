@@ -196,12 +196,14 @@ export default function RenderNavigation({
 
       {collection.isOpen && (
         <div className="animate__animated animate__fadeIn child ml-6 border-l">
-          {collection?.children?.map((folder) => (
-            <RenderNavigation
-              collection={folder}
-              key={folder.id}
-            />
-          ))}
+          {collection?.children
+            ?.sort((a, b) => a.name.localeCompare(b.name))
+            .map((folder) => (
+              <RenderNavigation
+                collection={folder}
+                key={folder.id}
+              />
+            ))}
           {isCreatingFolder && collection.id === collectionId && (
             <CreateFolder
               name={collection.name}
@@ -211,125 +213,129 @@ export default function RenderNavigation({
             />
           )}
 
-          {collection.apis?.map((api) => (
-            <ContextMenu key={api.id}>
-              <ContextMenuTrigger asChild>
-                <div
-                  onClick={(event) =>
-                    handleClickApi(
-                      event as unknown as React.MouseEvent<
-                        HTMLButtonElement,
-                        MouseEvent
-                      >,
-                      api,
-                    )
-                  }
-                  className={cn(
-                    buttonVariants({ variant: 'ghost', size: 'xs' }),
-                    'group relative w-full cursor-pointer items-center justify-between rounded-none truncate',
-                    (params.apiId && params.apiId === api.id) ||
-                      selectedApis.map((apiType) => apiType.id).includes(api.id)
-                      ? 'border-l-2 border-primary bg-secondary'
-                      : 'border-l-2 border-transparent',
-                  )}
-                >
-                  <div className="w-full truncate">
-                    <span
-                      className={cn(
-                        api.method === 'GET'
-                          ? ' bg-green-700 border border-green-500'
-                          : api.method === 'POST'
-                          ? 'bg-yellow-700 border-yellow-500'
-                          : api.method === 'PUT'
-                          ? 'bg-cyan-700 border-cyan-500'
-                          : api.method === 'PATCH'
-                          ? 'bg-purple-700 border-purple-500'
-                          : 'bg-red-700 border-red-500',
-                        'font-medium text-white mr-2 text-xs px-1 py-0.5 rounded-md',
-                      )}
-                    >
-                      {api.method}
-                    </span>
-                    <span className="truncate text-sm">{api.name}</span>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <MoreVertical
-                        className="opacity-0 group-hover:opacity-100"
-                        size={18}
-                      />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {!selectedApis
-                        .map((apiType) => apiType.id)
-                        .includes(api.id) && (
+          {collection.apis
+            ?.sort((a, b) => a.name.localeCompare(b.name))
+            .map((api) => (
+              <ContextMenu key={api.id}>
+                <ContextMenuTrigger asChild>
+                  <div
+                    onClick={(event) =>
+                      handleClickApi(
+                        event as unknown as React.MouseEvent<
+                          HTMLButtonElement,
+                          MouseEvent
+                        >,
+                        api,
+                      )
+                    }
+                    className={cn(
+                      buttonVariants({ variant: 'ghost', size: 'xs' }),
+                      'group relative w-full cursor-pointer items-center justify-between rounded-none truncate',
+                      (params.apiId && params.apiId === api.id) ||
+                        selectedApis
+                          .map((apiType) => apiType.id)
+                          .includes(api.id)
+                        ? 'border-l-2 border-primary bg-secondary'
+                        : 'border-l-2 border-transparent',
+                    )}
+                  >
+                    <div className="w-full truncate">
+                      <span
+                        className={cn(
+                          api.method === 'GET'
+                            ? ' bg-green-700 border border-green-500'
+                            : api.method === 'POST'
+                            ? 'bg-yellow-700 border-yellow-500'
+                            : api.method === 'PUT'
+                            ? 'bg-cyan-700 border-cyan-500'
+                            : api.method === 'PATCH'
+                            ? 'bg-purple-700 border-purple-500'
+                            : 'bg-red-700 border-red-500',
+                          'font-medium text-white mr-2 text-xs px-1 py-0.5 rounded-md',
+                        )}
+                      >
+                        {api.method}
+                      </span>
+                      <span className="truncate text-sm">{api.name}</span>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <MoreVertical
+                          className="opacity-0 group-hover:opacity-100"
+                          size={18}
+                        />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {!selectedApis
+                          .map((apiType) => apiType.id)
+                          .includes(api.id) && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              setApiDetails(api)
+                              e.stopPropagation()
+                              navigate(`/api/${collection.id}/${api.id}/update`)
+                            }}
+                          >
+                            Update
+                          </DropdownMenuItem>
+                        )}
+
                         <DropdownMenuItem
                           onClick={(e) => {
                             setApiDetails(api)
                             e.stopPropagation()
-                            navigate(`/api/${collection.id}/${api.id}/update`)
+                            deleteButtonRef.current?.click()
                           }}
                         >
-                          Update
+                          Delete
                         </DropdownMenuItem>
-                      )}
-
-                      <DropdownMenuItem
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedApis([...selectedApis, api])
+                            setIsMoveToFolderDialogOpen(true)
+                          }}
+                        >
+                          Move
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                  {selectedApis.length > 1 &&
+                    selectedApis.map((item) => item.id).includes(api.id) && (
+                      <ContextMenuItem
                         onClick={(e) => {
                           setApiDetails(api)
                           e.stopPropagation()
-                          deleteButtonRef.current?.click()
+                          navigate(`/api/${collection.id}/${api.id}/update`)
                         }}
                       >
-                        Delete
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setSelectedApis([...selectedApis, api])
-                          setIsMoveToFolderDialogOpen(true)
-                        }}
-                      >
-                        Move
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </ContextMenuTrigger>
-              <ContextMenuContent>
-                {selectedApis.length > 1 &&
-                  selectedApis.map((item) => item.id).includes(api.id) && (
-                    <ContextMenuItem
-                      onClick={(e) => {
-                        setApiDetails(api)
-                        e.stopPropagation()
-                        navigate(`/api/${collection.id}/${api.id}/update`)
-                      }}
-                    >
-                      Update
-                    </ContextMenuItem>
-                  )}
-                <ContextMenuItem
-                  onClick={(e) => {
-                    setApiDetails(api)
-                    e.stopPropagation()
-                    deleteButtonRef.current?.click()
-                  }}
-                >
-                  Delete
-                </ContextMenuItem>
-                <ContextMenuItem
-                  onClick={() => {
-                    setIsMoveToFolderDialogOpen(true)
-                    if (!selectedApis.map((a) => a.id).includes(api.id)) {
-                      setSelectedApis([...selectedApis, api])
-                    }
-                  }}
-                >
-                  Move
-                </ContextMenuItem>
-              </ContextMenuContent>
-            </ContextMenu>
-          ))}
+                        Update
+                      </ContextMenuItem>
+                    )}
+                  <ContextMenuItem
+                    onClick={(e) => {
+                      setApiDetails(api)
+                      e.stopPropagation()
+                      deleteButtonRef.current?.click()
+                    }}
+                  >
+                    Delete
+                  </ContextMenuItem>
+                  <ContextMenuItem
+                    onClick={() => {
+                      setIsMoveToFolderDialogOpen(true)
+                      if (!selectedApis.map((a) => a.id).includes(api.id)) {
+                        setSelectedApis([...selectedApis, api])
+                      }
+                    }}
+                  >
+                    Move
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
+            ))}
         </div>
       )}
 

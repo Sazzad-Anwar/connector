@@ -29,11 +29,11 @@ export function Toaster() {
                     props.variant === 'success'
                       ? 'text-green-500'
                       : props.variant === 'error'
-                      ? 'text-destructive'
+                      ? 'text-red-500'
                       : props.variant === 'warning'
                       ? 'text-orange-500'
                       : '',
-                    'flex items-start text-base',
+                    'flex items-center text-base',
                   )}
                 >
                   {props.variant === 'success' ? (

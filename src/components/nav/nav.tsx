@@ -29,7 +29,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
   const [search, setSearch] = useState<string>('')
   const [isCreatingFolder, setIsCreatingFolder] = useState(false)
   const { collections, createFolder, searchApi } = useApiStore()
-  const debouncedValue = useDebounce(search, 1000)
+  const debouncedValue = useDebounce(search, 700)
   const form = useForm<z.infer<typeof CollectionSchema>>({
     mode: 'onChange',
     resolver: zodResolver(CollectionSchema),
@@ -122,7 +122,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
         <div className="max-h-[calc(100vh-106px)] overflow-auto pb-5">
           {!collections?.length && (
             <div className="flex h-96 w-full items-center justify-center">
-              <h1 className="opacity-40">No Collection Found</h1>
+              <h1 className="opacity-40">No Items Found</h1>
             </div>
           )}
           {collections?.map((collection: FolderType) => (

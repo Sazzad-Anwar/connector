@@ -36,12 +36,6 @@ export default function MoveToFolder({
   }
 
   const handleApiMove = () => {
-    console.log({
-      collection,
-      selectedFolder,
-      apis: apis?.map((api) => api.id),
-      folderId,
-    })
     const updatedCollection = moveApisToFolder(
       collection!,
       selectedFolder,
@@ -61,7 +55,7 @@ export default function MoveToFolder({
         description: 'APIs moved to selected folder',
       })
     }
-
+    setSelectedApis([])
     setIsDialogOpen(false)
   }
 

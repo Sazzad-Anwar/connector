@@ -21,13 +21,91 @@ export type InputFileType = {
 export default function useImportJSON() {
   const { createFolder } = useApiStore()
 
+  // Validator to check if the structure matches FolderType
+  const isValidCollectionType = (data: any): boolean => {
+    const isValidEnv = (env: any): boolean =>
+      Array.isArray(env) &&
+      env.every(
+        (e: any) =>
+          typeof e.id === 'string' &&
+          typeof e.key === 'string' &&
+          typeof e.value === 'string',
+      )
+
+    const isValidApis = (apis: any): boolean =>
+      Array.isArray(apis) &&
+      apis.every(
+        (api: any) =>
+          typeof api.id === 'string' &&
+          typeof api.name === 'string' &&
+          typeof api.url === 'string' &&
+          typeof api.method === 'string',
+      )
+
+    const isValidChildren = (children: any): boolean =>
+      Array.isArray(children) &&
+      children.every(
+        (child: any) =>
+          typeof child.id === 'string' &&
+          typeof child.name === 'string' &&
+          child.type === 'collection' && // Ensure valid types
+          isValidApis(child.apis) &&
+          isValidChildren(child.children),
+      )
+
+    return (
+      typeof data.id === 'string' &&
+      typeof data.name === 'string' &&
+      data.type === 'collection' && // Ensure valid types
+      isValidEnv(data.env) &&
+      isValidChildren(data.children) &&
+      isValidApis(data.apis)
+    )
+  }
+
+  const isValidFolderType = (data: any): boolean => {
+    const isValidApis = (apis: any): boolean =>
+      Array.isArray(apis) &&
+      apis.every(
+        (api: any) =>
+          typeof api.id === 'string' &&
+          typeof api.name === 'string' &&
+          typeof api.url === 'string' &&
+          typeof api.method === 'string',
+      )
+
+    const isValidChildren = (children: any): boolean =>
+      Array.isArray(children) &&
+      children.every(
+        (child: any) =>
+          typeof child.id === 'string' &&
+          typeof child.name === 'string' &&
+          child.type === 'folder' && // Ensure valid types
+          isValidApis(child.apis) &&
+          isValidChildren(child.children),
+      )
+
+    return (
+      typeof data.id === 'string' &&
+      typeof data.name === 'string' &&
+      data.type === 'folder' && // Ensure valid types
+      isValidChildren(data.children) &&
+      isValidApis(data.apis)
+    )
+  }
+
   const readJsonFile = (file: Blob) =>
     new Promise((resolve, reject) => {
       const fileReader = new FileReader()
 
       fileReader.onload = (event) => {
         if (event.target) {
-          resolve(JSON.parse(event.target.result as string))
+          try {
+            const parsedData = JSON.parse(event.target.result as string)
+            resolve(parsedData)
+          } catch (error) {
+            reject('Invalid JSON format')
+          }
         }
       }
 
@@ -37,21 +115,43 @@ export default function useImportJSON() {
 
   const onFileChange = async (e: any, id?: string) => {
     if (e.target?.files) {
-      const parsedData = (await readJsonFile(e.target.files[0])) as FolderType
-      parsedData.id = uuid()
-      parsedData.type = parsedData?.type ?? 'folder'
-      if (id) {
-        createFolder(parsedData, id)
-      } else {
-        createFolder(parsedData)
+      try {
+        const parsedData = (await readJsonFile(e.target.files[0])) as FolderType
+
+        // Validate FolderType structure
+        if (!isValidFolderType(parsedData) && id) {
+          throw new Error('Invalid file structure. Please upload a valid JSON.')
+        }
+
+        if (!isValidCollectionType(parsedData) && !id) {
+          throw new Error('Invalid file structure. Please upload a valid JSON.')
+        }
+
+        // Add additional logic for assigning default values and creating the folder
+        parsedData.id = uuid()
+        parsedData.type = parsedData?.type ?? 'folder'
+
+        if (id) {
+          createFolder(parsedData, id)
+        } else {
+          createFolder(parsedData)
+        }
+
+        toast({
+          variant: 'success',
+          title: 'Success',
+          description: 'Imported successfully',
+        })
+      } catch (error) {
+        toast({
+          variant: 'error',
+          title: 'Error',
+          description: (error as Error).message,
+        })
       }
-      toast({
-        variant: 'success',
-        title: 'Imported Successfully',
-      })
     }
 
-    e.target.value = ''
+    e.target.value = '' // Clear file input
   }
 
   const InputFile = ({

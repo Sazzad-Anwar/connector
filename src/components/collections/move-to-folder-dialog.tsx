@@ -39,7 +39,11 @@ export default function MoveToFolderDialog({
           <AlertDialogDescription>
             You've selected{' '}
             <b className="text-primary">
-              {apis?.map((api) => api.name).join(', ')}
+              {apis
+                ?.slice(0, 3)
+                .map((api) => api.name)
+                .join(', ')}
+              {apis?.length > 3 && ` +${apis.length - 3} more`}
             </b>{' '}
             apis to move.
           </AlertDialogDescription>

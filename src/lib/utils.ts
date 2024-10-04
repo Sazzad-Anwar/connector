@@ -371,71 +371,38 @@ export function filterURLWithParams(url: string, params: ParamsType[]) {
   return url
 }
 
-function searchInCollection(
-  collection: FolderType[],
+export function search(
+  collections: FolderType[] | undefined, // Handle undefined here
   query: string,
-  results: any[],
-) {
-  for (const item of collection) {
-    if (item.name.toLowerCase().includes(query.toLowerCase())) {
-      const existingIndex = results.findIndex(
-        (resultItem) => resultItem.id === item.id,
-      )
+): FolderType[] {
+  // Ensure collections is an array, or return an empty array if it's not
+  if (!Array.isArray(collections)) {
+    return []
+  }
 
-      if (existingIndex !== -1) {
-        // Replace the existing item with the new one
-        results[existingIndex] = {
-          ...item,
-          apis: item?.apis?.filter((api) =>
-            api.name.toLowerCase().includes(query.toLowerCase()),
-          ),
-        }
-      } else {
-        // Add the item if it doesn't exist in the results array
-        results.push(item)
-      }
-    }
+  const results: FolderType[] = []
+  const queryLower = query.toLowerCase()
 
-    if (item.children) {
-      searchInCollection(item.children, query, results)
-    }
+  for (const item of collections) {
+    // Filter APIs that match the query
+    const matchingApis = item?.apis?.filter((api) =>
+      api.name.toLowerCase().includes(queryLower),
+    )
 
-    if (item.apis) {
-      const matchingAPIs = item.apis.filter((api) =>
-        api.name.toLowerCase().includes(query.toLowerCase()),
-      )
+    // Search within children recursively
+    const matchingChildren = search(item.children, query)
 
-      if (matchingAPIs.length > 0) {
-        const existingIndex = results.findIndex(
-          (resultItem) => resultItem.id === item.id,
-        )
-
-        if (existingIndex !== -1) {
-          // Replace the existing item with the new one
-          results[existingIndex] = {
-            ...item,
-            apis: matchingAPIs,
-          }
-        } else {
-          // Add the item if it doesn't exist in the results array
-          results.push({
-            ...item,
-            apis: matchingAPIs,
-          })
-        }
-      }
+    // If there are matching APIs or children, include the current folder in the results
+    if (matchingApis!.length > 0 || matchingChildren.length > 0) {
+      results.push({
+        ...item,
+        apis: matchingApis, // Only keep matching APIs
+        children: matchingChildren, // Only keep matching children
+      })
     }
   }
-}
 
-export function search(collection: FolderType[], query: string) {
-  const results: any[] = []
-  if (query) {
-    searchInCollection(collection, query, results)
-    return results
-  } else {
-    return collection ?? []
-  }
+  return results
 }
 
 export function parseCookie(cookie: string) {
