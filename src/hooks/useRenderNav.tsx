@@ -1,5 +1,5 @@
-import { BaseDirectory, writeTextFile } from '@tauri-apps/api/fs'
-import { platform } from '@tauri-apps/api/os'
+import { BaseDirectory, writeTextFile } from '@tauri-apps/plugin-fs'
+import { platform } from '@tauri-apps/plugin-os'
 import React, { useEffect, useRef, useState } from 'react'
 import { SubmitHandler } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -9,6 +9,12 @@ import { toast } from '../components/ui/use-toast'
 import useApiStore from '../store/store'
 import { ApiType, CollectionSchema, FolderType } from '../types/api'
 import useImportJSON from './useImportJSON'
+
+enum Platform {
+  Darwin,
+  Linux,
+  Win32,
+}
 
 export default function useRenderNav({
   collection,
@@ -112,12 +118,12 @@ export default function useRenderNav({
     try {
       const platformName = await platform()
       if (
-        platformName === 'darwin' ||
-        platformName === 'linux' ||
-        platformName === 'win32'
+        platformName === 'macos' ||
+        platformName === 'windows' ||
+        platformName === 'linux'
       ) {
         await writeTextFile(`${fileName}`, JSON.stringify(data), {
-          dir: BaseDirectory.Download,
+          baseDir: BaseDirectory.Download,
         })
         toast({
           variant: 'success',
@@ -126,6 +132,7 @@ export default function useRenderNav({
         })
       }
     } catch (error: any) {
+      console.log('🚀 ~ error:', error)
       downloadFromBrowser()
       toast({
         variant: 'success',

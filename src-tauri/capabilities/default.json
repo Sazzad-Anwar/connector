@@ -1,11 +1,27 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default",
+  "identifier": "app.vercel.connector-ten",
   "description": "enables the default permissions",
-  "windows": [
-    "main"
-  ],
+  "windows": ["main"],
   "permissions": [
-    "core:default"
+    "core:default",
+    "os:default",
+    "fs:default",
+    {
+      "identifier": "fs:allow-app-write-recursive",
+      "allow": [
+        {
+          "path": "$HOME/**"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-app-write",
+      "allow": [
+        {
+          "path": "$HOME/**"
+        }
+      ]
+    }
   ]
 }

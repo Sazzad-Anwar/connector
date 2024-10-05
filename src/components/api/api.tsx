@@ -161,7 +161,7 @@ export default function Api() {
         urlDivRef?.current &&
         formDivRef?.current
       ) {
-        if (searchParams.get('view') === 'horizontal') {
+        if (resultRenderView === 'horizontal') {
           setSizes([
             formDivRef.current.clientWidth / 2,
             formDivRef.current.clientWidth / 2,

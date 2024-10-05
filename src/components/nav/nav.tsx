@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import useSidePanelToggleStore from '@/store/sidePanelToggle'
 import useApiStore from '@/store/store'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Braces, Folder, Plus } from 'lucide-react'
+import { FileJson2, Folder, Plus } from 'lucide-react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { v4 as uuid } from 'uuid'
 import * as z from 'zod'
@@ -120,9 +120,9 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
           >
             <Tooltip>
               <TooltipTrigger asChild>
-                <Braces size={16} />
+                <FileJson2 size={16} />
               </TooltipTrigger>
-              <TooltipContent>Import Collection</TooltipContent>
+              <TooltipContent align="end">Import Collection</TooltipContent>
             </Tooltip>
           </InputFile>
         </div>
