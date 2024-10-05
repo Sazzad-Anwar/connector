@@ -14,18 +14,15 @@ const useResultRenderViewStore = create<ResultRenderViewType>()((set) => ({
     : 'horizontal') as 'horizontal' | 'vertical',
   toggleResultRenderView: () => {
     const resultRenderView =
-      isLocalStorageAvailable() && localStorage.getItem('resultRenderView')
-        ? localStorage.getItem('resultRenderView')!
+      isLocalStorageAvailable() &&
+      localStorage.getItem('resultRenderView') === 'horizontal'
+        ? 'vertical'
         : 'horizontal'
     set(() => ({
-      resultRenderView:
-        resultRenderView === 'horizontal' ? 'vertical' : 'horizontal',
+      resultRenderView,
     }))
     isLocalStorageAvailable() &&
-      localStorage.setItem(
-        'resultRenderView',
-        JSON.stringify(!resultRenderView),
-      )
+      localStorage.setItem('resultRenderView', resultRenderView)
   },
 }))
 
