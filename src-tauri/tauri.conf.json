@@ -4,7 +4,7 @@
   "version": "2.0.0",
   "identifier": "app.vercel.connector-ten",
   "build": {
-    "frontendDist": "../build",
+    "frontendDist": "../dist",
     "devUrl": "http://localhost:2255",
     "beforeDevCommand": "bun dev",
     "beforeBuildCommand": "yarn build"
