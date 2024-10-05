@@ -4,6 +4,7 @@ on:
     branches:
       - '*'
       - release
+
 jobs:
   test:
     if: github.ref == 'refs/heads/main'
@@ -25,19 +26,23 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
-      - name: install bun
-        run: |
-          curl -fsSL https://bun.sh/install | bash
-      - name: add bun to PATH (macOS/Linux)
+      - name: install bun (Ubuntu/macOS)
         if: matrix.platform != 'windows-latest'
         run: |
+          curl -fsSL https://bun.sh/install | bash
           echo 'export BUN_INSTALL="$HOME/.bun"' >> $GITHUB_ENV
           echo 'export PATH="$BUN_INSTALL/bin:$PATH"' >> $GITHUB_ENV
-      - name: add bun to PATH (Windows)
+        shell: bash
+      - name: install bun (Windows)
         if: matrix.platform == 'windows-latest'
         run: |
+          curl -fsSL https://bun.sh/install | bash
           $env:BUN_INSTALL = "$env:USERPROFILE\.bun"
           [System.Environment]::SetEnvironmentVariable("PATH", "$env:BUN_INSTALL\bin;$env:PATH", [System.EnvironmentVariableTarget]::Process)
+        shell: pwsh
+      - name: ensure bun is available
+        run: bun --version
+        shell: bash
       - name: install frontend dependencies
         run: bun install
       - uses: tauri-apps/tauri-action@v0
