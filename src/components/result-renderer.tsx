@@ -3,6 +3,7 @@ import copy from 'copy-to-clipboard'
 import { Check, Copy } from 'lucide-react'
 import { forwardRef, useEffect, useRef, useState } from 'react'
 import { JSONErrorType } from './api/api'
+import Loading from './loading'
 import { useTheme } from './theme-provider'
 import { Button } from './ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
@@ -33,7 +34,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
     ref,
   ) {
     const { theme } = useTheme()
-    const editorRef = useRef<Monaco>(null)
+    const editorRef = useRef<any>(null)
     const [isCopiedResponse, setIsCopiedResponse] = useState<boolean>(false)
     const [isErrorResult, setIsErrorResult] = useState<boolean>(false)
     const [editorValue, setEditorValue] = useState<string>(
@@ -168,10 +169,10 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
             automaticLayout: true,
             formatOnType: true,
             formatOnPaste: true,
-            editor: {
-              setTheme: {},
-            },
-            scrollType: 'smooth',
+            smoothScrolling: true,
+            cursorSmoothCaretAnimation: 'explicit',
+            fastScrollSensitivity: 10,
+            mouseWheelScrollSensitivity: 3,
             tabSize: 8,
             scrollBeyondLastLine: false,
             lineNumbersMinChars: 10,
@@ -199,7 +200,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
               ? 'onedark'
               : 'light'
           }
-          loading={<></>}
+          loading={<Loading />}
           // height={height ?? window.innerHeight - 320}
           height={height!}
           width="100%"

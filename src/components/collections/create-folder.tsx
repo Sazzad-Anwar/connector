@@ -53,11 +53,11 @@ export default function CreateFolder({
           name="collectionName"
           render={({ field }) => (
             <FormItem>
-              <FormControl>
+              <FormControl className="mb-0">
                 <div className={className}>
                   <FolderClosed
                     size={16}
-                    className="mr-2"
+                    className="mr-1"
                   />
                   <Input
                     placeholder={
@@ -65,13 +65,13 @@ export default function CreateFolder({
                     }
                     autoFocus
                     autoComplete="off"
-                    className="w-full h-7"
+                    className="w-full px-1 h-7 mb-0"
                     {...field}
                     value={field.value ?? ''}
                   />
                 </div>
               </FormControl>
-              <FormMessage className="ml-16 text-red-500 mt-0 pt-0" />
+              <FormMessage className="ml-16 text-[10px] leading-[10px] pt-0" />
             </FormItem>
           )}
         />

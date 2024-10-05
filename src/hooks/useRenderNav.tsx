@@ -31,7 +31,7 @@ export default function useRenderNav({
   // Rename collection
   const renameCollectionName: SubmitHandler<
     z.infer<typeof CollectionSchema>
-  > = (data) => {
+  > = (data: z.infer<typeof CollectionSchema>) => {
     const updateData = { ...collection, name: data.collectionName }
     updateFolder(updateData, collection.id)
     setIsFolderNameUpdating(false)
@@ -59,7 +59,6 @@ export default function useRenderNav({
     const folder: FolderType = {
       name: data.collectionName,
       id: uuid(),
-      isOpen: true,
       type: 'folder',
       children: [],
       apis: [],

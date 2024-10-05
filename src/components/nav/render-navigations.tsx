@@ -11,7 +11,7 @@ import {
   MoreVertical,
 } from 'lucide-react'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 
 import { cn, findRootCollection } from '@/lib/utils'
@@ -50,7 +50,8 @@ export default function RenderNavigation({
   collection,
 }: RenderNavigationProps): JSX.Element {
   const navigate = useNavigate()
-  const { updateFolder, collections } = useApiStore()
+  const { collections } = useApiStore()
+  const [isFolderOpen, setIsFolderOpen] = useState(true)
   const navWidthRef = useRef<HTMLDivElement>(null)
   const params = useParams()
   const {
@@ -98,103 +99,122 @@ export default function RenderNavigation({
 
   return (
     <>
-      <div
-        ref={navWidthRef}
-        className={cn(
-          buttonVariants({ variant: 'ghost', size: 'xs' }),
-          'group relative w-full cursor-pointer items-center justify-between rounded-none',
-        )}
-      >
-        {isFolderNameUpdating && collection.id === collectionId ? (
-          <>
-            <ChevronRight
-              size={20}
-              className={
-                (collection.isOpen ? 'rotate-90' : '') +
-                ' transition-all duration-100 ease-linear mr-3'
-              }
-            />
-            <CreateFolder
-              name={collection.name}
-              onSubmit={renameCollectionName}
-              type="folder"
-              className="w-full flex items-center"
-              actionType={'update'}
-            />
-          </>
-        ) : (
-          <button
-            onClick={() => {
-              updateFolder(
-                { ...collection, isOpen: !collection.isOpen },
-                collection.id,
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <div
+            ref={navWidthRef}
+            className={cn(
+              buttonVariants({ variant: 'ghost', size: 'xs' }),
+              'group sticky top-0 w-full bg-background z-10 cursor-pointer items-center justify-between rounded-none',
+            )}
+          >
+            {isFolderNameUpdating && collection.id === collectionId ? (
+              <>
+                <ChevronRight
+                  size={20}
+                  className={
+                    (isFolderOpen ? 'rotate-90' : '') +
+                    ' transition-all duration-100 ease-linear mr-3'
+                  }
+                />
+                <CreateFolder
+                  name={collection.name}
+                  onSubmit={renameCollectionName}
+                  type="folder"
+                  className="w-full flex items-center"
+                  actionType={'update'}
+                />
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  setIsFolderOpen(!isFolderOpen)
+                }}
+                className="flex flex-1 h-7 items-center"
+              >
+                <ChevronRight
+                  size={15}
+                  className={
+                    (isFolderOpen ? 'rotate-90' : '') +
+                    ' transition-all duration-100 ease-linear mr-3'
+                  }
+                />
+                <FolderClosed
+                  size={14}
+                  className="mr-2"
+                />
+                {collection.name}
+              </button>
+            )}
+            <div className="flex items-center">
+              <InputFile
+                id={uuid()}
+                importOn="collection"
+                variant="link"
+                size="xs"
+                className="p-1 opacity-20 group-hover:opacity-100"
+                collectionId={collection.id}
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <FileDown size={16} />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Import in {collection.name} collection
+                  </TooltipContent>
+                </Tooltip>
+              </InputFile>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <MoreVertical
+                    className="opacity-20 group-hover:opacity-100"
+                    size={18}
+                    startOffset={30}
+                  />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {folderDropDownMenu.map((item) => {
+                    if (!item.isHidden) {
+                      return (
+                        <DropdownMenuItem
+                          key={uuid()}
+                          onClick={(e) => {
+                            item.onClick(e)
+                          }}
+                        >
+                          {item.name}
+                        </DropdownMenuItem>
+                      )
+                    } else {
+                      return null
+                    }
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          {folderDropDownMenu.map((item) => {
+            if (!item.isHidden) {
+              return (
+                <ContextMenuItem
+                  key={uuid()}
+                  onClick={(e) => {
+                    item.onClick(e)
+                  }}
+                >
+                  {item.name}
+                </ContextMenuItem>
               )
-            }}
-            className="flex flex-1 h-7 items-center"
-          >
-            <ChevronRight
-              size={15}
-              className={
-                (collection.isOpen ? 'rotate-90' : '') +
-                ' transition-all duration-100 ease-linear mr-3'
-              }
-            />
-            <FolderClosed
-              size={14}
-              className="mr-2"
-            />
-            {collection.name}
-          </button>
-        )}
-        <div className="flex items-center">
-          <InputFile
-            id={uuid()}
-            importOn="collection"
-            variant="link"
-            size="xs"
-            className="p-1 opacity-20 group-hover:opacity-100"
-            collectionId={collection.id}
-          >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <FileDown size={16} />
-              </TooltipTrigger>
-              <TooltipContent>
-                Import in {collection.name} collection
-              </TooltipContent>
-            </Tooltip>
-          </InputFile>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <MoreVertical
-                className="opacity-20 group-hover:opacity-100"
-                size={18}
-                startOffset={30}
-              />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {folderDropDownMenu.map((item) => {
-                if (!item.isHidden) {
-                  return (
-                    <DropdownMenuItem
-                      key={uuid()}
-                      onClick={(e) => {
-                        item.onClick(e)
-                      }}
-                    >
-                      {item.name}
-                    </DropdownMenuItem>
-                  )
-                } else {
-                  return null
-                }
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+            } else {
+              return null
+            }
+          })}
+        </ContextMenuContent>
+      </ContextMenu>
 
-      {collection.isOpen && (
+      {isFolderOpen && (
         <div className="animate__animated animate__fadeIn child ml-6 border-l">
           {collection?.children
             ?.sort((a, b) => a.name.localeCompare(b.name))
@@ -365,6 +385,7 @@ export default function RenderNavigation({
               className={buttonVariants({
                 size: 'xs',
                 variant: 'outline',
+                className: '',
               })}
             >
               Cancel

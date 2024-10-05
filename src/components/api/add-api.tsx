@@ -281,6 +281,7 @@ export default function AddApi() {
         <InputTabs
           className="pt-5 h-auto"
           form={form}
+          type="create"
           height={window?.innerHeight - 262}
         />
         <div className="flex mt-5 justify-end">

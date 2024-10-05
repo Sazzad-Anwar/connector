@@ -180,7 +180,7 @@ export default function DynamicInput({
                 className="border-none m-0"
               />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent align="end">
               <SelectItem value="text">Text</SelectItem>
               <SelectItem value="file">File</SelectItem>
             </SelectContent>

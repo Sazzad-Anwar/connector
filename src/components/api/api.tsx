@@ -4,7 +4,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { platform } from '@tauri-apps/api/os'
 import copy from 'copy-to-clipboard'
 import { Check, ChevronsRight, Copy, Settings } from 'lucide-react'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { v4 as uuid } from 'uuid'
 
@@ -23,11 +29,12 @@ import {
   updateEnvWithDynamicVariableValue,
   updateUrlWithPathVariables,
 } from '@/lib/utils'
-import { ApiSchema, ApiType } from '@/types/api'
+import { ApiSchema, ApiType, ParamsType } from '@/types/api'
 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import SplitPane, { Pane } from 'split-pane-react'
 import fetcher from '../../lib/fetcher'
+import useResultRenderViewStore from '../../store/resultRenderView'
 import useSidePanelToggleStore from '../../store/sidePanelToggle'
 import Breadcrumbs from '../breadcrumb'
 import Loading from '../loading'
@@ -53,6 +60,7 @@ export default function Api() {
   const { api, getApi, updateApi, collections, env, getEnv, updateEnv } =
     useApiStore()
   const params = useParams()
+  const { resultRenderView } = useResultRenderViewStore()
   const { isOpen } = useSidePanelToggleStore()
   const [urlWidth, setUrlWidth] = useState<number>()
   const formDivRef = useRef<HTMLFormElement>(null)
@@ -84,7 +92,7 @@ export default function Api() {
   const interactiveQuery = form.watch('interactiveQuery')
   let url = form.watch('url')
   const hasActiveCustomParams = !!customParams?.filter(
-    (item) => item.isActive && item.key !== '',
+    (item: ParamsType) => item.isActive && item.key !== '',
   ).length
   url = generateURLFromParams(url, pathVariables!)
   url =
@@ -242,7 +250,7 @@ export default function Api() {
           ? (searchParams.get('activeQuery')! as
               | 'query-params'
               | 'interactive-query')
-          : api?.params?.filter((item) => item.isActive)?.length
+          : api?.params?.filter((item: ParamsType) => item.isActive)?.length
           ? 'query-params'
           : typeof api?.interactiveQuery === 'object' &&
             Object.keys(api?.interactiveQuery).length
@@ -301,7 +309,9 @@ export default function Api() {
           : ''
 
       // This will update the url with given path variable  and will generate if user input something
-      let url = submitData.pathVariables?.find((item) => item.key !== '')
+      let url = submitData.pathVariables?.find(
+        (item: ParamsType) => item.key !== '',
+      )
         ? updateUrlWithPathVariables(
             generateURLFromParams(submitData.url, submitData.pathVariables!),
             submitData.pathVariables!,
@@ -326,16 +336,18 @@ export default function Api() {
 
       // This is for the media upload
       const formData = new FormData()
-      const files = submitData.body?.filter((item) => item?.type === 'file')
+      const files = submitData.body?.filter(
+        (item: ParamsType) => item?.type === 'file',
+      )
       if (files?.length) {
-        files.map((file) => {
+        files.map((file: ParamsType) => {
           Array.from(file.value).map((item: Blob | any) => {
             formData.append(file.key, item)
           })
         })
       }
       Object.keys(requestBody).map((item) => {
-        if (!files?.find((file) => file.key === item)) {
+        if (!files?.find((file: ParamsType) => file.key === item)) {
           formData.append(item, requestBody[item])
         }
       })
@@ -452,7 +464,7 @@ export default function Api() {
     buttonRef.current?.click()
   }
 
-  const saveUpdate = () => {
+  const saveUpdate = useCallback(() => {
     const data: ApiType = {} as ApiType
     data.id = api.id
     data.params = filterEmptyParams(form.getValues('params')!)
@@ -474,7 +486,7 @@ export default function Api() {
     })
     form.reset()
     getApi(api?.id)
-  }
+  }, [form])
 
   const copyUrl = () => {
     setIsUrlCopied(true)
@@ -489,7 +501,9 @@ export default function Api() {
           Object.keys(interactiveQuery)?.length
         ? getQueryString(form.getValues('interactiveQuery'))
         : ''
-    let url = form.getValues('pathVariables')?.find((item) => item.key !== '')
+    let url = form
+      .getValues('pathVariables')
+      ?.find((item: ParamsType) => item.key !== '')
       ? updateUrlWithPathVariables(
           generateURLFromParams(
             form.getValues('url'),
@@ -551,13 +565,14 @@ export default function Api() {
           className="mx-2"
         />
         {api.name}
-        {form.formState.isDirty && (
+        {!!Object.entries(form.formState.dirtyFields).length && (
           <Button
             ref={updateButtonRef}
             onClick={() => saveUpdate()}
             type="button"
+            variant="destructive"
             size="xs"
-            className="py-.5 px-1 ml-2 text-xs"
+            className="py-.5 px-1 ml-2 text-xs mt-px"
           >
             Save
           </Button>
@@ -568,7 +583,7 @@ export default function Api() {
         className="mx-auto relative h-10 flex w-[calc(100%-40px)] items-center justify-between rounded overflow-hidden border p-0"
       >
         <div
-          onClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
+          onDoubleClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
           className="flex items-center"
         >
           <span
@@ -582,7 +597,7 @@ export default function Api() {
                 : api.method === 'PATCH'
                 ? 'bg-purple-700 border-purple-500'
                 : 'bg-red-700 border-red-500',
-              'font-medium text-white ml-2 text-xs px-1 py-0.5 rounded-md',
+              'font-medium text-white ml-1.5 text-xs px-1 py-0.5 rounded-md',
             )}
           >
             {api.method}
@@ -692,9 +707,9 @@ export default function Api() {
       <SplitPane
         sashRender={() => <></>}
         split={
-          (searchParams.get('view') === 'horizontal'
+          (resultRenderView === 'horizontal'
             ? 'vertical'
-            : searchParams.get('view') === 'vertical'
+            : resultRenderView === 'vertical'
             ? 'horizontal'
             : 'horizontal') as 'vertical' | 'horizontal'
         }
@@ -703,7 +718,7 @@ export default function Api() {
       >
         <Pane
           minSize={
-            searchParams.get('view') === 'horizontal'
+            resultRenderView === 'horizontal'
               ? formDivRef?.current?.clientWidth &&
                 formDivRef?.current?.clientWidth / 3
               : 5
@@ -713,7 +728,7 @@ export default function Api() {
           <InputTabs
             className="px-5 pt-2"
             height={
-              (searchParams.get('view') === 'horizontal'
+              (resultRenderView === 'horizontal'
                 ? window.innerHeight - 120
                 : sizes[0]) - 60
             }
@@ -724,7 +739,7 @@ export default function Api() {
 
         <Pane
           minSize={
-            searchParams.get('view') === 'horizontal'
+            resultRenderView === 'horizontal'
               ? formDivRef?.current?.clientWidth &&
                 formDivRef?.current?.clientWidth / 2.9
               : 160
@@ -733,9 +748,7 @@ export default function Api() {
         >
           <ApiResult
             height={
-              searchParams.get('view') === 'horizontal'
-                ? window.innerHeight
-                : sizes[1]!
+              resultRenderView === 'horizontal' ? window.innerHeight : sizes[1]!
             }
             isLoading={isLoading}
             result={result}

@@ -3,7 +3,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 import 'split-pane-react/esm/themes/default.css'
-import router from './Routes.tsx'
+import { router } from './Routes.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
 import './index.css'
 

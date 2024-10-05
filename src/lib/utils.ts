@@ -393,11 +393,12 @@ export function search(
     const matchingChildren = search(item.children, query)
 
     // If there are matching APIs or children, include the current folder in the results
-    if (matchingApis!.length > 0 || matchingChildren.length > 0) {
+    if (matchingApis?.length! > 0 || matchingChildren?.length! > 0) {
       results.push({
         ...item,
         apis: matchingApis, // Only keep matching APIs
         children: matchingChildren, // Only keep matching children
+        isOpen: true,
       })
     }
   }

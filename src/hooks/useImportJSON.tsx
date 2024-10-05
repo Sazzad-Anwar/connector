@@ -6,7 +6,11 @@ import { v4 as uuid } from 'uuid'
 import { buttonVariants } from '@/components/ui/button'
 import { toast } from '@/components/ui/use-toast'
 import { cn } from '@/lib/utils'
-import { FolderType } from '@/types/api'
+import {
+  CollectionParsingSchema,
+  FolderParsingSchema,
+  FolderType,
+} from '@/types/api'
 
 export type InputFileType = {
   children: React.ReactNode
@@ -20,79 +24,6 @@ export type InputFileType = {
 
 export default function useImportJSON() {
   const { createFolder } = useApiStore()
-
-  // Validator to check if the structure matches FolderType
-  const isValidCollectionType = (data: any): boolean => {
-    const isValidEnv = (env: any): boolean =>
-      Array.isArray(env) &&
-      env.every(
-        (e: any) =>
-          typeof e.id === 'string' &&
-          typeof e.key === 'string' &&
-          typeof e.value === 'string',
-      )
-
-    const isValidApis = (apis: any): boolean =>
-      Array.isArray(apis) &&
-      apis.every(
-        (api: any) =>
-          typeof api.id === 'string' &&
-          typeof api.name === 'string' &&
-          typeof api.url === 'string' &&
-          typeof api.method === 'string',
-      )
-
-    const isValidChildren = (children: any): boolean =>
-      Array.isArray(children) &&
-      children.every(
-        (child: any) =>
-          typeof child.id === 'string' &&
-          typeof child.name === 'string' &&
-          child.type === 'collection' && // Ensure valid types
-          isValidApis(child.apis) &&
-          isValidChildren(child.children),
-      )
-
-    return (
-      typeof data.id === 'string' &&
-      typeof data.name === 'string' &&
-      data.type === 'collection' && // Ensure valid types
-      isValidEnv(data.env) &&
-      isValidChildren(data.children) &&
-      isValidApis(data.apis)
-    )
-  }
-
-  const isValidFolderType = (data: any): boolean => {
-    const isValidApis = (apis: any): boolean =>
-      Array.isArray(apis) &&
-      apis.every(
-        (api: any) =>
-          typeof api.id === 'string' &&
-          typeof api.name === 'string' &&
-          typeof api.url === 'string' &&
-          typeof api.method === 'string',
-      )
-
-    const isValidChildren = (children: any): boolean =>
-      Array.isArray(children) &&
-      children.every(
-        (child: any) =>
-          typeof child.id === 'string' &&
-          typeof child.name === 'string' &&
-          child.type === 'folder' && // Ensure valid types
-          isValidApis(child.apis) &&
-          isValidChildren(child.children),
-      )
-
-    return (
-      typeof data.id === 'string' &&
-      typeof data.name === 'string' &&
-      data.type === 'folder' && // Ensure valid types
-      isValidChildren(data.children) &&
-      isValidApis(data.apis)
-    )
-  }
 
   const readJsonFile = (file: Blob) =>
     new Promise((resolve, reject) => {
@@ -116,37 +47,48 @@ export default function useImportJSON() {
   const onFileChange = async (e: any, id?: string) => {
     if (e.target?.files) {
       try {
-        const parsedData = (await readJsonFile(e.target.files[0])) as FolderType
-
-        // Validate FolderType structure
-        if (!isValidFolderType(parsedData) && id) {
-          throw new Error('Invalid file structure. Please upload a valid JSON.')
-        }
-
-        if (!isValidCollectionType(parsedData) && !id) {
-          throw new Error('Invalid file structure. Please upload a valid JSON.')
-        }
-
-        // Add additional logic for assigning default values and creating the folder
+        const data = await readJsonFile(e.target.files[0])
+        let parsedData = data as FolderType
+        id
+          ? await CollectionParsingSchema.parse(data)
+          : await FolderParsingSchema.parse(data)
         parsedData.id = uuid()
         parsedData.type = parsedData?.type ?? 'folder'
 
-        if (id) {
+        if (!!id && parsedData.type === 'folder') {
           createFolder(parsedData, id)
-        } else {
+          toast({
+            variant: 'success',
+            title: 'Success',
+            description: 'Imported successfully',
+          })
+        } else if (parsedData.type === 'collection') {
           createFolder(parsedData)
+          toast({
+            variant: 'success',
+            title: 'Success',
+            description: 'Imported successfully',
+          })
+        } else {
+          toast({
+            variant: 'error',
+            title: 'Error',
+            description:
+              'Folder schema can not be imported in root. Import in collection only.',
+          })
         }
-
-        toast({
-          variant: 'success',
-          title: 'Success',
-          description: 'Imported successfully',
-        })
       } catch (error) {
         toast({
           variant: 'error',
           title: 'Error',
-          description: (error as Error).message,
+          description: Array.isArray(JSON.parse((error as Error).message))
+            ? JSON.parse((error as Error).message)
+                .map(
+                  (err: any) =>
+                    `${err.path[0].toUpperCase()} ${err.message} \n`,
+                )
+                .join(', ') + '\n\n'.concat('. Please import a valid JSON')
+            : (error as Error).message,
         })
       }
     }

@@ -35,27 +35,28 @@ function actionsInNestedFolder(
   actionType: 'create' | 'update' | 'delete',
   data?: FolderType,
 ) {
-  for (let i = 0; i < folders.length; i++) {
-    const current = folders[i]
-    if (current.id === id) {
-      if (actionType === 'create') {
-        current.children = [...(current.children ?? []), data!]
-      } else if (actionType === 'update') {
-        Object.assign(current, data)
-      } else if (actionType === 'delete') {
-        folders.splice(i, 1)
+  for (const folder of folders) {
+    if (folder.id === id) {
+      switch (actionType) {
+        case 'create':
+          folder.children = [...(folder.children ?? []), data!]
+          break
+        case 'update':
+          Object.assign(folder, data)
+          break
+        case 'delete':
+          return folders.filter((f) => f.id !== id)
       }
-      return folders // Return the updated array
-    } else if (current.children && current.children.length > 0) {
+      return folders
+    } else if (folder.children && folder.children.length > 0) {
       const updatedChildren = actionsInNestedFolder(
-        current.children,
+        folder.children,
         id,
         actionType,
         data,
       )
-      if (updatedChildren !== current.children) {
-        // If the children array was updated, return the updated object
-        current.children = updatedChildren
+      if (updatedChildren !== folder.children) {
+        folder.children = updatedChildren
         return folders
       }
     }
@@ -317,7 +318,6 @@ const useApiStore = create<Store>()((set) => ({
     isLocalStorageAvailable() &&
       localStorage.setItem('collections', JSON.stringify(collections))
   },
-
   updateFolder: (data, id) => {
     let collections = JSON.parse(
       isLocalStorageAvailable() ? localStorage.getItem('collections')! : '[]',

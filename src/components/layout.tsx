@@ -90,7 +90,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <main className={cn('min-h-screen bg-background font-sans antialiased')}>
-      <div className="relative flex min-h-screen flex-col">
+      <div className="relative flex min-h-screen flex-col transition-all duration-200 ease-linear">
         <SplitPane
           sashRender={() => <></>}
           split="vertical"

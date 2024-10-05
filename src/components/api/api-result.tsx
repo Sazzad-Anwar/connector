@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import copy from 'copy-to-clipboard'
 import { Check, Columns2, Copy, Info, Rows2, X } from 'lucide-react'
-import { useRef } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
 import { v4 as uuid } from 'uuid'
 import { cn, parseCookie } from '../../lib/utils'
+import useResultRenderViewStore from '../../store/resultRenderView'
 import Loading from '../loading'
 import ResultRender from '../result-renderer'
 import { Button } from '../ui/button'
@@ -50,9 +50,10 @@ export default function ApiResult({
   headers,
 }: PropsType) {
   const resultDivRef = useRef<HTMLDivElement>(null)
-  const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
-  const resultRenderView = searchParams.get('view')
+  // const [searchParams] = useSearchParams()
+  // const navigate = useNavigate()
+  const { resultRenderView, toggleResultRenderView } =
+    useResultRenderViewStore()
   const resultContainerRef = useRef<HTMLDivElement>(null)
 
   const payloadSize = (data: any): string => {
@@ -67,6 +68,8 @@ export default function ApiResult({
     const payload_size_kb = +(string_length / 1024).toFixed(2)
     return payload_size_kb > 1 ? `${payload_size_kb} KB` : `${string_length} B`
   }
+
+  useEffect(() => {}, [resultRenderView])
 
   return (
     <section
@@ -268,23 +271,24 @@ export default function ApiResult({
               className="mr-2 flex h-8 w-8 justify-self-end p-0"
               size="sm"
               onClick={() => {
-                if (resultRenderView === 'horizontal') {
-                  navigate({
-                    search: searchParams.get('activeQuery')
-                      ? `activeQuery=${searchParams.get(
-                          'activeQuery',
-                        )}&view=vertical`
-                      : 'view=vertical',
-                  })
-                } else {
-                  navigate({
-                    search: searchParams.get('activeQuery')
-                      ? `activeQuery=${searchParams.get(
-                          'activeQuery',
-                        )}&view=horizontal`
-                      : 'view=horizontal',
-                  })
-                }
+                // if (resultRenderView === 'horizontal') {
+                //   navigate({
+                //     search: searchParams.get('activeQuery')
+                //       ? `activeQuery=${searchParams.get(
+                //           'activeQuery',
+                //         )}&view=vertical`
+                //       : 'view=vertical',
+                //   })
+                // } else {
+                //   navigate({
+                //     search: searchParams.get('activeQuery')
+                //       ? `activeQuery=${searchParams.get(
+                //           'activeQuery',
+                //         )}&view=horizontal`
+                //       : 'view=horizontal',
+                //   })
+                // }
+                toggleResultRenderView()
               }}
             >
               <Tooltip>
@@ -314,7 +318,7 @@ export default function ApiResult({
               <DropdownMenu>
                 <TooltipProvider>
                   <Tooltip>
-                    <TooltipTrigger>
+                    <TooltipTrigger asChild>
                       <DropdownMenuTrigger asChild>
                         <Button
                           type="button"
