@@ -7,7 +7,7 @@
     "frontendDist": "../build",
     "devUrl": "http://localhost:2255",
     "beforeDevCommand": "bun dev",
-    "beforeBuildCommand": "bun build"
+    "beforeBuildCommand": "yarn build"
   },
   "app": {
     "windows": [
