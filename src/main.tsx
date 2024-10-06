@@ -3,9 +3,9 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
 import 'split-pane-react/esm/themes/default.css'
-import { router } from './Routes.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
 import './index.css'
+import RouterConfigs from './Routes.tsx'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -14,7 +14,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       storageKey="vite-ui-theme"
     >
       <TooltipProvider>
-        <RouterProvider router={router} />
+        <RouterProvider router={RouterConfigs} />
       </TooltipProvider>
     </ThemeProvider>
   </React.StrictMode>,

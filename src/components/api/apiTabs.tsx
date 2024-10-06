@@ -22,10 +22,10 @@ export default function ApiTabs() {
         <CarouselContent className="ml-0">
           {tabs.map((tab) => (
             <CarouselItem
-              key={tab.id}
+              key={`folder-${tab.folderId}-api-${tab.id}`}
               className={cn(
                 'basis-44 mr-0.5  text-left rounded-t-lg border flex items-center pl-2.5 pr-1.5 py-1',
-                tab.id === apiId ? 'bg-secondary' : 'bg-transparent',
+                tab.id === apiId ? 'bg-secondary' : 'bg-background',
               )}
               onClick={() => navigate(`/api/${tab.folderId}/${tab.id}`)}
             >
@@ -41,7 +41,10 @@ export default function ApiTabs() {
                   if (tabs.length === 1) {
                     navigate('/')
                   } else {
-                    const lastTab = tabs[tabs.indexOf(tab) - 1]
+                    const lastTab =
+                      tabs.indexOf(tab) === 0
+                        ? tabs[tabs.indexOf(tab) + 1]
+                        : tabs[tabs.indexOf(tab) - 1]
                     navigate(`/api/${lastTab.folderId}/${lastTab.id}`)
                   }
                 }}

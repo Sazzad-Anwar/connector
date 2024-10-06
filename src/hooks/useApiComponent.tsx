@@ -28,7 +28,7 @@ import {
 } from '../lib/utils'
 import useResultRenderViewStore from '../store/resultRenderView'
 import useSidePanelToggleStore from '../store/sidePanelToggle'
-import useApiStore from '../store/store'
+import useApiStore, { isLocalStorageAvailable } from '../store/store'
 import { ApiSchema, ApiType, ParamsType } from '../types/api'
 
 export default function useApiComponent() {
@@ -98,6 +98,12 @@ export default function useApiComponent() {
   }, [apiId, folderId, getApi, navigate, getEnv])
 
   useEffect(() => {
+    if (isLocalStorageAvailable()) {
+      localStorage.setItem('resultRenderView', resultRenderView)
+    }
+  }, [])
+
+  useEffect(() => {
     if (apiId && folderId && !api) {
       navigate('/')
     }
@@ -136,21 +142,23 @@ export default function useApiComponent() {
         urlDivRef?.current &&
         formDivRef?.current
       ) {
-        if (resultRenderView === 'horizontal') {
+        if (resultRenderView === 'vertical') {
           setSizes([
-            formDivRef.current.clientWidth / 2,
-            formDivRef.current.clientWidth / 2,
+            formDivRef?.current?.clientWidth &&
+              formDivRef?.current?.clientWidth / 3,
+            formDivRef?.current?.clientWidth &&
+              formDivRef?.current?.clientWidth / 2.8,
           ])
         } else {
           setSizes([
             (window.innerHeight -
               (breadCrumbDivRef.current?.clientHeight +
                 urlDivRef.current?.clientHeight)) /
-              1.8,
+              2,
             (window.innerHeight -
               (breadCrumbDivRef.current?.clientHeight +
                 urlDivRef.current?.clientHeight)) /
-              1.8,
+              1.7,
           ])
         }
       }
@@ -441,26 +449,29 @@ export default function useApiComponent() {
 
   const saveUpdate = useCallback(() => {
     const data: ApiType = {} as ApiType
-    data.id = api.id
-    data.params = filterEmptyParams(form.getValues('params')!)
-    data.headers = filterEmptyParams(form.getValues('headers')!)
-    data.dynamicVariables = filterEmptyParams(
-      form.getValues('dynamicVariables')!,
-    )
-    data.body = filterEmptyParams(form.getValues('body')!)
-    data.pathVariables = filterEmptyParams(form.getValues('pathVariables')!)
-    data.jsonBody = form.getValues('jsonBody')
-    data.interactiveQuery = form.getValues('interactiveQuery')
-    data.response = result
-    data.responseStatus = JSON.stringify(responseStatus)
-    updateApi(data, api.id)
-    toast({
-      variant: 'success',
-      title: 'Success',
-      description: 'Api is updated successfully',
-    })
-    form.reset()
-    getApi(api?.id)
+
+    if (params?.apiId) {
+      data.id = params?.apiId!
+      data.params = filterEmptyParams(form.getValues('params')!)
+      data.headers = filterEmptyParams(form.getValues('headers')!)
+      data.dynamicVariables = filterEmptyParams(
+        form.getValues('dynamicVariables')!,
+      )
+      data.body = filterEmptyParams(form.getValues('body')!)
+      data.pathVariables = filterEmptyParams(form.getValues('pathVariables')!)
+      data.jsonBody = form.getValues('jsonBody')
+      data.interactiveQuery = form.getValues('interactiveQuery')
+      data.response = result
+      data.responseStatus = JSON.stringify(responseStatus)
+      updateApi(data, params.apiId)
+      toast({
+        variant: 'success',
+        title: 'Success',
+        description: 'Api is updated successfully',
+      })
+      form.reset()
+      getApi(api?.id)
+    }
   }, [form])
 
   const copyUrl = () => {
@@ -544,5 +555,8 @@ export default function useApiComponent() {
     apiId,
     folderId,
     url,
+    api,
+    collections,
+    env,
   }
 }

@@ -85,7 +85,7 @@ function addApi(folders: FolderType[], id: string, api?: ApiType) {
 }
 
 // Update an API
-function updateApi(
+function updateApiFunction(
   arr: FolderType[],
   apiId: string,
   updatedApiData: ApiType,
@@ -93,32 +93,41 @@ function updateApi(
   let updated = false // Initialize a flag to track changes
 
   const updatedArr = arr.map((current) => {
+    let updatedApis = current.apis
+
+    // If the current folder contains APIs, we check for a match with the provided apiId
     if (current.apis && current.apis.length > 0) {
-      const updatedApis = current.apis.map((api: ApiType) => {
+      updatedApis = current.apis.map((api: ApiType) => {
         if (api.id === apiId) {
-          // If the API is found, update its properties with updatedApiData
           updated = true // Set the flag to true as an update is made
-          return { ...api, ...updatedApiData }
+          return { ...api, ...updatedApiData } // Merge the current API with the updated data
         }
-        return api // Return the unchanged API if the ID doesn't match
+        return api // Return unchanged API if ID doesn't match
       })
-
-      if (updated) {
-        // If the 'apis' array was updated, return the updated object
-        return { ...current, apis: updatedApis }
-      }
     }
 
+    let updatedChildren = current.children
+
+    // Recursively update children if they exist
     if (current.children && current.children.length > 0) {
-      const updatedChildren = updateApi(current.children, apiId, updatedApiData)
+      updatedChildren = updateApiFunction(
+        current.children,
+        apiId,
+        updatedApiData,
+      )
       if (updatedChildren !== current.children) {
-        updated = true // Set the flag to true if 'children' array was updated
-        return { ...current, children: updatedChildren }
+        updated = true // Set the flag to true if children were updated
       }
     }
-    return current // Return the unchanged object if no updates were made
+
+    // If either apis or children were updated, return the updated object
+    if (updated) {
+      return { ...current, apis: updatedApis, children: updatedChildren }
+    }
+    return current // Return unchanged folder object if no updates
   })
-  return updated ? updatedArr : arr // Return the original array if no changes were made
+
+  return updated ? updatedArr : arr // Return updated array or original if no updates were made
 }
 
 // Delete Api
@@ -336,7 +345,7 @@ const useApiStore = create<Store>()((set) => ({
       isLocalStorageAvailable() ? localStorage.getItem('collections')! : '[]',
     )
     if (id) {
-      collections = updateApi(collections, id, data)
+      collections = updateApiFunction(collections, id, data)
     } else {
       collections = [...collections, data]
     }

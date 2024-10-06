@@ -221,7 +221,7 @@ export default function RenderNavigation({
             .map((folder) => (
               <RenderNavigation
                 collection={folder}
-                key={folder.id}
+                key={`folder-${folder.id}`}
               />
             ))}
           {isCreatingFolder && collection.id === collectionId && (
@@ -236,7 +236,7 @@ export default function RenderNavigation({
           {collection.apis
             ?.sort((a, b) => a.name.localeCompare(b.name))
             .map((api) => (
-              <ContextMenu key={api.id}>
+              <ContextMenu key={`api-${api.id}`}>
                 <ContextMenuTrigger asChild>
                   <div
                     onClick={(event) =>

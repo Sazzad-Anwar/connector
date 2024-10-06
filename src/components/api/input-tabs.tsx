@@ -5,6 +5,7 @@ import { UseFormReturn } from 'react-hook-form'
 import { ApiType, ParamsType } from '@/types/api'
 
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import useResultRenderViewStore from '../../store/resultRenderView'
 import Loading from '../loading'
 import MultipleInput from '../multiple-input'
 import ResultRender from '../result-renderer'
@@ -37,6 +38,7 @@ export const InputTabs = ({
   const navigate = useNavigate()
   const [jsonError, setJsonError] = useState<JSONErrorType | undefined>()
   const [defaultOpen, setDefaultOpen] = useState<string>('params')
+  const { resultRenderView } = useResultRenderViewStore()
 
   const setJsonBody = (data: string) => {
     try {
@@ -289,7 +291,10 @@ export const InputTabs = ({
                 <ResultRender
                   ref={jsonBodyDivRef}
                   result={interactiveQueryData}
-                  height={(height as number) - 95}
+                  height={
+                    (height as number) -
+                    (resultRenderView === 'horizontal' ? 115 : 55)
+                  }
                   readOnly={false}
                   setData={setInteractiveQuery}
                   setError={setJsonError}
@@ -370,7 +375,10 @@ export const InputTabs = ({
                 <ResultRender
                   ref={jsonBodyDivRef}
                   result={jsonBodyData}
-                  height={(height as number) - 105}
+                  height={
+                    (height as number) -
+                    (resultRenderView === 'vertical' ? 105 : 50)
+                  }
                   readOnly={false}
                   setData={setJsonBody}
                   className="border-t pt-3"

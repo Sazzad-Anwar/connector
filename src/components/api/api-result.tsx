@@ -75,7 +75,7 @@ export default function ApiResult({
     <section
       ref={resultDivRef}
       className={cn(
-        resultRenderView === 'horizontal' ? 'border-l py-1' : 'border-t py-1',
+        resultRenderView === 'vertical' ? 'border-l py-1' : 'border-t py-1',
         'bg-background',
       )}
       style={{
@@ -271,37 +271,20 @@ export default function ApiResult({
               className="mr-2 flex h-8 w-8 justify-self-end p-0"
               size="sm"
               onClick={() => {
-                // if (resultRenderView === 'horizontal') {
-                //   navigate({
-                //     search: searchParams.get('activeQuery')
-                //       ? `activeQuery=${searchParams.get(
-                //           'activeQuery',
-                //         )}&view=vertical`
-                //       : 'view=vertical',
-                //   })
-                // } else {
-                //   navigate({
-                //     search: searchParams.get('activeQuery')
-                //       ? `activeQuery=${searchParams.get(
-                //           'activeQuery',
-                //         )}&view=horizontal`
-                //       : 'view=horizontal',
-                //   })
-                // }
                 toggleResultRenderView()
               }}
             >
               <Tooltip>
                 <TooltipTrigger asChild>
-                  {resultRenderView === 'horizontal' ? (
+                  {resultRenderView === 'vertical' ? (
                     <Rows2
                       size={18}
-                      className="animate__animated animate__fadeIn"
+                      className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
                     />
                   ) : (
                     <Columns2
                       size={18}
-                      className="animate__animated animate__fadeIn"
+                      className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
                     />
                   )}
                 </TooltipTrigger>

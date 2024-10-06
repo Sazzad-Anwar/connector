@@ -10,7 +10,7 @@ const AddApi = lazy(() => import('./pages/api/add/page'))
 const UpdateApi = lazy(() => import('./pages/api/update/page'))
 const Variables = lazy(() => import('./pages/variables/page'))
 
-export const router = createBrowserRouter([
+const RouterConfigs = createBrowserRouter([
   {
     path: '/',
     errorElement: <Error />,
@@ -73,3 +73,5 @@ export const router = createBrowserRouter([
     ),
   },
 ])
+
+export default RouterConfigs

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import useApiStore from '@/store/store'
 import copy from 'copy-to-clipboard'
 import { Check, ChevronsRight, Copy, Settings } from 'lucide-react'
 
@@ -58,8 +57,10 @@ export default function Api() {
     onSubmit,
     callApi,
     saveUpdate,
+    collections,
+    env,
+    api,
   } = useApiComponent()
-  const { api, collections, env } = useApiStore()
   const { resultRenderView } = useResultRenderViewStore()
   const navigate = useNavigate()
 
@@ -87,7 +88,7 @@ export default function Api() {
       >
         <div
           ref={breadCrumbDivRef}
-          className="flex items-center p-5"
+          className="flex items-center px-5 py-3"
         >
           <SideNavToggler />
           <Breadcrumbs
@@ -189,12 +190,12 @@ export default function Api() {
                 >
                   {isUrlCopied ? (
                     <Check
-                      className="animate__animated animate__fadeIn"
+                      className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
                       size={18}
                     />
                   ) : (
                     <Copy
-                      className="animate__animated animate__fadeIn"
+                      className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
                       size={18}
                     />
                   )}
@@ -215,7 +216,7 @@ export default function Api() {
                   onClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
                 >
                   <Settings
-                    className="animate__animated animate__fadeIn"
+                    className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
                     size={18}
                   />
                 </Button>
@@ -228,9 +229,10 @@ export default function Api() {
                 <Button
                   onClick={() => callApi()}
                   className="p-1 rounded-l-none"
+                  variant="secondary"
                   size="icon"
                 >
-                  <i className="bi bi-plugin text-2xl font-bold" />
+                  <i className="bi bi-plugin text-xl font-bold" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -241,19 +243,13 @@ export default function Api() {
         </div>
         <SplitPane
           sashRender={() => <></>}
-          split={
-            (resultRenderView === 'horizontal'
-              ? 'vertical'
-              : resultRenderView === 'vertical'
-              ? 'horizontal'
-              : 'horizontal') as 'vertical' | 'horizontal'
-          }
+          split={resultRenderView}
           sizes={sizes}
           onChange={(sizes) => setSizes(sizes)}
         >
           <Pane
             minSize={
-              resultRenderView === 'horizontal'
+              resultRenderView === 'vertical'
                 ? formDivRef?.current?.clientWidth &&
                   formDivRef?.current?.clientWidth / 3
                 : 5
@@ -263,9 +259,9 @@ export default function Api() {
             <InputTabs
               className="px-5 pt-2"
               height={
-                (resultRenderView === 'horizontal'
-                  ? window.innerHeight - 120
-                  : sizes[0]) - 60
+                resultRenderView === 'vertical'
+                  ? window.innerHeight - 140
+                  : sizes[0]
               }
               form={form}
               api={api}
@@ -274,18 +270,18 @@ export default function Api() {
 
           <Pane
             minSize={
-              resultRenderView === 'horizontal'
+              resultRenderView === 'vertical'
                 ? formDivRef?.current?.clientWidth &&
                   formDivRef?.current?.clientWidth / 2.9
-                : 160
+                : 80
             }
             maxSize="100%"
           >
             <ApiResult
               height={
-                resultRenderView === 'horizontal'
-                  ? window.innerHeight
-                  : sizes[1]!
+                resultRenderView === 'vertical'
+                  ? window.innerHeight + 20
+                  : sizes[1]! + 20
               }
               isLoading={isLoading}
               result={result}

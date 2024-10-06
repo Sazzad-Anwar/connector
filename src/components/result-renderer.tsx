@@ -146,12 +146,12 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
             <TooltipTrigger asChild>
               {isCopiedResponse ? (
                 <Check
-                  className="animate__animated animate__fadeIn"
+                  className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
                   size={18}
                 />
               ) : (
                 <Copy
-                  className="animate__animated animate__fadeIn"
+                  className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
                   size={18}
                 />
               )}
