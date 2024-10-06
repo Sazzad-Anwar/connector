@@ -1,26 +1,36 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import MonacoEditor from '@monaco-editor/react'
+import MonacoEditor, { Monaco } from '@monaco-editor/react'
 import copy from 'copy-to-clipboard'
 import { Check, Copy } from 'lucide-react'
 import { forwardRef, useEffect, useRef, useState } from 'react'
+import { JSONErrorType } from './api/api'
+import Loading from './loading'
 import { useTheme } from './theme-provider'
 import { Button } from './ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { toast } from './ui/use-toast'
 
 type PropsType = {
-  result?: object | string | any[]
+  result?: object | string | unknown[]
   height?: number
   type?: 'response' | 'input'
   readOnly?: boolean
   defaultLanguage?: 'json' | 'javascript'
   className?: string
-  setData?: (value: any) => void
+  setError?: React.Dispatch<React.SetStateAction<JSONErrorType | undefined>>
+  setData?: (value: string) => void
 }
 
 const ResultRender = forwardRef<HTMLDivElement, PropsType>(
   function ResultRender(
-    { result, height, readOnly, setData, className, type = 'input' }: PropsType,
+    {
+      result,
+      height,
+      readOnly,
+      setData,
+      className,
+      type = 'input',
+      setError,
+    }: PropsType,
     ref,
   ) {
     const { theme } = useTheme()
@@ -31,7 +41,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       JSON.stringify(result, null, '\t') ?? '{}',
     )
 
-    function setEditorTheme(monaco: any) {
+    function setEditorTheme(monaco: Monaco) {
       monaco.editor.defineTheme('onedark', {
         base: 'vs-dark',
         inherit: true,
@@ -49,14 +59,16 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       })
     }
 
-    const handleEditorChange = (value: any) => {
-      setData && setData(value)
-      setEditorValue(value)
+    const handleEditorChange = (value: string | undefined) => {
+      if (!isErrorResult && value) {
+        setData?.(value!)
+        setEditorValue(value!)
+      }
     }
 
     useEffect(() => {
       const handleEscapeKeyPress = (event: KeyboardEvent) => {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && !readOnly) {
           // Handle the "Escape" key press here
           // form.setValue('jsonBody', api?.jsonBody)
           setEditorValue(JSON.stringify(result, null, '\t') ?? '{}')
@@ -84,9 +96,9 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
           JSON.parse(result as string)
           setIsErrorResult(false)
         }
-      } catch (error: any) {
+      } catch (error) {
+        console.log(error)
         setIsErrorResult(true)
-        setEditorValue(result as string)
       }
     }, [result])
 
@@ -110,7 +122,8 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       copy(JSON.stringify(result))
       toast({
         variant: 'success',
-        title: 'Data is copied',
+        title: 'Success',
+        description: 'Data is copied to clipboard',
       })
       setTimeout(() => {
         setIsCopiedResponse(false)
@@ -133,12 +146,12 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
             <TooltipTrigger asChild>
               {isCopiedResponse ? (
                 <Check
-                  className="animate__animated animate__fadeIn"
+                  className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
                   size={18}
                 />
               ) : (
                 <Copy
-                  className="animate__animated animate__fadeIn"
+                  className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
                   size={18}
                 />
               )}
@@ -156,10 +169,13 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
             automaticLayout: true,
             formatOnType: true,
             formatOnPaste: true,
-            editor: {
-              setTheme: {},
-            },
+            smoothScrolling: true,
+            cursorSmoothCaretAnimation: 'explicit',
+            fastScrollSensitivity: 10,
+            mouseWheelScrollSensitivity: 3,
             tabSize: 8,
+            scrollBeyondLastLine: false,
+            lineNumbersMinChars: 10,
             autoIndent: 'brackets',
             copyWithSyntaxHighlighting: true,
             fontLigatures: true,
@@ -184,12 +200,25 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
               ? 'onedark'
               : 'light'
           }
-          loading={<></>}
-          height={height ?? window.innerHeight - 320}
+          loading={<Loading height={height} />}
+          // height={height ?? window.innerHeight - 320}
+          height={height!}
           width="100%"
           defaultLanguage={isErrorResult ? 'html' : 'json'}
           onChange={handleEditorChange}
           className={className}
+          onValidate={(markers) => {
+            setError?.({
+              isError: markers.length > 0,
+              error: markers
+                .map(
+                  (marker) =>
+                    marker.message +
+                    ` at line number ${marker.startLineNumber}`,
+                )
+                .join(', '),
+            })
+          }}
         />
       </div>
     )

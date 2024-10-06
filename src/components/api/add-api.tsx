@@ -18,6 +18,7 @@ import {
 import { ApiSchema, ApiType, FolderType } from '@/types/api'
 
 import { useNavigate, useParams } from 'react-router-dom'
+import useTabRenderView from '../../store/tabView'
 import Breadcrumbs from '../breadcrumb'
 import SideNavToggler from '../nav/sidenav-toggler'
 import { Button } from '../ui/button'
@@ -35,6 +36,7 @@ import { toast } from '../ui/use-toast'
 import InputTabs from './input-tabs'
 
 export default function AddApi() {
+  const { tabs } = useTabRenderView()
   const navigate = useNavigate()
   const saveButtonRef = useRef<HTMLButtonElement>(null)
   const params = useParams()
@@ -68,7 +70,8 @@ export default function AddApi() {
     createApi(data, folderId)
     toast({
       variant: 'success',
-      title: 'Api is created',
+      title: 'Success',
+      description: 'Api is created successfully',
     })
     navigate(`/api/${folderId}/${data.id}`)
   }
@@ -125,7 +128,7 @@ export default function AddApi() {
       }
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
-        navigate(-1)
+        navigate(tabs.length ? `/api/${tabs[0].folderId}/${tabs[0].id}` : '/')
       }
     }
 
@@ -170,7 +173,7 @@ export default function AddApi() {
                   value={field.value ?? ''}
                   className={cn(
                     setBorderColor(!!form.formState.errors.name),
-                    'text-base',
+                    'text-base h-7',
                   )}
                 />
               </FormControl>
@@ -189,8 +192,8 @@ export default function AddApi() {
                 >
                   <FormControl>
                     <SelectTrigger
-                      className={
-                        (field.value === 'GET'
+                      className={cn(
+                        field.value === 'GET'
                           ? 'text-green-500'
                           : field.value === 'POST'
                           ? 'text-yellow-500'
@@ -199,13 +202,13 @@ export default function AddApi() {
                           : field.value === 'PATCH'
                           ? 'text-purple-500'
                           : field.value === 'DELETE'
-                          ? 'text-destructive'
-                          : 'text-foreground') +
-                        ' font-bold w-24 border-r-0 rounded-r-none' +
+                          ? 'text-red-500'
+                          : 'text-foreground',
+                        'font-bold w-24 border-r-0 rounded-r-none h-8',
                         setBorderColor(
                           !!form.formState.errors.method || isUrlError,
-                        )
-                      }
+                        ),
+                      )}
                     >
                       <SelectValue placeholder="Method" />
                     </SelectTrigger>
@@ -222,7 +225,7 @@ export default function AddApi() {
                             ? 'text-blue-500'
                             : item === 'PATCH'
                             ? 'text-purple-500'
-                            : 'text-destructive') + ' font-bold'
+                            : 'text-red-500') + ' font-bold'
                         }
                         key={item}
                         value={item}
@@ -239,7 +242,7 @@ export default function AddApi() {
             control={form.control}
             name="url"
             render={({ field }) => (
-              <FormItem className="flex items-center">
+              <FormItem className="flex items-center h-8">
                 <FormControl>
                   <Input
                     autoComplete="off"
@@ -259,7 +262,7 @@ export default function AddApi() {
                     className={cn(
                       isUrlError ? 'text-red-500 border-l' : 'border-l-0',
                       setBorderColor(isUrlError),
-                      'text-base rounded-l-none pl-1',
+                      'text-base rounded-l-none pl-1 h-8',
                     )}
                   />
                 </FormControl>
@@ -278,9 +281,10 @@ export default function AddApi() {
           />
         </div>
         <InputTabs
-          className="pt-5 h-auto"
+          className="pt-5"
           form={form}
-          // height={window.innerHeight - 160}
+          type="create"
+          height={window?.innerHeight - 200}
         />
         <div className="flex mt-5 justify-end">
           <Button

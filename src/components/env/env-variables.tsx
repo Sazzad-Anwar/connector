@@ -122,7 +122,8 @@ export default function EnvVariables() {
 
     toast({
       variant: 'success',
-      title: 'Variables are saved',
+      title: 'Success',
+      description: 'Variables are saved successfully',
     })
     reloadPage()
   }

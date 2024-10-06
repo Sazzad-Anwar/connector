@@ -3,6 +3,7 @@ import React, { useRef } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import * as z from 'zod'
 
+import { CollectionSchema } from '../../types/api'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -20,12 +21,6 @@ import {
   FormMessage,
 } from '../ui/form'
 import { Input } from '../ui/input'
-
-export const CollectionSchema = z.object({
-  collectionName: z
-    .string()
-    .min(3, { message: 'Collection name should be more than 3 characters' }),
-})
 
 type PropsType = {
   children: React.ReactNode

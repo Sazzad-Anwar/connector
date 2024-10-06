@@ -1,90 +1,48 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "$schema": "https://schema.tauri.app/config/2.0.0",
+  "productName": "connector",
+  "version": "2.0.0",
+  "identifier": "app.vercel.connector-ten",
   "build": {
-    "beforeBuildCommand": "npm run build",
-    "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:2255",
-    "distDir": "../dist"
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:2255",
+    "beforeDevCommand": "yarn dev",
+    "beforeBuildCommand": "yarn build"
   },
-  "package": {
-    "productName": "Connector",
-    "version": "1.6.10"
-  },
-  "tauri": {
-    "allowlist": {
-      "os": {
-        "all": true
-      },
-      "fs": {
-        "writeFile": true,
-        "createDir": true,
-        "scope": ["$DOWNLOAD/*"]
-      },
-      "http": {
-        "all": true,
-        "request": true,
-        "scope": ["http://*", "https:///*"]
-      }
-    },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "",
-      "deb": {
-        "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico",
-        "icons/icon.png",
-        "icons/Square30x30Logo.png",
-        "icons/Square44x44Logo.png",
-        "icons/Square71x71Logo.png",
-        "icons/Square89x89Logo.png",
-        "icons/Square107x107Logo.png",
-        "icons/Square142x142Logo.png",
-        "icons/Square150x150Logo.png",
-        "icons/Square284x284Logo.png",
-        "icons/Square310x310Logo.png",
-        "icons/StoreLogo.png"
-      ],
-      "identifier": "app.vercel.connector-ten",
-      "longDescription": "",
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
-    },
-    "security": {
-      "csp": null
-    },
-    "updater": {
-      "active": false
-    },
+  "app": {
     "windows": [
       {
-        "fullscreen": false,
-        "height": 780,
+        "title": "connector",
+        "width": 1280,
+        "height": 820,
         "resizable": true,
-        "title": "Connector",
-        "width": 1024,
-        "maximized": true
+        "fullscreen": false
       }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico",
+      "icons/icon.png",
+      "icons/Square30x30Logo.png",
+      "icons/Square44x44Logo.png",
+      "icons/Square71x71Logo.png",
+      "icons/Square89x89Logo.png",
+      "icons/Square107x107Logo.png",
+      "icons/Square142x142Logo.png",
+      "icons/Square150x150Logo.png",
+      "icons/Square284x284Logo.png",
+      "icons/Square310x310Logo.png",
+      "icons/StoreLogo.png"
     ]
   }
 }

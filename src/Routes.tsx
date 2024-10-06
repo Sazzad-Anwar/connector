@@ -1,23 +1,22 @@
-import { Suspense, lazy } from "react";
-import { createBrowserRouter } from "react-router-dom";
-const Api = lazy(() => import("./pages/api/page"));
-const Home = lazy(() => import("./pages/page"));
-const AddApi = lazy(() => import("./pages/api/add/page"));
-const UpdateApi = lazy(() => import("./pages/api/update/page"));
-const Variables = lazy(() => import("./pages/variables/page"));
-import Loading from "./components/loading";
-import Layout from "./components/layout";
-import { ErrorBoundary } from "react-error-boundary";
-import Error from "./components/error";
-import NotFound from "./components/notFound";
+import { Suspense, lazy } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
+import { createBrowserRouter } from 'react-router-dom'
+import Error from './components/error'
+import Layout from './components/layout'
+import Loading from './components/loading'
+const Api = lazy(() => import('./pages/api/page'))
+const Home = lazy(() => import('./pages/page'))
+const AddApi = lazy(() => import('./pages/api/add/page'))
+const UpdateApi = lazy(() => import('./pages/api/update/page'))
+const Variables = lazy(() => import('./pages/variables/page'))
 
-const router = createBrowserRouter([
+const RouterConfigs = createBrowserRouter([
   {
-    path: "/",
-    errorElement: <NotFound />,
+    path: '/',
+    errorElement: <Error />,
     element: (
       <Layout>
-        <Suspense fallback={<Loading />}>
+        <Suspense fallback={<Loading className="h-screen" />}>
           <ErrorBoundary fallback={<Error />}>
             <Home />
           </ErrorBoundary>
@@ -26,10 +25,10 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/api/variables/:folderId",
+    path: '/api/variables/:folderId',
     element: (
       <Layout>
-        <Suspense fallback={<Loading />}>
+        <Suspense fallback={<Loading className="h-screen" />}>
           <ErrorBoundary fallback={<Error />}>
             <Variables />
           </ErrorBoundary>
@@ -38,10 +37,10 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/api/:folderId/:apiId/update",
+    path: '/api/:folderId/:apiId/update',
     element: (
       <Layout>
-        <Suspense fallback={<Loading />}>
+        <Suspense fallback={<Loading className="h-screen" />}>
           <ErrorBoundary fallback={<Error />}>
             <UpdateApi />
           </ErrorBoundary>
@@ -50,10 +49,10 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/api/:folderId/add",
+    path: '/api/:folderId/add',
     element: (
       <Layout>
-        <Suspense fallback={<Loading />}>
+        <Suspense fallback={<Loading className="h-screen" />}>
           <ErrorBoundary fallback={<Error />}>
             <AddApi />
           </ErrorBoundary>
@@ -62,10 +61,10 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/api/:folderId/:apiId",
+    path: '/api/:folderId/:apiId',
     element: (
       <Layout>
-        <Suspense fallback={<Loading />}>
+        <Suspense fallback={<Loading className="h-screen" />}>
           <ErrorBoundary fallback={<Error />}>
             <Api />
           </ErrorBoundary>
@@ -73,6 +72,6 @@ const router = createBrowserRouter([
       </Layout>
     ),
   },
-]);
+])
 
-export default router;
+export default RouterConfigs

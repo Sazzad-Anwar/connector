@@ -50,12 +50,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           if (error) {
             toast({
               variant: 'error',
-              title: error,
+              title: 'Error',
+              description: error,
             })
           } else {
             toast({
               variant: 'success',
-              title: 'Connection is updated!',
+              title: 'Success',
+              description: 'Update available',
             })
           }
         })
@@ -86,9 +88,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     resizeWindow()
   }, [isOpen])
 
+  // useEffect(() => {
+  //   localStorage.clear()
+  // }, [])
+
   return (
     <main className={cn('min-h-screen bg-background font-sans antialiased')}>
-      <div className="relative flex min-h-screen flex-col">
+      <div className="relative flex min-h-screen flex-col transition-all duration-200 ease-linear">
         <SplitPane
           sashRender={() => <></>}
           split="vertical"
