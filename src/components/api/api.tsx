@@ -41,7 +41,7 @@ export default function Api() {
     url,
     apiId,
     folderId,
-    urlWidth,
+    // urlWidth,
     formDivRef,
     result,
     isUrlCopied,
@@ -137,11 +137,11 @@ export default function Api() {
               {api.method}
             </span>
             <div
-              style={{
-                width: urlWidth,
-                maxWidth: '100%',
-              }}
-              className="overflow-hidden truncate px-2"
+              // style={{
+              //   width: urlWidth,
+              //   maxWidth: '100%',
+              // }}
+              className="truncate px-2"
             >
               {containsDynamicVariable(api.url) ? (
                 <Tooltip>
@@ -184,7 +184,7 @@ export default function Api() {
                 <Button
                   type="button"
                   variant="ghost"
-                  className="mr-2 flex h-8 w-8 justify-self-end p-0"
+                  className="flex justify-self-end px-3 rounded-none"
                   size="sm"
                   onClick={() => copyUrl()}
                 >
@@ -211,7 +211,7 @@ export default function Api() {
                 <Button
                   type="button"
                   variant="ghost"
-                  className="mr-2 flex h-8 w-8 justify-self-end p-0"
+                  className="flex justify-self-end px-3 rounded-none"
                   size="sm"
                   onClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
                 >
@@ -257,10 +257,15 @@ export default function Api() {
             maxSize="100%"
           >
             <InputTabs
-              className="px-5 pt-2"
+              className={cn(
+                'px-5 pt-2',
+                resultRenderView === 'horizontal'
+                  ? `w-[${sizes[0] - 120}px]`
+                  : '',
+              )}
               height={
                 resultRenderView === 'vertical'
-                  ? window.innerHeight - 140
+                  ? window.innerHeight - 200
                   : sizes[0]
               }
               form={form}

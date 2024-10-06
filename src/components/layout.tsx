@@ -88,6 +88,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     resizeWindow()
   }, [isOpen])
 
+  // useEffect(() => {
+  //   localStorage.clear()
+  // }, [])
+
   return (
     <main className={cn('min-h-screen bg-background font-sans antialiased')}>
       <div className="relative flex min-h-screen flex-col transition-all duration-200 ease-linear">

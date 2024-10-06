@@ -69,7 +69,7 @@ export const InputTabs = ({
         error: '',
       })
     } catch (error: any) {
-      console.log(error)
+      // console.log(error)
     }
   }
 

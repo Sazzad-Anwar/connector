@@ -16,7 +16,7 @@ const RouterConfigs = createBrowserRouter([
     errorElement: <Error />,
     element: (
       <Layout>
-        <Suspense fallback={<Loading />}>
+        <Suspense fallback={<Loading className="h-screen" />}>
           <ErrorBoundary fallback={<Error />}>
             <Home />
           </ErrorBoundary>
@@ -28,7 +28,7 @@ const RouterConfigs = createBrowserRouter([
     path: '/api/variables/:folderId',
     element: (
       <Layout>
-        <Suspense fallback={<Loading />}>
+        <Suspense fallback={<Loading className="h-screen" />}>
           <ErrorBoundary fallback={<Error />}>
             <Variables />
           </ErrorBoundary>
@@ -40,7 +40,7 @@ const RouterConfigs = createBrowserRouter([
     path: '/api/:folderId/:apiId/update',
     element: (
       <Layout>
-        <Suspense fallback={<Loading />}>
+        <Suspense fallback={<Loading className="h-screen" />}>
           <ErrorBoundary fallback={<Error />}>
             <UpdateApi />
           </ErrorBoundary>
@@ -52,7 +52,7 @@ const RouterConfigs = createBrowserRouter([
     path: '/api/:folderId/add',
     element: (
       <Layout>
-        <Suspense fallback={<Loading />}>
+        <Suspense fallback={<Loading className="h-screen" />}>
           <ErrorBoundary fallback={<Error />}>
             <AddApi />
           </ErrorBoundary>
@@ -64,7 +64,7 @@ const RouterConfigs = createBrowserRouter([
     path: '/api/:folderId/:apiId',
     element: (
       <Layout>
-        <Suspense fallback={<Loading />}>
+        <Suspense fallback={<Loading className="h-screen" />}>
           <ErrorBoundary fallback={<Error />}>
             <Api />
           </ErrorBoundary>

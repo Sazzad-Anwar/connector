@@ -200,7 +200,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
               ? 'onedark'
               : 'light'
           }
-          loading={<Loading />}
+          loading={<Loading height={height} />}
           // height={height ?? window.innerHeight - 320}
           height={height!}
           width="100%"

@@ -136,33 +136,39 @@ export default function useApiComponent() {
   }, [api, apiId])
 
   useLayoutEffect(() => {
-    setTimeout(() => {
-      if (
-        breadCrumbDivRef?.current &&
-        urlDivRef?.current &&
-        formDivRef?.current
-      ) {
-        if (resultRenderView === 'vertical') {
-          setSizes([
-            formDivRef?.current?.clientWidth &&
-              formDivRef?.current?.clientWidth / 3,
-            formDivRef?.current?.clientWidth &&
-              formDivRef?.current?.clientWidth / 2.8,
-          ])
-        } else {
-          setSizes([
-            (window.innerHeight -
-              (breadCrumbDivRef.current?.clientHeight +
-                urlDivRef.current?.clientHeight)) /
-              2,
-            (window.innerHeight -
-              (breadCrumbDivRef.current?.clientHeight +
-                urlDivRef.current?.clientHeight)) /
-              1.7,
-          ])
+    window?.addEventListener('resize', () => {
+      resizeWindow()
+    })
+    const resizeWindow = () => {
+      setTimeout(() => {
+        if (
+          breadCrumbDivRef?.current &&
+          urlDivRef?.current &&
+          formDivRef?.current
+        ) {
+          if (resultRenderView === 'vertical') {
+            setSizes([
+              formDivRef?.current?.clientWidth &&
+                formDivRef?.current?.clientWidth / 3,
+              formDivRef?.current?.clientWidth &&
+                formDivRef?.current?.clientWidth / 2.8,
+            ])
+          } else {
+            setSizes([
+              (window.innerHeight -
+                (breadCrumbDivRef.current?.clientHeight +
+                  urlDivRef.current?.clientHeight)) /
+                2,
+              (window.innerHeight -
+                (breadCrumbDivRef.current?.clientHeight +
+                  urlDivRef.current?.clientHeight)) /
+                1.7,
+            ])
+          }
         }
-      }
-    }, 100)
+      }, 100)
+    }
+    resizeWindow()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
@@ -245,7 +251,7 @@ export default function useApiComponent() {
     const handleEscapeKeyPress = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key === 's') {
         event.preventDefault()
-        if (form.formState.isDirty) {
+        if (!!Object.entries(form.formState.dirtyFields).length) {
           updateButtonRef.current?.click()
           form.reset()
           getApi(api?.id)
