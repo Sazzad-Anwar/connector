@@ -7,7 +7,7 @@ on:
       - '*'
 
 jobs:
-  test-connector:
+  test:
     if: startsWith(github.ref, 'refs/heads/')
     permissions:
       contents: write
@@ -55,7 +55,7 @@ jobs:
         # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
         run: yarn install # change this to npm or pnpm depending on which one you use.
 
-  create-releaes-candidate:
+  releaes-candidate:
     if: github.ref == 'refs/heads/rc'
     permissions:
       contents: write
@@ -108,13 +108,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          releaseName: 'Connector_rc v__VERSION__'
+          releaseName: 'Connector v__VERSION__rc'
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: false
           prerelease: true
           args: ${{ matrix.args }}
 
-  create-release:
+  release:
     if: github.ref == 'refs/heads/release'
     permissions:
       contents: write
