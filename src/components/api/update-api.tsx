@@ -169,12 +169,15 @@ export default function UpdateApi() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        className="m-5 h-full"
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem className="flex items-center space-y-0 px-5 pt-5">
+            <FormItem className="flex items-center">
               <SideNavToggler />
               <Breadcrumbs
                 breadcrumbs={getBreadcrumbsForNthChildren(
@@ -183,7 +186,7 @@ export default function UpdateApi() {
                 )}
               />
               <ChevronsRight
-                size={18}
+                size={13}
                 className="mx-2"
               />
               <FormControl>
@@ -194,14 +197,14 @@ export default function UpdateApi() {
                   value={field.value ?? ''}
                   className={cn(
                     setBorderColor(!!form.formState.errors.name),
-                    'w-full min-w-max text-base',
+                    'text-base h-7',
                   )}
                 />
               </FormControl>
             </FormItem>
           )}
         />
-        <div className="mt-4 flex w-full items-center px-5">
+        <div className="mt-4 flex w-full items-center">
           <FormField
             control={form.control}
             name="method"
@@ -213,8 +216,8 @@ export default function UpdateApi() {
                 >
                   <FormControl>
                     <SelectTrigger
-                      className={
-                        (field.value === 'GET'
+                      className={cn(
+                        field.value === 'GET'
                           ? 'text-green-500'
                           : field.value === 'POST'
                           ? 'text-yellow-500'
@@ -223,13 +226,13 @@ export default function UpdateApi() {
                           : field.value === 'PATCH'
                           ? 'text-purple-500'
                           : field.value === 'DELETE'
-                          ? 'text-destructive'
-                          : 'text-foreground') +
-                        ' font-bold w-24 border-r-0 rounded-r-none' +
+                          ? 'text-red-500'
+                          : 'text-foreground',
+                        'font-bold w-24 border-r-0 rounded-r-none h-8',
                         setBorderColor(
                           !!form.formState.errors.method || isUrlError,
-                        )
-                      }
+                        ),
+                      )}
                     >
                       <SelectValue placeholder="Method" />
                     </SelectTrigger>
@@ -246,7 +249,7 @@ export default function UpdateApi() {
                             ? 'text-blue-500'
                             : item === 'PATCH'
                             ? 'text-purple-500'
-                            : 'text-destructive') + ' font-bold'
+                            : 'text-red-500') + ' font-bold'
                         }
                         key={item}
                         value={item}
@@ -263,7 +266,7 @@ export default function UpdateApi() {
             control={form.control}
             name="url"
             render={({ field }) => (
-              <FormItem className="flex items-center">
+              <FormItem className="flex items-center h-8">
                 <FormControl>
                   <Input
                     autoComplete="off"
@@ -283,7 +286,7 @@ export default function UpdateApi() {
                     className={cn(
                       isUrlError ? 'text-red-500 border-l' : 'border-l-0',
                       setBorderColor(isUrlError),
-                      'text-base rounded-l-none pl-1',
+                      'text-base rounded-l-none pl-1 h-8',
                     )}
                   />
                 </FormControl>
@@ -302,13 +305,12 @@ export default function UpdateApi() {
           />
         </div>
         <InputTabs
-          className="p-5 overflow-auto"
+          className="pt-5"
           form={form}
-          api={api}
-          type="update"
-          height={window?.innerHeight - 300}
+          type="create"
+          height={window?.innerHeight - 200}
         />
-        <div className="mr-5 flex justify-end">
+        <div className="mt-5 flex justify-end">
           <Button
             variant="outline"
             className="mr-2"

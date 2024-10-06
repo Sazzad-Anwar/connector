@@ -18,6 +18,7 @@ import {
 import { ApiSchema, ApiType, FolderType } from '@/types/api'
 
 import { useNavigate, useParams } from 'react-router-dom'
+import useTabRenderView from '../../store/tabView'
 import Breadcrumbs from '../breadcrumb'
 import SideNavToggler from '../nav/sidenav-toggler'
 import { Button } from '../ui/button'
@@ -35,6 +36,7 @@ import { toast } from '../ui/use-toast'
 import InputTabs from './input-tabs'
 
 export default function AddApi() {
+  const { tabs } = useTabRenderView()
   const navigate = useNavigate()
   const saveButtonRef = useRef<HTMLButtonElement>(null)
   const params = useParams()
@@ -126,7 +128,7 @@ export default function AddApi() {
       }
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
-        navigate(-1)
+        navigate(tabs.length ? `/api/${tabs[0].folderId}/${tabs[0].id}` : '/')
       }
     }
 
@@ -279,10 +281,10 @@ export default function AddApi() {
           />
         </div>
         <InputTabs
-          className="pt-5 h-auto"
+          className="pt-5"
           form={form}
           type="create"
-          height={window?.innerHeight - 262}
+          height={window?.innerHeight - 200}
         />
         <div className="flex mt-5 justify-end">
           <Button

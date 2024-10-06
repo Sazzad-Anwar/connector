@@ -4,7 +4,7 @@ import { UseFormReturn } from 'react-hook-form'
 
 import { ApiType, ParamsType } from '@/types/api'
 
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import useResultRenderViewStore from '../../store/resultRenderView'
 import Loading from '../loading'
 import MultipleInput from '../multiple-input'
@@ -27,6 +27,7 @@ export const InputTabs = ({
   type,
   className,
 }: PropsType) => {
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const jsonBodyDivRef = useRef<HTMLDivElement>(null)
   const [jsonBodyData, setJsonBodyData] = useState<any>({})
@@ -293,7 +294,12 @@ export const InputTabs = ({
                   result={interactiveQueryData}
                   height={
                     (height as number) -
-                    (resultRenderView === 'horizontal' ? 115 : 55)
+                    (location.pathname.includes('/add') ||
+                    location.pathname.includes('/update')
+                      ? 105
+                      : resultRenderView === 'horizontal'
+                      ? 115
+                      : 55)
                   }
                   readOnly={false}
                   setData={setInteractiveQuery}

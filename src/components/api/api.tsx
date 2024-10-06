@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import copy from 'copy-to-clipboard'
 import { Check, ChevronsRight, Copy, Settings } from 'lucide-react'
 
 import {
@@ -10,6 +9,7 @@ import {
   replaceVariables,
 } from '@/lib/utils'
 
+import copy from 'copy-to-clipboard'
 import { useNavigate } from 'react-router-dom'
 import SplitPane, { Pane } from 'split-pane-react'
 import useApiComponent from '../../hooks/useApiComponent'
@@ -175,9 +175,13 @@ export default function Api() {
               ) : (
                 url
               )}
-              {url?.split('}}')[1]}
+              <Tooltip>
+                <TooltipTrigger>{url?.split('}}')[1]}</TooltipTrigger>
+                <TooltipContent>Double click to edit this API</TooltipContent>
+              </Tooltip>
             </div>
           </div>
+
           <div className="flex items-center justify-end absolute right-0 h-auto bg-background pl-1">
             <Tooltip>
               <TooltipTrigger asChild>
