@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    if: startsWith(github.ref, 'refs/heads/')
+    if: startsWith(github.ref, 'refs/heads/') && !startsWith(github.ref, 'refs/heads/release') && !contains(github.ref, 'refs/heads/rc')
     permissions:
       contents: write
     strategy:
