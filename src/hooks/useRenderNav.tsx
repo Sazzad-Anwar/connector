@@ -7,14 +7,9 @@ import { v4 as uuid } from 'uuid'
 import { z } from 'zod'
 import { toast } from '../components/ui/use-toast'
 import useApiStore from '../store/store'
+import useTabRenderView from '../store/tabView'
 import { ApiType, CollectionSchema, FolderType } from '../types/api'
 import useImportJSON from './useImportJSON'
-
-enum Platform {
-  Darwin,
-  Linux,
-  Win32,
-}
 
 export default function useRenderNav({
   collection,
@@ -33,6 +28,7 @@ export default function useRenderNav({
   const [isFolderNameUpdating, setIsFolderNameUpdating] = useState(false)
   const [isMoveToFolderDialogOpen, setIsMoveToFolderDialogOpen] =
     useState(false)
+  const { addInTab } = useTabRenderView()
 
   // Rename collection
   const renameCollectionName: SubmitHandler<
@@ -229,6 +225,11 @@ export default function useRenderNav({
         setSelectedApis([...selectedApis, api])
       }
     } else {
+      addInTab({
+        id: api.id,
+        name: api.name,
+        folderId: collection.id,
+      })
       navigate(`/api/${collection.id}/${api.id}`)
     }
   }

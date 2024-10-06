@@ -119,7 +119,7 @@ export default function ApiResult({
               <ResultRender
                 ref={resultContainerRef}
                 readOnly={true}
-                height={height! - 160}
+                height={height! - 215}
                 type="response"
                 result={result ?? {}}
               />

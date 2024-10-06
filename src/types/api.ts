@@ -74,3 +74,9 @@ export const CollectionParsingSchema: z.ZodSchema = z.object({
   apis: z.array(ApiSchema).optional(),
   children: z.array(FolderParsingSchema).optional(), // Reference the FolderParsingSchema
 })
+
+export type TabType = {
+  folderId: string
+  id: string
+  name: string
+}

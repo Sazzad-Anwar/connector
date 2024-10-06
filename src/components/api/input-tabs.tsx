@@ -164,7 +164,7 @@ export const InputTabs = ({
           value="params"
           className="animate__animated animate__fadeIn"
           style={{
-            maxHeight: (height as number) + 40,
+            maxHeight: (height as number) + 95,
           }}
         >
           <Tabs
@@ -261,7 +261,7 @@ export const InputTabs = ({
               value="url-params"
               className="animate__animated animate__fadeIn relative overflow-auto"
               style={{
-                maxHeight: (height as number) + 40,
+                maxHeight: (height as number) + 95,
               }}
             >
               <MultipleInput
@@ -273,7 +273,7 @@ export const InputTabs = ({
               value="interactive-query"
               className="animate__animated animate__fadeIn"
               style={{
-                height: (height as number) - (type === 'create' ? 40 : 0),
+                height: (height as number) - (type === 'create' ? 96 : 0),
               }}
             >
               <div className="flex items-center justify-between">
@@ -289,7 +289,7 @@ export const InputTabs = ({
                 <ResultRender
                   ref={jsonBodyDivRef}
                   result={interactiveQueryData}
-                  height={(height as number) - 40}
+                  height={(height as number) - 95}
                   readOnly={false}
                   setData={setInteractiveQuery}
                   setError={setJsonError}
@@ -305,7 +305,7 @@ export const InputTabs = ({
           value="headers"
           className="animate__animated animate__fadeIn overflow-auto"
           style={{
-            maxHeight: (height as number) + 40,
+            maxHeight: (height as number) + 95,
           }}
         >
           <MultipleInput
@@ -354,7 +354,7 @@ export const InputTabs = ({
               value="json"
               className="animate__animated animate__fadeIn"
               style={{
-                height: (height as number) - (type === 'create' ? 40 : 0),
+                height: (height as number) - (type === 'create' ? 95 : 0),
               }}
             >
               <div className="flex items-center justify-between">
@@ -370,7 +370,7 @@ export const InputTabs = ({
                 <ResultRender
                   ref={jsonBodyDivRef}
                   result={jsonBodyData}
-                  height={(height as number) - 50}
+                  height={(height as number) - 105}
                   readOnly={false}
                   setData={setJsonBody}
                   className="border-t pt-3"
