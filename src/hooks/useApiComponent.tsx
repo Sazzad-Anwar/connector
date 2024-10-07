@@ -76,9 +76,7 @@ export default function useApiComponent() {
     !!filterEmptyParams(customParams!)?.length &&
     hasActiveCustomParams &&
     form.watch('activeQuery') === 'query-params'
-      ? url +
-        // (hasActiveCustomParams ? '?' : '') +
-        getQueryString(arrayToObjectConversion(customParams!), env)
+      ? url + getQueryString(arrayToObjectConversion(customParams!), env)
       : typeof interactiveQuery === 'object' &&
         Object.keys(interactiveQuery)?.length
       ? url + '?' + getQueryString(interactiveQuery)
@@ -469,7 +467,7 @@ export default function useApiComponent() {
         title: 'Success',
         description: 'Api is updated successfully',
       })
-      // getApi(api?.id)
+      getApi(api?.id)
       setIsUrlEditing(false)
       setIsApiNameEditing(false)
       form.reset()
@@ -482,31 +480,8 @@ export default function useApiComponent() {
     }
   }, [form])
 
-  console.log(url)
-
   const copyUrl = () => {
     setIsUrlCopied(true)
-    // const params = isEmpty(form.getValues('params')!)
-    //   ? getQueryString(arrayToObjectConversion(form.getValues('params')!), env)
-    //   : typeof interactiveQuery === 'object' &&
-    //     Object.keys(interactiveQuery)?.length
-    //   ? getQueryString(form.getValues('interactiveQuery'))
-    //   : ''
-
-    // url = url + (params ? '?' + params : '')
-
-    // // This will replace the {{dynamic_variable}} withe the variable's value
-    // url = containsDynamicVariable(url) ? replaceVariables(url, env) : url
-    // url = form
-    //   .getValues('pathVariables')
-    //   ?.find((item: ParamsType) => item.key !== '')
-    //   ? updateUrlWithPathVariables(url, form.getValues('pathVariables')!)
-    //   : url
-    // url =
-    //   !url.includes('http') &&
-    //   (url.includes('localhost') || url.includes('127.0.0.1'))
-    //     ? 'http://' + url
-    //     : url
     url = containsDynamicVariable(url)
       ? replaceVariables(updateUrlWithPathVariables(url, pathVariables!), env)
       : updateUrlWithPathVariables(url, pathVariables!)

@@ -3,9 +3,9 @@ import copy from 'copy-to-clipboard'
 import { Check, Copy } from 'lucide-react'
 import React, {
   forwardRef,
-  memo,
   ReactElement,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -46,9 +46,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
     const editorRef = useRef<any>(null)
     const [isCopiedResponse, setIsCopiedResponse] = useState<boolean>(false)
     const [isErrorResult, setIsErrorResult] = useState<boolean>(false)
-    const [editorValue, setEditorValue] = useState<string>(
-      JSON.stringify(result, null, '\t') ?? '{}',
-    )
+    const [editorValue, setEditorValue] = useState<string>()
 
     function setEditorTheme(monaco: Monaco) {
       monaco.editor.defineTheme('onedark', {
@@ -139,37 +137,8 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       }, 2000)
     }
 
-    return (
-      <div
-        ref={ref}
-        className="relative"
-      >
-        <Button
-          type="button"
-          variant="ghost"
-          className="mr-2 flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
-          size="sm"
-          onClick={() => copyResponse()}
-        >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              {isCopiedResponse ? (
-                <Check
-                  className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
-                  size={18}
-                />
-              ) : (
-                <Copy
-                  className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
-                  size={18}
-                />
-              )}
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Copy data</p>
-            </TooltipContent>
-          </Tooltip>
-        </Button>
+    const MemoizedRenderer = useMemo(() => {
+      return (
         <MonacoEditor
           beforeMount={setEditorTheme}
           language={isErrorResult ? 'text' : 'json'}
@@ -210,9 +179,11 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
               : 'light'
           }
           loading={loading ? loading : <LoadingComponent height={height} />}
-          // height={height ?? window.innerHeight - 320}
           height={height!}
           width="100%"
+          onMount={(editorRef) => {
+            editorRef.current = editorRef
+          }}
           defaultLanguage={isErrorResult ? 'html' : 'json'}
           onChange={handleEditorChange}
           className={className}
@@ -229,9 +200,44 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
             })
           }}
         />
+      )
+    }, [result, height])
+
+    return (
+      <div
+        ref={ref}
+        className="relative"
+      >
+        <Button
+          type="button"
+          variant="ghost"
+          className="mr-2 flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
+          size="sm"
+          onClick={() => copyResponse()}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {isCopiedResponse ? (
+                <Check
+                  className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                  size={18}
+                />
+              ) : (
+                <Copy
+                  className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                  size={18}
+                />
+              )}
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Copy data</p>
+            </TooltipContent>
+          </Tooltip>
+        </Button>
+        {MemoizedRenderer}
       </div>
     )
   },
 )
 
-export default memo(ResultRender)
+export default ResultRender

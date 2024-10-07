@@ -122,12 +122,12 @@ export default function ApiResult({
               <ResultRender
                 ref={resultContainerRef}
                 readOnly={true}
-                height={height! - 215}
+                height={height! - 220}
                 type="response"
                 loading={
                   <Loading
                     name="Connecting"
-                    height={height! - 215}
+                    height={height! - 220}
                   />
                 }
                 result={result ?? {}}

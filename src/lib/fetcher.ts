@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ResponseType, getClient } from '@tauri-apps/api/http'
+import { fetch } from '@tauri-apps/plugin-http'
 import axios from 'axios'
 import { ParamsType } from '../types/api'
 
@@ -33,56 +33,14 @@ const fetcher = async ({
     }
   })
   try {
-    const client = await getClient()
-    if (isUpload) {
-      return await axios({
-        url,
-        method,
-        data: formData,
-        headers,
-      })
-    } else {
-      switch (method) {
-        case 'POST':
-          return await client.post(
-            url,
-            { payload: requestBody, type: 'Json' },
-            {
-              headers,
-              responseType: ResponseType.Binary,
-            },
-          )
-        case 'PUT':
-          return await client.put(
-            url,
-            { payload: requestBody, type: 'Json' },
-            {
-              headers,
-              responseType: ResponseType.Binary,
-            },
-          )
-        case 'DELETE':
-          return await client.delete(url, {
-            headers,
-            responseType: ResponseType.Binary,
-          })
-        case 'PATCH':
-          return await client.patch(url, {
-            body: {
-              payload: requestBody,
-              type: 'Json',
-            },
-            headers,
-            responseType: ResponseType.Binary,
-          })
-        default:
-          return await client.get(url, {
-            headers,
-            responseType: ResponseType.Binary,
-          })
-      }
-    }
+    const response = await fetch(url, {
+      method,
+      body: method !== 'GET' ? (isUpload ? formData : requestBody) : undefined,
+      headers,
+    })
+    return await response.json()
   } catch (error) {
+    console.log(error)
     return await axios({
       url,
       method,
