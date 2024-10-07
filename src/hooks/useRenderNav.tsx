@@ -28,7 +28,7 @@ export default function useRenderNav({
   const [isFolderNameUpdating, setIsFolderNameUpdating] = useState(false)
   const [isMoveToFolderDialogOpen, setIsMoveToFolderDialogOpen] =
     useState(false)
-  const { addInTab } = useTabRenderView()
+  const { addTab } = useTabRenderView()
 
   // Rename collection
   const renameCollectionName: SubmitHandler<
@@ -225,7 +225,7 @@ export default function useRenderNav({
         setSelectedApis([...selectedApis, api])
       }
     } else {
-      addInTab({
+      addTab({
         id: api.id,
         name: api.name,
         folderId: collection.id,

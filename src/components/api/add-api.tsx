@@ -19,7 +19,7 @@ import { ApiSchema, ApiType, FolderType } from '@/types/api'
 
 import { useNavigate, useParams } from 'react-router-dom'
 import useTabRenderView from '../../store/tabView'
-import Breadcrumbs from '../breadcrumb'
+import Breadcrumbs from '../nav/breadcrumb'
 import SideNavToggler from '../nav/sidenav-toggler'
 import { Button } from '../ui/button'
 import { Form, FormControl, FormField, FormItem } from '../ui/form'
@@ -36,7 +36,7 @@ import { toast } from '../ui/use-toast'
 import InputTabs from './input-tabs'
 
 export default function AddApi() {
-  const { addInTab } = useTabRenderView()
+  const { addTab } = useTabRenderView()
   const { tabs } = useTabRenderView()
   const navigate = useNavigate()
   const saveButtonRef = useRef<HTMLButtonElement>(null)
@@ -69,7 +69,7 @@ export default function AddApi() {
     data.pathVariables = filterEmptyParams(form.getValues('pathVariables')!)
     data.jsonBody = form.getValues('jsonBody')
     createApi(data, folderId)
-    addInTab({
+    addTab({
       id: data.id,
       name: data.name,
       folderId,

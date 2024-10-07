@@ -16,7 +16,7 @@ export default function Loading({
         className,
       )}
       style={{
-        height: height ?? 500,
+        height: className?.includes('h-screen') ? '100vh' : height ?? 500,
       }}
     >
       <div className="flex flex-col items-center justify-center">

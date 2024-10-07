@@ -20,9 +20,7 @@ import {
   containsDynamicVariable,
   extractVariable,
   filterEmptyParams,
-  generateURLFromParams,
   getQueryString,
-  isEmpty,
   replaceVariables,
   updateEnvWithDynamicVariableValue,
   updateUrlWithPathVariables,
@@ -30,12 +28,14 @@ import {
 import useResultRenderViewStore from '../store/resultRenderView'
 import useSidePanelToggleStore from '../store/sidePanelToggle'
 import useApiStore, { isLocalStorageAvailable } from '../store/store'
+import useTabRenderView from '../store/tabView'
 import { ApiSchema, ApiType, ParamsType } from '../types/api'
 
 export default function useApiComponent() {
   const { api, getApi, updateApi, collections, env, getEnv, updateEnv } =
     useApiStore()
   const params = useParams()
+  const { updateTab } = useTabRenderView()
   const { resultRenderView } = useResultRenderViewStore()
   const { isOpen } = useSidePanelToggleStore()
   const [urlWidth, setUrlWidth] = useState<number>()
@@ -72,17 +72,15 @@ export default function useApiComponent() {
   const hasActiveCustomParams = !!customParams?.filter(
     (item: ParamsType) => item.isActive && item.key !== '',
   ).length
-  url = generateURLFromParams(url, pathVariables!)
   url =
     !!filterEmptyParams(customParams!)?.length &&
     hasActiveCustomParams &&
     form.watch('activeQuery') === 'query-params'
       ? url +
-        (hasActiveCustomParams ? '?' : '') +
+        // (hasActiveCustomParams ? '?' : '') +
         getQueryString(arrayToObjectConversion(customParams!), env)
       : typeof interactiveQuery === 'object' &&
-        Object.keys(interactiveQuery)?.length &&
-        form.watch('activeQuery') === 'interactive-query'
+        Object.keys(interactiveQuery)?.length
       ? url + '?' + getQueryString(interactiveQuery)
       : url
   const apiId = params.apiId as string
@@ -258,12 +256,13 @@ export default function useApiComponent() {
       ) {
         event.preventDefault()
         saveUpdate()
-        form.reset()
         getApi(api?.id)
+        form.reset()
       }
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
         form.reset()
+        getApi(api?.id)
         setIsUrlEditing(false)
         setIsApiNameEditing(false)
         setAllParams()
@@ -272,12 +271,12 @@ export default function useApiComponent() {
 
     // Add the event listener when the component mounts
     document.addEventListener('keydown', handleKeyPress)
-    document.addEventListener('keyup', handleKeyPress)
+    // document.addEventListener('keyup', handleKeyPress)
     setAllParams()
     // Remove the event listener when the component unmounts
     return () => {
       document.removeEventListener('keydown', handleKeyPress)
-      document.addEventListener('keyup', handleKeyPress)
+      // document.addEventListener('keyup', handleKeyPress)
     }
   }, [form, api, searchParams])
 
@@ -293,31 +292,6 @@ export default function useApiComponent() {
     const startTime = Date.now()
     try {
       setIsLoading(true)
-
-      // get the params in querystring from an array
-      const params =
-        form.watch('activeQuery') === 'query-params'
-          ? getQueryString(
-              arrayToObjectConversion(form.getValues('params')!),
-              env,
-            )
-          : typeof form.getValues('interactiveQuery') === 'object'
-          ? getQueryString(form.getValues('interactiveQuery'))
-          : ''
-
-      // This will update the url with given path variable  and will generate if user input something
-      let url = submitData.pathVariables?.find(
-        (item: ParamsType) => item.key !== '',
-      )
-        ? updateUrlWithPathVariables(
-            generateURLFromParams(submitData.url, submitData.pathVariables!),
-            submitData.pathVariables!,
-          )
-        : submitData.url
-      url = url + (params ? '?' + params : '')
-
-      // This will replace the {{dynamic_variable}} withe the variable's value
-      url = containsDynamicVariable(url) ? replaceVariables(url, env) : url
 
       // This will check if the {{dynamic_variable}} exists on body payload. If exists then replace with the value
       const requestBody = checkAndReplaceWithDynamicVariable(
@@ -353,11 +327,12 @@ export default function useApiComponent() {
       // this is axios call
       const response = await fetcher({
         method: api.method,
-        url:
-          !url.includes('http') &&
-          (url.includes('localhost') || url.includes('127.0.0.1'))
-            ? 'http://' + url
-            : url,
+        url: containsDynamicVariable(url)
+          ? replaceVariables(
+              updateUrlWithPathVariables(url, pathVariables!),
+              env,
+            )
+          : updateUrlWithPathVariables(url, pathVariables!),
         submitDataBody: submitData.body,
         isUpload: files?.length ? true : false,
         headers,
@@ -494,46 +469,48 @@ export default function useApiComponent() {
         title: 'Success',
         description: 'Api is updated successfully',
       })
-      form.reset()
-      getApi(api?.id)
+      // getApi(api?.id)
       setIsUrlEditing(false)
       setIsApiNameEditing(false)
+      form.reset()
+      updateTab({
+        id: params.apiId,
+        name: data.name,
+        folderId: folderId,
+      })
+      navigate(`/api/${folderId}/${params.apiId}`)
     }
   }, [form])
 
+  console.log(url)
+
   const copyUrl = () => {
     setIsUrlCopied(true)
-    const params =
-      isEmpty(form.getValues('params')!) &&
-      form.getValues('activeQuery') === 'query-params'
-        ? getQueryString(
-            arrayToObjectConversion(form.getValues('params')!),
-            env,
-          )
-        : typeof interactiveQuery === 'object' &&
-          Object.keys(interactiveQuery)?.length
-        ? getQueryString(form.getValues('interactiveQuery'))
-        : ''
-    let url = form
-      .getValues('pathVariables')
-      ?.find((item: ParamsType) => item.key !== '')
-      ? updateUrlWithPathVariables(
-          generateURLFromParams(
-            form.getValues('url'),
-            form.getValues('pathVariables')!,
-          ),
-          form.getValues('pathVariables')!,
-        )
-      : form.getValues('url')
-    url = url + (params ? '?' + params : '')
+    // const params = isEmpty(form.getValues('params')!)
+    //   ? getQueryString(arrayToObjectConversion(form.getValues('params')!), env)
+    //   : typeof interactiveQuery === 'object' &&
+    //     Object.keys(interactiveQuery)?.length
+    //   ? getQueryString(form.getValues('interactiveQuery'))
+    //   : ''
 
-    // This will replace the {{dynamic_variable}} withe the variable's value
-    url = containsDynamicVariable(url) ? replaceVariables(url, env) : url
-    url =
-      !url.includes('http') &&
-      (url.includes('localhost') || url.includes('127.0.0.1'))
-        ? 'http://' + url
-        : url
+    // url = url + (params ? '?' + params : '')
+
+    // // This will replace the {{dynamic_variable}} withe the variable's value
+    // url = containsDynamicVariable(url) ? replaceVariables(url, env) : url
+    // url = form
+    //   .getValues('pathVariables')
+    //   ?.find((item: ParamsType) => item.key !== '')
+    //   ? updateUrlWithPathVariables(url, form.getValues('pathVariables')!)
+    //   : url
+    // url =
+    //   !url.includes('http') &&
+    //   (url.includes('localhost') || url.includes('127.0.0.1'))
+    //     ? 'http://' + url
+    //     : url
+    url = containsDynamicVariable(url)
+      ? replaceVariables(updateUrlWithPathVariables(url, pathVariables!), env)
+      : updateUrlWithPathVariables(url, pathVariables!)
+    console.log({ url })
     copy(url)
     toast({
       variant: 'success',

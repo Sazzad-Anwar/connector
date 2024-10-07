@@ -29,8 +29,12 @@ export default function MoveToFolder({
 
   const collection = findRootCollection(collections, folderId)
 
+  /**
+   * Go back to the previous folder when the user clicks the "Go back" button.
+   * This is done by setting the nested folders back to the original folders
+   * and clearing the parent ID.
+   */
   const handleGoBack = () => {
-    console.log(parentId)
     setNestedFolders(folders)
     setParentId('')
   }

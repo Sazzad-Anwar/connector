@@ -191,35 +191,38 @@ function getApiDetailsById(arr: FolderType[], apiId: string): ApiType | null {
 function findParentEnvInArray(
   folder: FolderType[],
   childId: string,
-): ParamsType[] | null {
-  let result: FolderType | undefined = undefined
+): ParamsType[] | null | undefined {
+  let result: FolderType | undefined
 
-  function findParentAndCollect(child: FolderType, path: FolderType[]) {
+  function findParentAndCollect(
+    child: FolderType,
+    path: FolderType[],
+  ): boolean {
     path.push(child)
 
     if (child.id === childId) {
-      result = path[0] // The first element in the path is the root parent
-      return
+      result = path[0] // The root parent is the first element in the path
+      return true // Return true to stop further traversal
     }
 
     if (child.children) {
       for (const subChild of child.children) {
-        findParentAndCollect(subChild, path.slice()) // Create a new path for each child
+        if (findParentAndCollect(subChild, path)) {
+          return true // Stop recursion once the child is found
+        }
       }
     }
-  }
-  if (folder && folder.length) {
-    for (const item of folder) {
-      findParentAndCollect(item, [])
-      if (result) {
-        break // If the root parent is found, exit the loop
-      }
-    }
-  } else {
-    return null
+
+    return false
   }
 
-  return result!.env!
+  for (const item of folder) {
+    if (findParentAndCollect(item, [])) {
+      break // Exit once the parent is found
+    }
+  }
+
+  return result ? result.env : null
 }
 
 const useApiStore = create<Store>()((set) => ({

@@ -4,7 +4,11 @@ import { useEffect } from 'react'
 import { UseFormReturn, useFieldArray } from 'react-hook-form'
 import { v4 as uuid } from 'uuid'
 
-import { containsDynamicVariable, containsVariable } from '@/lib/utils'
+import {
+  containsDynamicVariable,
+  containsVariable,
+  parseURLParameters,
+} from '@/lib/utils'
 import { ApiType } from '@/types/api'
 
 import { useParams } from 'react-router-dom'
@@ -30,12 +34,17 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
   })
   const folderId = routeParams?.folderId
   const params = form.watch(propertyName)
+  const url = form.watch('url')
 
   useEffect(() => {
     if (folderId) {
       getEnv(folderId)
     }
   }, [getEnv, folderId])
+
+  useEffect(() => {
+    form.setValue('pathVariables', parseURLParameters(url))
+  }, [url])
 
   useEffect(() => {
     if (fields.length < 1) {

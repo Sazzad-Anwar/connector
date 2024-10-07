@@ -12,7 +12,7 @@ import {
 } from '../ui/carousel'
 
 export default function ApiTabs() {
-  const { tabs, removeFromTab } = useTabRenderView()
+  const { tabs, removeTab } = useTabRenderView()
   const { apiId } = useParams()
   const navigate = useNavigate()
 
@@ -37,7 +37,7 @@ export default function ApiTabs() {
                 variant="secondary"
                 onClick={(e) => {
                   e.stopPropagation()
-                  removeFromTab(tab.id)
+                  removeTab(tab.id)
                   if (tabs.length === 1) {
                     navigate('/')
                   } else {

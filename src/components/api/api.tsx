@@ -18,14 +18,13 @@ import {
   replaceVariables,
 } from '@/lib/utils'
 
-import copy from 'copy-to-clipboard'
 import { useEffect, useState } from 'react'
 import SplitPane, { Pane } from 'split-pane-react'
 import useApiComponent from '../../hooks/useApiComponent'
 import useResultRenderViewStore from '../../store/resultRenderView'
 import { FolderType } from '../../types/api'
-import Breadcrumbs from '../breadcrumb'
 import Loading from '../loading'
+import Breadcrumbs from '../nav/breadcrumb'
 import SideNavToggler from '../nav/sidenav-toggler'
 import NotFound from '../notFound'
 import { Button, buttonVariants } from '../ui/button'
@@ -114,7 +113,7 @@ export default function Api() {
     return <NotFound />
   }
   if (apiId && folderId && !api.id) {
-    return <Loading />
+    return <Loading className="h-screen" />
   }
 
   return (
@@ -142,7 +141,11 @@ export default function Api() {
             {isApiNameEditing ? (
               <Input
                 value={form.watch('name')}
-                onChange={(e) => form.setValue('name', e.target.value)}
+                onChange={(e) => {
+                  form.setValue('name', e.target.value, {
+                    shouldDirty: true,
+                  })
+                }}
                 autoFocus
                 className={cn(
                   'bg-transparent h-auto px-1 py-px text-base w-auto border',
@@ -151,7 +154,7 @@ export default function Api() {
               />
             ) : (
               <span className="text-base h-auto px-1 py-px w-auto border border-transparent">
-                {api.name}
+                {form.watch('name')}
               </span>
             )}
             {!isApiNameEditing ? (
@@ -169,6 +172,7 @@ export default function Api() {
                 })}
                 onClick={() => {
                   saveUpdate()
+                  setIsApiNameEditing(false)
                 }}
               >
                 <Check size={12} />
@@ -218,7 +222,8 @@ export default function Api() {
                       : form.getValues('method') === 'PATCH'
                       ? 'bg-purple-700 border-purple-500'
                       : 'bg-red-700 border-red-500',
-                    'font-bold w-20 h-full border-0 text-white',
+                    'w-auto h-6 mx-h-6 border-0 font-medium text-white ml-1.5 text-xs pl-2 pr-1 py-0',
+
                     setBorderColor(
                       !!form.formState.errors.method || isUrlError,
                     ),
@@ -253,23 +258,26 @@ export default function Api() {
                 autoComplete="off"
                 placeholder="Url"
                 autoFocus
-                {...form.register('url')}
-                // value={form.getValues('url')}
+                value={form.watch('url')}
                 size={200}
                 onChange={(e) => {
-                  if (e.target.value.includes('?')) {
-                    e.target.value = e.target.value.replace('?', '')
+                  if (
+                    e.target.value.includes('?') ||
+                    e.target.value.includes('&')
+                  ) {
+                    e.target.value = e.target.value
+                      .replace('?', '')
+                      .replace('&', '')
+                  } else {
+                    form.setValue('url', e.target.value, {
+                      shouldDirty: true,
+                    })
                   }
-                  if (e.target.value.includes('&')) {
-                    e.target.value = e.target.value.replace('&', '')
-                  }
-                  form.setValue('url', e.target.value)
                 }}
                 className={cn(
                   setBorderColor(isUrlError),
                   'text-base rounded-l-none pl-1 h-full border-0',
                 )}
-                // onBlur={() => setIsUrlEditing(false)}
               />
 
               <Tooltip>
@@ -284,10 +292,7 @@ export default function Api() {
               </Tooltip>
             </div>
           ) : (
-            <div
-              onClick={() => setIsUrlEditing(true)}
-              className="flex items-center"
-            >
+            <div className="flex items-center">
               <span
                 className={cn(
                   api.method === 'GET'
@@ -304,45 +309,45 @@ export default function Api() {
               >
                 {api.method}
               </span>
-              <div className="truncate px-2">
-                {containsDynamicVariable(api.url) ? (
+              <div
+                onDoubleClick={() => setIsUrlEditing(true)}
+                className="truncate px-2"
+              >
+                {containsDynamicVariable(url) ? (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="text-cyan-500">{`{{${extractVariable(
                         url,
                       )}}}`}</span>
                     </TooltipTrigger>
-                    <TooltipContent className="flex items-center text-base">
+                    <TooltipContent
+                      className="flex items-center text-base"
+                      onClick={() => {
+                        copyUrl()
+                        toast({
+                          variant: 'success',
+                          title: 'Success',
+                          description: 'Env value is copied to clipboard',
+                        })
+                      }}
+                    >
                       {replaceVariables(`{{${extractVariable(url)}}}`, env)}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="ml-2 flex h-4 w-4 justify-self-end p-0"
-                        size="xs"
-                        onClick={() => {
-                          copy(
-                            replaceVariables(
-                              `{{${extractVariable(url)}}}`,
-                              env,
-                            ),
-                          )
-                          toast({
-                            variant: 'success',
-                            title: 'Success',
-                            description: 'Env value is copied to clipboard',
-                          })
-                        }}
-                      >
-                        <Copy size={16} />
-                      </Button>
+
+                      <Copy
+                        className="h-4 w-4 justify-self-end p-0 ml-2 cursor-pointer"
+                        size={16}
+                      />
                     </TooltipContent>
                   </Tooltip>
                 ) : (
-                  url
+                  form.watch('url')
+                  // url
                 )}
                 <Tooltip>
-                  <TooltipTrigger>{url?.split('}}')[1]}</TooltipTrigger>
-                  <TooltipContent>Click to edit this URL</TooltipContent>
+                  <TooltipTrigger asChild>
+                    <span>{url?.split('}}')[1]}</span>
+                  </TooltipTrigger>
+                  <TooltipContent>Double click to edit this URL</TooltipContent>
                 </Tooltip>
               </div>
             </div>
