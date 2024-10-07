@@ -18,7 +18,7 @@ import {
 import { ApiSchema, ApiType, FolderType } from '@/types/api'
 
 import { useNavigate, useParams } from 'react-router-dom'
-import Breadcrumbs from '../nav/breadcrumb'
+import Breadcrumbs from '../breadcrumb'
 import SideNavToggler from '../nav/sidenav-toggler'
 import { Button } from '../ui/button'
 import { Form, FormControl, FormField, FormItem } from '../ui/form'
