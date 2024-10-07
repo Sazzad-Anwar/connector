@@ -127,13 +127,13 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
           </InputFile>
         </div>
         <div className="max-h-[calc(100vh-106px)] overflow-auto pb-5 relative">
-          {!collections?.length && (
+          {!collections?.length && !isCreatingFolder && (
             <div className="flex flex-col h-[calc(100vh-126px)] w-full items-center justify-center">
               <Folder
                 size={60}
                 className="opacity-40"
               />
-              <h1 className="opacity-40">No Collections Found</h1>
+              <h1 className="opacity-40">No Collection Found</h1>
             </div>
           )}
           {collections?.map((collection: FolderType) => (
