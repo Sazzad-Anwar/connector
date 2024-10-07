@@ -18,6 +18,7 @@ import {
   arrayToObjectConversion,
   checkAndReplaceWithDynamicVariable,
   containsDynamicVariable,
+  extractVariable,
   filterEmptyParams,
   generateURLFromParams,
   getQueryString,
@@ -41,6 +42,8 @@ export default function useApiComponent() {
   const formDivRef = useRef<HTMLFormElement>(null)
   const navigate = useNavigate()
   const [result, setResult] = useState<any>()
+  const [isUrlEditing, setIsUrlEditing] = useState(false)
+  const [isApiNameEditing, setIsApiNameEditing] = useState(false)
   const [isUrlCopied, setIsUrlCopied] = useState<boolean>(false)
   const breadCrumbDivRef = useRef<HTMLDivElement>(null)
   const urlDivRef = useRef<HTMLDivElement>(null)
@@ -248,30 +251,35 @@ export default function useApiComponent() {
       )
     }
 
-    const handleEscapeKeyPress = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (
+        (event.ctrlKey && event.key === 's') ||
+        (event.metaKey && event.key === 's')
+      ) {
         event.preventDefault()
-        if (!!Object.entries(form.formState.dirtyFields).length) {
-          updateButtonRef.current?.click()
-          form.reset()
-          getApi(api?.id)
-        }
+        saveUpdate()
+        form.reset()
+        getApi(api?.id)
       }
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
         form.reset()
+        setIsUrlEditing(false)
+        setIsApiNameEditing(false)
         setAllParams()
       }
     }
 
     // Add the event listener when the component mounts
-    document.addEventListener('keydown', handleEscapeKeyPress)
+    document.addEventListener('keydown', handleKeyPress)
+    document.addEventListener('keyup', handleKeyPress)
     setAllParams()
     // Remove the event listener when the component unmounts
     return () => {
-      document.removeEventListener('keydown', handleEscapeKeyPress)
+      document.removeEventListener('keydown', handleKeyPress)
+      document.addEventListener('keyup', handleKeyPress)
     }
-  }, [form, api, getApi, searchParams])
+  }, [form, api, searchParams])
 
   // this is making the API call
   const onSubmit: SubmitHandler<ApiType> = async (submitData) => {
@@ -401,7 +409,6 @@ export default function useApiComponent() {
 
       // If there is any requirement to set the value of a {{dynamic_variable}} with the response, this logic will do that and update that {{dynamic_variable}}
       if (api.dynamicVariables?.length) {
-        console.log(resultText)
         const updatedEnv = updateEnvWithDynamicVariableValue(
           submitData.dynamicVariables!,
           env,
@@ -431,7 +438,12 @@ export default function useApiComponent() {
             typeof error !== 'string'
               ? error?.response?.data
                 ? error?.response?.data
-                : error?.message
+                : error?.message === 'Network Error'
+                ? `Unable to reach ${replaceVariables(
+                    `{{${extractVariable(url)}}}`,
+                    env,
+                  )}`
+                : error.message
               : error,
         })
         setResult(null)
@@ -455,9 +467,16 @@ export default function useApiComponent() {
 
   const saveUpdate = useCallback(() => {
     const data: ApiType = {} as ApiType
-
-    if (params?.apiId) {
+    if (
+      params?.apiId &&
+      form.getValues('name') &&
+      form.getValues('url') &&
+      form.getValues('method')
+    ) {
       data.id = params?.apiId!
+      data.name = form.getValues('name')!
+      data.url = form.getValues('url')!
+      data.method = form.getValues('method')!
       data.params = filterEmptyParams(form.getValues('params')!)
       data.headers = filterEmptyParams(form.getValues('headers')!)
       data.dynamicVariables = filterEmptyParams(
@@ -477,6 +496,8 @@ export default function useApiComponent() {
       })
       form.reset()
       getApi(api?.id)
+      setIsUrlEditing(false)
+      setIsApiNameEditing(false)
     }
   }, [form])
 
@@ -564,5 +585,9 @@ export default function useApiComponent() {
     api,
     collections,
     env,
+    isUrlEditing,
+    setIsUrlEditing,
+    isApiNameEditing,
+    setIsApiNameEditing,
   }
 }

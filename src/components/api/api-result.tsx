@@ -83,7 +83,10 @@ export default function ApiResult({
       }}
     >
       {isLoading ? (
-        <Loading height={height! - 300} />
+        <Loading
+          name="Connecting"
+          height={height! - 300}
+        />
       ) : (
         <div className="relative flex justify-between pt-1 pb-3 pl-5 pr-0 text-sm">
           <Tabs
@@ -121,6 +124,12 @@ export default function ApiResult({
                 readOnly={true}
                 height={height! - 215}
                 type="response"
+                loading={
+                  <Loading
+                    name="Connecting"
+                    height={height! - 215}
+                  />
+                }
                 result={result ?? {}}
               />
             </TabsContent>

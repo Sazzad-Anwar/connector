@@ -166,9 +166,10 @@ export const InputTabs = ({
         <TabsContent
           value="params"
           className="animate__animated animate__fadeIn"
-          style={{
-            maxHeight: (height as number) + 95,
-          }}
+          // style={{
+          //   maxHeight: (height as number) + 95,
+          //   height: 'auto',
+          // }}
         >
           <Tabs
             defaultValue={
@@ -252,7 +253,7 @@ export const InputTabs = ({
               value="query-params"
               className="animate__animated animate__fadeIn"
               style={{
-                height: height as number,
+                maxHeight: (height as number) - 95,
               }}
             >
               <MultipleInput
@@ -264,7 +265,7 @@ export const InputTabs = ({
               value="url-params"
               className="animate__animated animate__fadeIn relative overflow-auto"
               style={{
-                maxHeight: (height as number) + 95,
+                maxHeight: height as number,
               }}
             >
               <MultipleInput

@@ -145,6 +145,12 @@ export default function UpdateApi() {
           : [{ id: uuid(), key: '', value: '', description: '' }],
       )
       form.setValue(
+        'interactiveQuery',
+        api?.interactiveQuery?.length
+          ? api?.interactiveQuery
+          : [{ id: uuid(), key: '', value: '', description: '' }],
+      )
+      form.setValue(
         'pathVariables',
         api?.pathVariables?.length
           ? api?.pathVariables

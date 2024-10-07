@@ -88,6 +88,28 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     resizeWindow()
   }, [isOpen])
 
+  useEffect(() => {
+    if (import.meta.env.PROD) {
+      document.addEventListener('contextmenu', (e) => e.preventDefault())
+
+      function ctrlShiftKey(e: KeyboardEvent, keyCode: string) {
+        return e.ctrlKey && e.shiftKey && e.keyCode === keyCode.charCodeAt(0)
+      }
+
+      document.onkeydown = (e) => {
+        if (
+          (e as KeyboardEvent).keyCode === 123 ||
+          ctrlShiftKey(e as KeyboardEvent, 'I') ||
+          ctrlShiftKey(e as KeyboardEvent, 'J') ||
+          ctrlShiftKey(e as KeyboardEvent, 'C') ||
+          ((e as KeyboardEvent).ctrlKey &&
+            (e as KeyboardEvent).keyCode === 'U'.charCodeAt(0))
+        )
+          return false
+      }
+    }
+  }, [])
+
   return (
     <main className={cn('min-h-screen bg-background font-sans antialiased')}>
       <div className="relative flex min-h-screen flex-col transition-all duration-200 ease-linear">

@@ -36,6 +36,7 @@ import { toast } from '../ui/use-toast'
 import InputTabs from './input-tabs'
 
 export default function AddApi() {
+  const { addInTab } = useTabRenderView()
   const { tabs } = useTabRenderView()
   const navigate = useNavigate()
   const saveButtonRef = useRef<HTMLButtonElement>(null)
@@ -68,6 +69,11 @@ export default function AddApi() {
     data.pathVariables = filterEmptyParams(form.getValues('pathVariables')!)
     data.jsonBody = form.getValues('jsonBody')
     createApi(data, folderId)
+    addInTab({
+      id: data.id,
+      name: data.name,
+      folderId,
+    })
     toast({
       variant: 'success',
       title: 'Success',
@@ -194,17 +200,15 @@ export default function AddApi() {
                     <SelectTrigger
                       className={cn(
                         field.value === 'GET'
-                          ? 'text-green-500'
+                          ? ' bg-green-700 border border-green-500'
                           : field.value === 'POST'
-                          ? 'text-yellow-500'
+                          ? 'bg-yellow-700 border-yellow-500'
                           : field.value === 'PUT'
-                          ? 'text-blue-500'
+                          ? 'bg-cyan-700 border-cyan-500'
                           : field.value === 'PATCH'
-                          ? 'text-purple-500'
-                          : field.value === 'DELETE'
-                          ? 'text-red-500'
-                          : 'text-foreground',
-                        'font-bold w-24 border-r-0 rounded-r-none h-8',
+                          ? 'bg-purple-700 border-purple-500'
+                          : 'bg-red-700 border-red-500',
+                        'font-medium text-white ml-1.5 text-xs px-1 py-0.5 h-8 rounded-md',
                         setBorderColor(
                           !!form.formState.errors.method || isUrlError,
                         ),

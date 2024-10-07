@@ -1,24 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Check, ChevronsRight, Copy, Settings } from 'lucide-react'
+import {
+  Check,
+  ChevronsRight,
+  Copy,
+  InfoIcon,
+  Pencil,
+  Save,
+} from 'lucide-react'
 
 import {
   cn,
   containsDynamicVariable,
+  containsVariable,
   extractVariable,
   getBreadcrumbsForNthChildren,
+  getRootParentIdForNthChildren,
   replaceVariables,
 } from '@/lib/utils'
 
 import copy from 'copy-to-clipboard'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import SplitPane, { Pane } from 'split-pane-react'
 import useApiComponent from '../../hooks/useApiComponent'
 import useResultRenderViewStore from '../../store/resultRenderView'
+import { FolderType } from '../../types/api'
 import Breadcrumbs from '../breadcrumb'
 import Loading from '../loading'
 import SideNavToggler from '../nav/sidenav-toggler'
 import NotFound from '../notFound'
-import { Button } from '../ui/button'
+import { Button, buttonVariants } from '../ui/button'
+import { Input } from '../ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { toast } from '../ui/use-toast'
 import ApiResult from './api-result'
@@ -41,7 +59,8 @@ export default function Api() {
     url,
     apiId,
     folderId,
-    // urlWidth,
+    isUrlEditing,
+    setIsUrlEditing,
     formDivRef,
     result,
     isUrlCopied,
@@ -60,9 +79,30 @@ export default function Api() {
     collections,
     env,
     api,
+    isApiNameEditing,
+    setIsApiNameEditing,
+    getApi,
   } = useApiComponent()
   const { resultRenderView } = useResultRenderViewStore()
-  const navigate = useNavigate()
+  const [isUrlError, setIsUrlError] = useState<boolean>(false)
+  const rootParentId = getRootParentIdForNthChildren(collections, folderId)
+  const rootParent = collections.find(
+    (item: FolderType) => item.id === rootParentId,
+  )
+
+  useEffect(() => {
+    if (
+      containsDynamicVariable(url) &&
+      !containsVariable(url, rootParent?.env ?? [])
+    ) {
+      setIsUrlError(true)
+    } else {
+      setIsUrlError(false)
+    }
+  }, [rootParent, url])
+
+  const setBorderColor = (isError: boolean) =>
+    isError ? 'border-destructive' : ''
 
   if (
     apiId === 'undefined' ||
@@ -98,7 +138,44 @@ export default function Api() {
             size={13}
             className="mx-2"
           />
-          {api.name}
+          <div className="flex items-center group">
+            {isApiNameEditing ? (
+              <Input
+                value={form.watch('name')}
+                onChange={(e) => form.setValue('name', e.target.value)}
+                autoFocus
+                className={cn(
+                  'bg-transparent h-auto px-1 py-px text-base w-auto border',
+                )}
+                // onBlur={() => setIsApiNameEditing(false)}
+              />
+            ) : (
+              <span className="text-base h-auto px-1 py-px w-auto border border-transparent">
+                {api.name}
+              </span>
+            )}
+            {!isApiNameEditing ? (
+              <Pencil
+                onClick={() => setIsApiNameEditing(true)}
+                size={12}
+                className="ml-1 group-hover:visible invisible cursor-pointer"
+              />
+            ) : (
+              <span
+                className={buttonVariants({
+                  size: 'icon',
+                  variant: 'secondary',
+                  className: 'p-0 w-7 h-7 ml-1 cursor-pointer',
+                })}
+                onClick={() => {
+                  saveUpdate()
+                }}
+              >
+                <Check size={12} />
+              </span>
+            )}
+          </div>
+
           {!!Object.entries(form.formState.dirtyFields).length && (
             <Button
               ref={updateButtonRef}
@@ -114,135 +191,247 @@ export default function Api() {
         </div>
         <div
           ref={urlDivRef}
-          className="mx-auto relative h-10 flex w-[calc(100%-40px)] items-center justify-between rounded overflow-hidden border p-0"
+          className={cn(
+            'mx-auto relative h-10 flex w-[calc(100%-40px)] items-center justify-between rounded overflow-hidden border p-0',
+            isUrlError ? 'text-red-500' : '',
+          )}
         >
-          <div
-            onDoubleClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
-            className="flex items-center"
-          >
-            <span
-              className={cn(
-                api.method === 'GET'
-                  ? ' bg-green-700 border border-green-500'
-                  : api.method === 'POST'
-                  ? 'bg-yellow-700 border-yellow-500'
-                  : api.method === 'PUT'
-                  ? 'bg-cyan-700 border-cyan-500'
-                  : api.method === 'PATCH'
-                  ? 'bg-purple-700 border-purple-500'
-                  : 'bg-red-700 border-red-500',
-                'font-medium text-white ml-1.5 text-xs px-1 py-0.5 rounded-md',
-              )}
-            >
-              {api.method}
-            </span>
-            <div
-              // style={{
-              //   width: urlWidth,
-              //   maxWidth: '100%',
-              // }}
-              className="truncate px-2"
-            >
-              {containsDynamicVariable(api.url) ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="text-cyan-500">{`{{${extractVariable(
-                      url,
-                    )}}}`}</span>
-                  </TooltipTrigger>
-                  <TooltipContent className="flex items-center text-base">
-                    {replaceVariables(`{{${extractVariable(url)}}}`, env)}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="ml-2 flex h-4 w-4 justify-self-end p-0"
-                      size="xs"
-                      onClick={() => {
-                        copy(
-                          replaceVariables(`{{${extractVariable(url)}}}`, env),
-                        )
-                        toast({
-                          variant: 'success',
-                          title: 'Success',
-                          description: 'Env value is copied to clipboard',
-                        })
-                      }}
+          {isUrlEditing ? (
+            <div className="flex w-full items-center">
+              <Select
+                onValueChange={(value) =>
+                  form.setValue(
+                    'method',
+                    value as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+                  )
+                }
+                value={form.watch('method') ?? 'GET'}
+              >
+                <SelectTrigger
+                  className={cn(
+                    form.getValues('method') === 'GET'
+                      ? ' bg-green-700 border border-green-500'
+                      : form.getValues('method') === 'POST'
+                      ? 'bg-yellow-700 border-yellow-500'
+                      : form.getValues('method') === 'PUT'
+                      ? 'bg-cyan-700 border-cyan-500'
+                      : form.getValues('method') === 'PATCH'
+                      ? 'bg-purple-700 border-purple-500'
+                      : 'bg-red-700 border-red-500',
+                    'font-bold w-20 h-full border-0 text-white',
+                    setBorderColor(
+                      !!form.formState.errors.method || isUrlError,
+                    ),
+                  )}
+                >
+                  <SelectValue placeholder="Method" />
+                </SelectTrigger>
+                <SelectContent>
+                  {['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map((item) => (
+                    <SelectItem
+                      className={
+                        (item === 'GET'
+                          ? 'text-green-500'
+                          : item === 'POST'
+                          ? 'text-yellow-500'
+                          : item === 'PUT'
+                          ? 'text-cyan-500'
+                          : item === 'PATCH'
+                          ? 'text-purple-500'
+                          : 'text-red-500') + ' font-bold'
+                      }
+                      key={item}
+                      value={item}
                     >
-                      <Copy size={16} />
-                    </Button>
-                  </TooltipContent>
-                </Tooltip>
-              ) : (
-                url
-              )}
+                      {item}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Input
+                autoComplete="off"
+                placeholder="Url"
+                autoFocus
+                {...form.register('url')}
+                // value={form.getValues('url')}
+                size={200}
+                onChange={(e) => {
+                  if (e.target.value.includes('?')) {
+                    e.target.value = e.target.value.replace('?', '')
+                  }
+                  if (e.target.value.includes('&')) {
+                    e.target.value = e.target.value.replace('&', '')
+                  }
+                  form.setValue('url', e.target.value)
+                }}
+                className={cn(
+                  setBorderColor(isUrlError),
+                  'text-base rounded-l-none pl-1 h-full border-0',
+                )}
+                // onBlur={() => setIsUrlEditing(false)}
+              />
+
               <Tooltip>
-                <TooltipTrigger>{url?.split('}}')[1]}</TooltipTrigger>
-                <TooltipContent>Double click to edit this API</TooltipContent>
+                <TooltipTrigger>
+                  {isUrlError && (
+                    <InfoIcon className="mb-2 ml-2 text-destructive" />
+                  )}
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>It is not a valid variable</p>
+                </TooltipContent>
               </Tooltip>
             </div>
-          </div>
+          ) : (
+            <div
+              onClick={() => setIsUrlEditing(true)}
+              className="flex items-center"
+            >
+              <span
+                className={cn(
+                  api.method === 'GET'
+                    ? ' bg-green-700 border border-green-500'
+                    : api.method === 'POST'
+                    ? 'bg-yellow-700 border-yellow-500'
+                    : api.method === 'PUT'
+                    ? 'bg-cyan-700 border-cyan-500'
+                    : api.method === 'PATCH'
+                    ? 'bg-purple-700 border-purple-500'
+                    : 'bg-red-700 border-red-500',
+                  'font-medium text-white ml-1.5 text-xs px-1 py-0.5 rounded-md',
+                )}
+              >
+                {api.method}
+              </span>
+              <div className="truncate px-2">
+                {containsDynamicVariable(api.url) ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-cyan-500">{`{{${extractVariable(
+                        url,
+                      )}}}`}</span>
+                    </TooltipTrigger>
+                    <TooltipContent className="flex items-center text-base">
+                      {replaceVariables(`{{${extractVariable(url)}}}`, env)}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="ml-2 flex h-4 w-4 justify-self-end p-0"
+                        size="xs"
+                        onClick={() => {
+                          copy(
+                            replaceVariables(
+                              `{{${extractVariable(url)}}}`,
+                              env,
+                            ),
+                          )
+                          toast({
+                            variant: 'success',
+                            title: 'Success',
+                            description: 'Env value is copied to clipboard',
+                          })
+                        }}
+                      >
+                        <Copy size={16} />
+                      </Button>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  url
+                )}
+                <Tooltip>
+                  <TooltipTrigger>{url?.split('}}')[1]}</TooltipTrigger>
+                  <TooltipContent>Click to edit this URL</TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center justify-end absolute right-0 h-auto bg-background pl-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="flex justify-self-end px-3 rounded-none"
-                  size="sm"
-                  onClick={() => copyUrl()}
-                >
-                  {isUrlCopied ? (
-                    <Check
-                      className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
-                      size={18}
-                    />
-                  ) : (
-                    <Copy
-                      className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
-                      size={18}
-                    />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Copy url</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="flex justify-self-end px-3 rounded-none"
-                  size="sm"
-                  onClick={() => navigate(`/api/${folderId}/${apiId}/update`)}
-                >
-                  <Settings
-                    className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
-                    size={18}
-                  />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Edit</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={() => callApi()}
-                  className="p-1 rounded-l-none"
-                  variant="secondary"
-                  size="icon"
-                >
-                  <i className="bi bi-plugin text-xl font-bold" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Send request</p>
-              </TooltipContent>
-            </Tooltip>
+            {!isUrlEditing && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="flex justify-self-end px-3 rounded-none"
+                      size="sm"
+                      onClick={() => copyUrl()}
+                    >
+                      {isUrlCopied ? (
+                        <Check
+                          className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                          size={18}
+                        />
+                      ) : (
+                        <Copy
+                          className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                          size={18}
+                        />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Copy url</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="flex justify-self-end px-3 rounded-none"
+                      size="sm"
+                      onClick={() => setIsUrlEditing(true)}
+                    >
+                      <Pencil
+                        className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                        size={17}
+                      />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Edit Url</TooltipContent>
+                </Tooltip>
+              </>
+            )}
+            {isUrlEditing ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    onClick={() => {
+                      saveUpdate()
+                      getApi(api?.id)
+                    }}
+                    className={buttonVariants({
+                      className: 'p-1 rounded-l-none cursor-pointer',
+                      variant: 'secondary',
+                      size: 'icon',
+                    })}
+                  >
+                    <Save size={18} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>Save Url</TooltipContent>
+              </Tooltip>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => callApi()}
+                    className="p-1 rounded-l-none"
+                    variant="secondary"
+                    size="icon"
+                  >
+                    <i className="bi bi-plugin text-xl font-bold" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Send request</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
         </div>
         <SplitPane

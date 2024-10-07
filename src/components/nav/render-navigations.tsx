@@ -217,7 +217,7 @@ export default function RenderNavigation({
       {isFolderOpen && (
         <div className="animate__animated animate__fadeIn child ml-6 border-l">
           {collection?.children
-            ?.sort((a, b) => a.name.localeCompare(b.name))
+            ?.sort((a, b) => a.name?.localeCompare(b.name))
             .map((folder) => (
               <RenderNavigation
                 collection={folder}
@@ -234,7 +234,7 @@ export default function RenderNavigation({
           )}
 
           {collection.apis
-            ?.sort((a, b) => a.name.localeCompare(b.name))
+            ?.sort((a, b) => a.name?.localeCompare(b.name))
             .map((api) => (
               <ContextMenu key={`api-${api.id}`}>
                 <ContextMenuTrigger asChild>

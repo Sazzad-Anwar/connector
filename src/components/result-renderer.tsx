@@ -1,9 +1,16 @@
 import MonacoEditor, { Monaco } from '@monaco-editor/react'
 import copy from 'copy-to-clipboard'
 import { Check, Copy } from 'lucide-react'
-import { forwardRef, useEffect, useRef, useState } from 'react'
+import React, {
+  forwardRef,
+  memo,
+  ReactElement,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { JSONErrorType } from './api/api'
-import Loading from './loading'
+import LoadingComponent from './loading'
 import { useTheme } from './theme-provider'
 import { Button } from './ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
@@ -18,6 +25,7 @@ type PropsType = {
   className?: string
   setError?: React.Dispatch<React.SetStateAction<JSONErrorType | undefined>>
   setData?: (value: string) => void
+  loading?: ReactElement
 }
 
 const ResultRender = forwardRef<HTMLDivElement, PropsType>(
@@ -30,6 +38,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       className,
       type = 'input',
       setError,
+      loading,
     }: PropsType,
     ref,
   ) {
@@ -200,7 +209,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
               ? 'onedark'
               : 'light'
           }
-          loading={<Loading height={height} />}
+          loading={loading ? loading : <LoadingComponent height={height} />}
           // height={height ?? window.innerHeight - 320}
           height={height!}
           width="100%"
@@ -225,4 +234,4 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
   },
 )
 
-export default ResultRender
+export default memo(ResultRender)
