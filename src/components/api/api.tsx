@@ -72,7 +72,6 @@ export default function Api() {
     isLoading,
     form,
     onSubmit,
-    callApi,
     saveUpdate,
     collections,
     env,
@@ -414,7 +413,6 @@ export default function Api() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    onClick={() => callApi()}
                     className="p-1 rounded-l-none"
                     variant="secondary"
                     size="icon"

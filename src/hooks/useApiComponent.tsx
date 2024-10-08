@@ -65,7 +65,6 @@ export default function useApiComponent() {
     statusText: '',
     time: '',
   })
-  const buttonRef = useRef<HTMLButtonElement>(null)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const form = useForm<ApiType>({
     mode: 'onChange',
@@ -259,14 +258,11 @@ export default function useApiComponent() {
         (event.metaKey && event.key === 's')
       ) {
         event.preventDefault()
-        if (
-          form.formState.isDirty ||
-          !!Object.entries(form.formState.dirtyFields).length
-        ) {
+        if (form.formState.isDirty) {
           saveUpdate()
           getApi(api?.id)
+          form.reset(api)
         }
-        // form.reset(api)
       }
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
@@ -444,10 +440,6 @@ export default function useApiComponent() {
     updateApi(dataWithResponse, dataWithResponse.id)
   }
 
-  const callApi = async () => {
-    buttonRef.current?.click()
-  }
-
   const saveUpdate = useCallback(() => {
     const data: ApiType = {} as ApiType
     if (
@@ -469,8 +461,6 @@ export default function useApiComponent() {
       data.pathVariables = filterEmptyParams(form.getValues('pathVariables')!)
       data.jsonBody = form.getValues('jsonBody')
       data.interactiveQuery = form.getValues('interactiveQuery')
-      data.response = result
-      data.responseStatus = JSON.stringify(responseStatus)
       updateApi(data, params.apiId)
       toast({
         variant: 'success',
@@ -523,7 +513,6 @@ export default function useApiComponent() {
     setHeaders,
     responseStatus,
     setResponseStatus,
-    buttonRef,
     isLoading,
     setIsLoading,
     form,
@@ -537,7 +526,6 @@ export default function useApiComponent() {
     getEnv,
     copyUrl,
     onSubmit,
-    callApi,
     saveUpdate,
     apiId,
     folderId,
