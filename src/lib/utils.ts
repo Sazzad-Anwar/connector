@@ -195,7 +195,7 @@ export function resolveQuery(queryString: string, data: any) {
       }
     }
   } else if (result && typeof result === 'object') {
-    properties = properties.filter((item) => item !== 'response')
+    properties = properties.filter((item) => item.toLowerCase() !== 'response')
     for (const property of properties) {
       result = property !== 'response' ? result[property] ?? '' : ''
     }
@@ -592,8 +592,6 @@ export function updateRecentlyOpenedApis(
   }
 
   // Iterate through the folders in the deleted collection and collect their API IDs
-
-  console.log({ apiIdsToRemove })
 
   // Filter the recently opened APIs and remove the ones whose id is in apiIdsToRemove
   return recentlyOpenedApis.filter((api) => !apiIdsToRemove.includes(api.id))

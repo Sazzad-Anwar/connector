@@ -18,11 +18,11 @@ import {
   replaceVariables,
 } from '@/lib/utils'
 
-import { useEffect, useState } from 'react'
+import useApiComponent from '@/hooks/useApiComponent'
+import useResultRenderViewStore from '@/store/resultRenderView'
+import { FolderType } from '@/types/api'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import SplitPane, { Pane } from 'split-pane-react'
-import useApiComponent from '../../hooks/useApiComponent'
-import useResultRenderViewStore from '../../store/resultRenderView'
-import { FolderType } from '../../types/api'
 import Breadcrumbs from '../breadcrumb'
 import Loading from '../loading'
 import SideNavToggler from '../nav/sidenav-toggler'
@@ -38,9 +38,9 @@ import {
 } from '../ui/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { toast } from '../ui/use-toast'
-import ApiResult from './api-result'
-import ApiTabs from './apiTabs'
-import InputTabs from './input-tabs'
+const ApiTabs = lazy(() => import('./apiTabs'))
+const InputTabs = lazy(() => import('./input-tabs'))
+const ApiResult = lazy(() => import('./api-result'))
 export type JSONErrorType = {
   isError: boolean
   error: string
@@ -65,7 +65,6 @@ export default function Api() {
     isUrlCopied,
     breadCrumbDivRef,
     urlDivRef,
-    updateButtonRef,
     sizes,
     setSizes,
     headers,
@@ -118,7 +117,11 @@ export default function Api() {
 
   return (
     <>
-      <ApiTabs />
+      <Suspense fallback={<Loading className="h-screen" />}>
+        <ApiTabs
+          isEdited={!!Object.entries(form.formState.dirtyFields).length}
+        />
+      </Suspense>
       <form
         ref={formDivRef}
         onSubmit={form.handleSubmit(onSubmit)}
@@ -140,7 +143,7 @@ export default function Api() {
           <div className="flex items-center group">
             {isApiNameEditing ? (
               <Input
-                value={form.watch('name')}
+                value={form.watch('name') ?? ''}
                 onChange={(e) => {
                   form.setValue('name', e.target.value, {
                     shouldDirty: true,
@@ -179,19 +182,6 @@ export default function Api() {
               </span>
             )}
           </div>
-
-          {!!Object.entries(form.formState.dirtyFields).length && (
-            <Button
-              ref={updateButtonRef}
-              onClick={() => saveUpdate()}
-              type="button"
-              variant="destructive"
-              size="xs"
-              className="py-.5 px-1 ml-2 text-xs mt-px"
-            >
-              Save
-            </Button>
-          )}
         </div>
         <div
           ref={urlDivRef}
@@ -258,7 +248,7 @@ export default function Api() {
                 autoComplete="off"
                 placeholder="Url"
                 autoFocus
-                value={form.watch('url')}
+                value={form.watch('url') ?? ''}
                 size={200}
                 onChange={(e) => {
                   if (
@@ -454,21 +444,33 @@ export default function Api() {
             }
             maxSize="100%"
           >
-            <InputTabs
-              className={cn(
-                'px-5 pt-2',
-                resultRenderView === 'horizontal'
-                  ? `w-[${sizes[0] - 120}px]`
-                  : '',
-              )}
-              height={
-                resultRenderView === 'vertical'
-                  ? window.innerHeight - 200
-                  : sizes[0]
+            <Suspense
+              fallback={
+                <Loading
+                  height={
+                    resultRenderView === 'vertical'
+                      ? window.innerHeight - 200
+                      : sizes[0]
+                  }
+                />
               }
-              form={form}
-              api={api}
-            />
+            >
+              <InputTabs
+                className={cn(
+                  'px-5 pt-2',
+                  resultRenderView === 'horizontal'
+                    ? `w-[${sizes[0] - 120}px]`
+                    : '',
+                )}
+                height={
+                  resultRenderView === 'vertical'
+                    ? window.innerHeight - 200
+                    : sizes[0]
+                }
+                form={form}
+                api={api}
+              />
+            </Suspense>
           </Pane>
 
           <Pane
@@ -480,17 +482,29 @@ export default function Api() {
             }
             maxSize="100%"
           >
-            <ApiResult
-              height={
-                resultRenderView === 'vertical'
-                  ? window.innerHeight + 20
-                  : sizes[1]! + 20
+            <Suspense
+              fallback={
+                <Loading
+                  height={
+                    resultRenderView === 'vertical'
+                      ? window.innerHeight + 20
+                      : sizes[1]! + 20
+                  }
+                />
               }
-              isLoading={isLoading}
-              result={result}
-              headers={headers}
-              responseStatus={responseStatus}
-            />
+            >
+              <ApiResult
+                height={
+                  resultRenderView === 'vertical'
+                    ? window.innerHeight + 20
+                    : sizes[1]! + 20
+                }
+                isLoading={isLoading}
+                result={result}
+                headers={headers}
+                responseStatus={responseStatus}
+              />
+            </Suspense>
           </Pane>
         </SplitPane>
       </form>

@@ -11,7 +11,11 @@ import {
   CarouselPrevious,
 } from '../ui/carousel'
 
-export default function ApiTabs() {
+type Props = {
+  isEdited: boolean
+}
+
+export default function ApiTabs({ isEdited }: Props) {
   const { tabs, removeTab } = useTabRenderStore()
   const { apiId } = useParams()
   const navigate = useNavigate()
@@ -32,25 +36,30 @@ export default function ApiTabs() {
               <span className="cursor-pointer w-full text-xs py-1 truncate">
                 {tab.name}
               </span>
-              <Button
-                className="p-0 h-auto"
-                variant="secondary"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  removeTab(tab.id)
-                  if (tabs.length === 1) {
-                    navigate('/')
-                  } else {
-                    const lastTab =
-                      tabs.indexOf(tab) === 0
-                        ? tabs[tabs.indexOf(tab) + 1]
-                        : tabs[tabs.indexOf(tab) - 1]
-                    navigate(`/api/${lastTab.folderId}/${lastTab.id}`)
-                  }
-                }}
-              >
-                <X size={16} />
-              </Button>
+              <div className="flex items-center justify-end gap-1">
+                {apiId === tab.id && isEdited && (
+                  <span className="h-2 w-2 flex justify-center items-center p-0 rounded-full bg-green-500" />
+                )}
+                <Button
+                  className="p-0 h-auto"
+                  variant="secondary"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    removeTab(tab.id)
+                    if (tabs.length === 1) {
+                      navigate('/')
+                    } else {
+                      const nextTab =
+                        tabs.indexOf(tab) === 0
+                          ? tabs[tabs.indexOf(tab) + 1]
+                          : tabs[tabs.indexOf(tab) - 1]
+                      navigate(`/api/${nextTab.folderId}/${nextTab.id}`)
+                    }
+                  }}
+                >
+                  <X size={16} />
+                </Button>
+              </div>
             </CarouselItem>
           ))}
         </CarouselContent>

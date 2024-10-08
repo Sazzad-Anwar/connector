@@ -11,13 +11,13 @@ import {
   MoreVertical,
 } from 'lucide-react'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 
 import { cn, findRootCollection } from '@/lib/utils'
 import { FolderType } from '@/types/api'
 
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import useRenderNav from '../../hooks/useRenderNav'
 import useApiStore from '../../store/store'
 import { default as CreateFolder } from '../collections/create-folder'
@@ -49,7 +49,6 @@ interface RenderNavigationProps {
 export default function RenderNavigation({
   collection,
 }: RenderNavigationProps): JSX.Element {
-  const navigate = useNavigate()
   const { collections } = useApiStore()
   const [isFolderOpen, setIsFolderOpen] = useState(true)
   const navWidthRef = useRef<HTMLDivElement>(null)
@@ -66,36 +65,13 @@ export default function RenderNavigation({
     deleteApiHandler,
     selectedApis,
     collectionId,
-    setCollectionId,
     isCreatingFolder,
-    setIsCreatingFolder,
     isFolderNameUpdating,
-    setIsFolderNameUpdating,
     isMoveToFolderDialogOpen,
     setIsMoveToFolderDialogOpen,
     handleClickApi,
     setSelectedApis,
   } = useRenderNav({ collection })
-
-  useEffect(() => {
-    const handleEscapeKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        // Handle the "Escape" key press here
-        setIsFolderNameUpdating(false)
-        setCollectionId('')
-        setIsCreatingFolder(false)
-        setSelectedApis([])
-      }
-    }
-
-    // Add the event listener when the component mounts
-    document.addEventListener('keydown', handleEscapeKeyPress)
-    // Remove the event listener when the component unmounts
-    return () => {
-      document.removeEventListener('keydown', handleEscapeKeyPress)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   return (
     <>
@@ -286,29 +262,6 @@ export default function RenderNavigation({
                         />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {!selectedApis
-                          .map((apiType) => apiType.id)
-                          .includes(api.id) && (
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              setApiDetails(api)
-                              e.stopPropagation()
-                              navigate(`/api/${collection.id}/${api.id}/update`)
-                            }}
-                          >
-                            Update
-                          </DropdownMenuItem>
-                        )}
-
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            setApiDetails(api)
-                            e.stopPropagation()
-                            deleteButtonRef.current?.click()
-                          }}
-                        >
-                          Delete
-                        </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => {
                             setSelectedApis([...selectedApis, api])
@@ -317,32 +270,21 @@ export default function RenderNavigation({
                         >
                           Move
                         </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            setApiDetails(api)
+                            e.stopPropagation()
+                            deleteButtonRef.current?.click()
+                          }}
+                          className="text-red-500"
+                        >
+                          Delete
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 </ContextMenuTrigger>
                 <ContextMenuContent>
-                  {selectedApis.length > 1 &&
-                    selectedApis.map((item) => item.id).includes(api.id) && (
-                      <ContextMenuItem
-                        onClick={(e) => {
-                          setApiDetails(api)
-                          e.stopPropagation()
-                          navigate(`/api/${collection.id}/${api.id}/update`)
-                        }}
-                      >
-                        Update
-                      </ContextMenuItem>
-                    )}
-                  <ContextMenuItem
-                    onClick={(e) => {
-                      setApiDetails(api)
-                      e.stopPropagation()
-                      deleteButtonRef.current?.click()
-                    }}
-                  >
-                    Delete
-                  </ContextMenuItem>
                   <ContextMenuItem
                     onClick={() => {
                       setIsMoveToFolderDialogOpen(true)
@@ -352,6 +294,16 @@ export default function RenderNavigation({
                     }}
                   >
                     Move
+                  </ContextMenuItem>
+                  <ContextMenuItem
+                    onClick={(e) => {
+                      setApiDetails(api)
+                      e.stopPropagation()
+                      deleteButtonRef.current?.click()
+                    }}
+                    className="text-red-500"
+                  >
+                    Delete
                   </ContextMenuItem>
                 </ContextMenuContent>
               </ContextMenu>

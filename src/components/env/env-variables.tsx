@@ -45,28 +45,33 @@ export default function EnvVariables() {
 
   useEffect(() => {
     const handleEscapeKeyPress = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === 's' && form.formState.isDirty) {
-        event.preventDefault()
-        submitButtonRef.current?.click()
-        form.reset()
-      }
-      if (event.key === 'Escape') {
-        // Handle the "Escape" key press here
-        if (form.formState.isDirty) {
-          if (collection.env?.length) {
-            const env = collection.env
-            form.setValue('env', env)
-          } else {
-            form.setValue('env', [
-              {
-                id: uuid(),
-                key: '',
-                value: '',
-                description: '',
-              },
-            ])
-          }
+      if (
+        form.formState.isDirty ||
+        !!Object.entries(form.formState.dirtyFields).length
+      ) {
+        if (event.ctrlKey && event.key === 's') {
+          event.preventDefault()
+          submitButtonRef.current?.click()
           form.reset()
+        }
+        if (event.key === 'Escape') {
+          // Handle the "Escape" key press here
+          if (form.formState.isDirty) {
+            if (collection.env?.length) {
+              const env = collection.env
+              form.setValue('env', env)
+            } else {
+              form.setValue('env', [
+                {
+                  id: uuid(),
+                  key: '',
+                  value: '',
+                  description: '',
+                },
+              ])
+            }
+            form.reset()
+          }
         }
       }
     }
@@ -254,7 +259,7 @@ export default function EnvVariables() {
           </Table>
           <div className="flex items-center justify-end w-full">
             <div className="flex items-center">
-              {form.formState.isDirty && (
+              {!!Object.entries(form.formState.dirtyFields).length && (
                 <>
                   <Button
                     type="button"

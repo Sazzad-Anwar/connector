@@ -55,7 +55,6 @@ export default function useApiComponent() {
   const [isUrlCopied, setIsUrlCopied] = useState<boolean>(false)
   const breadCrumbDivRef = useRef<HTMLDivElement>(null)
   const urlDivRef = useRef<HTMLDivElement>(null)
-  const updateButtonRef = useRef<HTMLButtonElement>(null)
   const [sizes, setSizes] = useState<number[]>([
     (window.innerHeight - 320) / 2,
     (window.innerHeight - 320) / 2,
@@ -84,7 +83,7 @@ export default function useApiComponent() {
     !!filterEmptyParams(customParams!)?.length &&
     hasActiveCustomParams &&
     form.watch('activeQuery') === 'query-params'
-      ? url + getQueryString(arrayToObjectConversion(customParams!), env)
+      ? url + '?' + getQueryString(arrayToObjectConversion(customParams!), env)
       : typeof interactiveQuery === 'object' &&
         Object.keys(interactiveQuery)?.length
       ? url + '?' + getQueryString(interactiveQuery)
@@ -93,9 +92,14 @@ export default function useApiComponent() {
   const folderId = params.folderId as string
 
   useEffect(() => {
+    state?.isUrlEditing ? setIsUrlEditing(true) : null
+    state?.isApiNameEditing ? setIsApiNameEditing(true) : null
+  }, [state])
+
+  useEffect(() => {
     if (apiId && folderId) {
-      getApi(apiId!)
-      getEnv(folderId!)
+      getApi(apiId)
+      getEnv(folderId)
     } else {
       navigate('/')
     }
@@ -109,12 +113,6 @@ export default function useApiComponent() {
       localStorage.setItem('resultRenderView', resultRenderView)
     }
   }, [])
-
-  useEffect(() => {
-    if (apiId && folderId && !api) {
-      navigate('/')
-    }
-  }, [api, apiId, folderId, navigate])
 
   useEffect(() => {
     if (api.id === apiId) {
@@ -261,17 +259,21 @@ export default function useApiComponent() {
         (event.metaKey && event.key === 's')
       ) {
         event.preventDefault()
-        saveUpdate()
-        getApi(api?.id)
-        form.reset()
+        if (
+          form.formState.isDirty ||
+          !!Object.entries(form.formState.dirtyFields).length
+        ) {
+          saveUpdate()
+          getApi(api?.id)
+        }
+        // form.reset(api)
       }
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
-        form.reset()
-        getApi(api?.id)
+        // getApi(api?.id)
+        form.reset(api)
         setIsUrlEditing(false)
         setIsApiNameEditing(false)
-        setAllParams()
       }
     }
 
@@ -475,7 +477,6 @@ export default function useApiComponent() {
         title: 'Success',
         description: 'Api is updated successfully',
       })
-      getApi(api?.id)
       setIsUrlEditing(false)
       setIsApiNameEditing(false)
       form.reset()
@@ -485,15 +486,15 @@ export default function useApiComponent() {
         folderId: folderId,
       })
       navigate(`/api/${folderId}/${params.apiId}`)
+      getApi(api?.id)
     }
-  }, [form])
+  }, [form, api])
 
   const copyUrl = () => {
     setIsUrlCopied(true)
     url = containsDynamicVariable(url)
       ? replaceVariables(updateUrlWithPathVariables(url, pathVariables!), env)
       : updateUrlWithPathVariables(url, pathVariables!)
-    console.log({ url })
     copy(url)
     toast({
       variant: 'success',
@@ -516,7 +517,6 @@ export default function useApiComponent() {
     setIsUrlCopied,
     breadCrumbDivRef,
     urlDivRef,
-    updateButtonRef,
     sizes,
     setSizes,
     headers,

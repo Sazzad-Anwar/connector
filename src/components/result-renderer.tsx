@@ -50,8 +50,6 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       JSON.stringify(result, null, '\t') ?? '{}',
     )
 
-    console.log()
-
     function setEditorTheme(monaco: Monaco) {
       monaco.editor.defineTheme('onedark', {
         base: 'vs-dark',
@@ -79,9 +77,11 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
 
     useEffect(() => {
       const handleEscapeKeyPress = (event: KeyboardEvent) => {
-        if (event.key === 'Escape' && !readOnly) {
-          // Handle the "Escape" key press here
-          // form.setValue('jsonBody', api?.jsonBody)
+        if (
+          event.key === 'Escape' &&
+          !readOnly &&
+          JSON.stringify(result, null, '\t') !== editorValue
+        ) {
           setEditorValue(JSON.stringify(result, null, '\t') ?? '{}')
         }
       }
@@ -92,7 +92,6 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       return () => {
         document.removeEventListener('keydown', handleEscapeKeyPress)
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {

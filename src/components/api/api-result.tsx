@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import copy from 'copy-to-clipboard'
 import { Check, Columns2, Copy, Info, Rows2, X } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { lazy, memo, Suspense, useEffect, useRef } from 'react'
 import { v4 as uuid } from 'uuid'
 import { cn, parseCookie } from '../../lib/utils'
 import useResultRenderViewStore from '../../store/resultRenderView'
 import Loading from '../loading'
-import ResultRender from '../result-renderer'
 import { Button } from '../ui/button'
 import {
   DropdownMenu,
@@ -31,6 +30,7 @@ import {
   TooltipTrigger,
 } from '../ui/tooltip'
 import { ResponseStatus } from './api'
+const ResultRender = lazy(() => import('../result-renderer'))
 
 type PropsType = {
   isLoading: boolean
@@ -42,13 +42,13 @@ type PropsType = {
   }
 }
 
-export default function ApiResult({
+const ApiResult = ({
   isLoading,
   result,
   height,
   responseStatus,
   headers,
-}: PropsType) {
+}: PropsType) => {
   const resultDivRef = useRef<HTMLDivElement>(null)
   // const [searchParams] = useSearchParams()
   // const navigate = useNavigate()
@@ -119,19 +119,28 @@ export default function ApiResult({
               value="response"
               className="w-full"
             >
-              <ResultRender
-                ref={resultContainerRef}
-                readOnly={true}
-                height={height! - 220}
-                type="response"
-                loading={
+              <Suspense
+                fallback={
                   <Loading
-                    name="Connecting"
+                    name="Loading"
                     height={height! - 220}
                   />
                 }
-                result={result ?? {}}
-              />
+              >
+                <ResultRender
+                  ref={resultContainerRef}
+                  readOnly={true}
+                  height={height! - 220}
+                  type="response"
+                  loading={
+                    <Loading
+                      name="Connecting"
+                      height={height! - 220}
+                    />
+                  }
+                  result={result ?? {}}
+                />
+              </Suspense>
             </TabsContent>
             <TabsContent
               value="headers"
@@ -381,3 +390,5 @@ export default function ApiResult({
     </section>
   )
 }
+
+export default memo(ApiResult)

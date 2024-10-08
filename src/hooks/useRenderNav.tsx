@@ -77,15 +77,24 @@ export default function useRenderNav({
 
   // Delete Collection
   const deleteApiHandler = (id: string) => {
+    updateTab(updateRecentlyOpenedApis(tabs, collection))
     deleteApi(id)
+    const tab = tabs.find((t) => t.id === params.apiId)
+    if (!tab) {
+      navigate('/')
+    } else {
+      const nextTab =
+        tabs.indexOf(tab) === 0
+          ? tabs[tabs.indexOf(tab) + 1]
+          : tabs[tabs.indexOf(tab) - 1]
+
+      navigate(`/api/${nextTab.folderId}/${nextTab.id}`)
+    }
     toast({
       variant: 'success',
       title: `Success`,
-      description: `Api is deleted successfully`,
+      description: `${apiDetails?.name} Api is deleted successfully`,
     })
-    if (params.apiId === id) {
-      navigate('/')
-    }
   }
   // Export as JSON
   const downloadFile = async ({
@@ -151,7 +160,6 @@ export default function useRenderNav({
       headers: [],
       dynamicVariables: [],
       body: [],
-      jsonBody: '',
       pathVariables: [],
     }
     createApi(data, collection.id)
@@ -233,6 +241,7 @@ export default function useRenderNav({
         setIsFolderNameUpdating(false)
         setCollectionId('')
         setIsCreatingFolder(false)
+        setSelectedApis([])
       }
     }
 

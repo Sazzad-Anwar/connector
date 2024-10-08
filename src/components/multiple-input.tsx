@@ -9,7 +9,7 @@ import {
   containsVariable,
   parseURLParameters,
 } from '@/lib/utils'
-import { ApiType } from '@/types/api'
+import { ApiType, ParamsType } from '@/types/api'
 
 import { useParams } from 'react-router-dom'
 import DynamicInput from './dynamic-input'
@@ -23,6 +23,7 @@ export type PropsType = {
     | 'pathVariables'
     | 'dynamicVariables'
   form: UseFormReturn<ApiType, any, undefined>
+  params?: ParamsType[]
 }
 
 export default function MultipleInput({ form, propertyName }: PropsType) {
@@ -43,7 +44,9 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
   }, [getEnv, folderId])
 
   useEffect(() => {
-    form.setValue('pathVariables', parseURLParameters(url))
+    if (form.formState.dirtyFields?.url) {
+      form.setValue('pathVariables', parseURLParameters(url))
+    }
   }, [url])
 
   useEffect(() => {
