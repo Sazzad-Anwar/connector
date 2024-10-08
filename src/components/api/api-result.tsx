@@ -88,7 +88,7 @@ const ApiResult = ({
           height={height! - 300}
         />
       ) : (
-        <div className="relative flex justify-between pt-1 pb-3 pl-5 pr-0 text-sm">
+        <div className="relative flex justify-between pt-1 pb-3 pl-5 pr-0 text-sm animate__animated animated__fadeIn">
           <Tabs
             defaultValue="response"
             className="w-full"

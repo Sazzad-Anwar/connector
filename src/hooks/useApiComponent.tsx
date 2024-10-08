@@ -329,14 +329,14 @@ export default function useApiComponent() {
 
       const activeBody = form.getValues('activeBody')
       // this is axios call
+      url = containsDynamicVariable(url)
+        ? replaceVariables(updateUrlWithPathVariables(url, pathVariables!), env)
+        : url.split('://')[1].includes('/:')
+        ? updateUrlWithPathVariables(url, pathVariables!)
+        : url
       const response = await fetcher({
         method: api.method,
-        url: containsDynamicVariable(url)
-          ? replaceVariables(
-              updateUrlWithPathVariables(url, pathVariables!),
-              env,
-            )
-          : updateUrlWithPathVariables(url, pathVariables!),
+        url,
         submitDataBody: submitData.body,
         isUpload: files?.length ? true : false,
         headers,
@@ -484,7 +484,9 @@ export default function useApiComponent() {
     setIsUrlCopied(true)
     url = containsDynamicVariable(url)
       ? replaceVariables(updateUrlWithPathVariables(url, pathVariables!), env)
-      : updateUrlWithPathVariables(url, pathVariables!)
+      : url.split('://')[1].includes('/:')
+      ? updateUrlWithPathVariables(url, pathVariables!)
+      : url
     copy(url)
     toast({
       variant: 'success',
