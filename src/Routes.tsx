@@ -6,8 +6,6 @@ import Layout from './components/layout'
 import Loading from './components/loading'
 const Api = lazy(() => import('./pages/api/page'))
 const Home = lazy(() => import('./pages/page'))
-const AddApi = lazy(() => import('./pages/api/add/page'))
-const UpdateApi = lazy(() => import('./pages/api/update/page'))
 const Variables = lazy(() => import('./pages/variables/page'))
 
 const RouterConfigs = createBrowserRouter([
@@ -31,30 +29,6 @@ const RouterConfigs = createBrowserRouter([
         <Suspense fallback={<Loading className="h-screen" />}>
           <ErrorBoundary fallback={<Error />}>
             <Variables />
-          </ErrorBoundary>
-        </Suspense>
-      </Layout>
-    ),
-  },
-  {
-    path: '/api/:folderId/:apiId/update',
-    element: (
-      <Layout>
-        <Suspense fallback={<Loading className="h-screen" />}>
-          <ErrorBoundary fallback={<Error />}>
-            <UpdateApi />
-          </ErrorBoundary>
-        </Suspense>
-      </Layout>
-    ),
-  },
-  {
-    path: '/api/:folderId/add',
-    element: (
-      <Layout>
-        <Suspense fallback={<Loading className="h-screen" />}>
-          <ErrorBoundary fallback={<Error />}>
-            <AddApi />
           </ErrorBoundary>
         </Suspense>
       </Layout>

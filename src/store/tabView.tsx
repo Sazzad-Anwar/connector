@@ -7,10 +7,10 @@ type TabViewStoreType = {
   tabs: TabType[]
   removeTab: (id: string) => void
   addTab: (tab: TabType) => void
-  updateTab: (tab: TabType) => void
+  updateTab: (tab: TabType | TabType[]) => void
 }
 
-const useTabRenderView = create<TabViewStoreType>()((set) => ({
+const useTabRenderStore = create<TabViewStoreType>()((set) => ({
   tabs:
     isLocalStorageAvailable() && localStorage.getItem('tabs')
       ? JSON.parse(localStorage.getItem('tabs')!)
@@ -26,30 +26,35 @@ const useTabRenderView = create<TabViewStoreType>()((set) => ({
     set(() => ({ tabs: newTabs }))
   },
   addTab: (tab: TabType) => {
-    const tabs =
+    const tabs: TabType[] =
       isLocalStorageAvailable() && localStorage.getItem('tabs')
         ? JSON.parse(localStorage.getItem('tabs')!)
         : []
     if (!tabs.map((tab: TabType) => tab.id).includes(tab.id)) {
-      tabs.push(tab)
+      tabs.unshift(tab)
       localStorage.setItem('tabs', JSON.stringify(tabs))
       set(() => ({ tabs }))
     }
   },
-  updateTab: (tab: TabType) => {
+  updateTab: (tab: TabType | TabType[]) => {
     const tabs =
       isLocalStorageAvailable() && localStorage.getItem('tabs')
         ? JSON.parse(localStorage.getItem('tabs')!)
         : []
-    const newTabs = tabs.map((t: TabType) => {
-      if (t.id === tab.id) {
-        return tab
-      }
-      return t
-    })
-    localStorage.setItem('tabs', JSON.stringify(newTabs))
-    set(() => ({ tabs: newTabs }))
+    if (Array.isArray(tab)) {
+      localStorage.setItem('tabs', JSON.stringify(tab))
+      set(() => ({ tabs: tab }))
+    } else {
+      const newTabs = tabs.map((t: TabType) => {
+        if (t.id === tab.id) {
+          return tab
+        }
+        return t
+      })
+      localStorage.setItem('tabs', JSON.stringify(newTabs))
+      set(() => ({ tabs: newTabs }))
+    }
   },
 }))
 
-export default useTabRenderView
+export default useTabRenderStore

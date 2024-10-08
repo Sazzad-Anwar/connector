@@ -9,7 +9,12 @@ import {
   useState,
 } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom'
 import { v4 as uuid } from 'uuid'
 import { ResponseStatus } from '../components/api/api'
 import { toast } from '../components/ui/use-toast'
@@ -28,22 +33,25 @@ import {
 import useResultRenderViewStore from '../store/resultRenderView'
 import useSidePanelToggleStore from '../store/sidePanelToggle'
 import useApiStore, { isLocalStorageAvailable } from '../store/store'
-import useTabRenderView from '../store/tabView'
+import useTabRenderStore from '../store/tabView'
 import { ApiSchema, ApiType, ParamsType } from '../types/api'
 
 export default function useApiComponent() {
   const { api, getApi, updateApi, collections, env, getEnv, updateEnv } =
     useApiStore()
   const params = useParams()
-  const { updateTab } = useTabRenderView()
+  const { state } = useLocation()
+  const { updateTab } = useTabRenderStore()
   const { resultRenderView } = useResultRenderViewStore()
   const { isOpen } = useSidePanelToggleStore()
   const [urlWidth, setUrlWidth] = useState<number>()
   const formDivRef = useRef<HTMLFormElement>(null)
   const navigate = useNavigate()
   const [result, setResult] = useState<any>()
-  const [isUrlEditing, setIsUrlEditing] = useState(false)
-  const [isApiNameEditing, setIsApiNameEditing] = useState(false)
+  const [isUrlEditing, setIsUrlEditing] = useState(state?.isUrlEditing ?? false)
+  const [isApiNameEditing, setIsApiNameEditing] = useState(
+    state?.isApiNameEditing ?? false,
+  )
   const [isUrlCopied, setIsUrlCopied] = useState<boolean>(false)
   const breadCrumbDivRef = useRef<HTMLDivElement>(null)
   const urlDivRef = useRef<HTMLDivElement>(null)

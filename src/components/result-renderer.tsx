@@ -5,7 +5,6 @@ import React, {
   forwardRef,
   ReactElement,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -46,7 +45,12 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
     const editorRef = useRef<any>(null)
     const [isCopiedResponse, setIsCopiedResponse] = useState<boolean>(false)
     const [isErrorResult, setIsErrorResult] = useState<boolean>(false)
-    const [editorValue, setEditorValue] = useState<string>()
+    const [lineNumbersMinChars, setLineNumbersMinChars] = useState<number>(3)
+    const [editorValue, setEditorValue] = useState<string>(
+      JSON.stringify(result, null, '\t') ?? '{}',
+    )
+
+    console.log()
 
     function setEditorTheme(monaco: Monaco) {
       monaco.editor.defineTheme('onedark', {
@@ -94,6 +98,13 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
     useEffect(() => {
       if (type === 'response') {
         setEditorValue(JSON.stringify(result, null, '\t') ?? '{}')
+        setLineNumbersMinChars(
+          JSON.stringify(result, null, '\t').split('\n').length.toString()
+            .length
+            ? JSON.stringify(result, null, '\t').split('\n').length.toString()
+                .length + 1
+            : 3,
+        )
       }
     }, [type, result])
 
@@ -137,8 +148,37 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       }, 2000)
     }
 
-    const MemoizedRenderer = useMemo(() => {
-      return (
+    return (
+      <div
+        ref={ref}
+        className="relative"
+      >
+        <Button
+          type="button"
+          variant="ghost"
+          className="mr-2 flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
+          size="sm"
+          onClick={() => copyResponse()}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {isCopiedResponse ? (
+                <Check
+                  className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                  size={18}
+                />
+              ) : (
+                <Copy
+                  className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                  size={18}
+                />
+              )}
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Copy data</p>
+            </TooltipContent>
+          </Tooltip>
+        </Button>
         <MonacoEditor
           beforeMount={setEditorTheme}
           language={isErrorResult ? 'text' : 'json'}
@@ -151,9 +191,9 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
             cursorSmoothCaretAnimation: 'explicit',
             fastScrollSensitivity: 10,
             mouseWheelScrollSensitivity: 3,
-            tabSize: 8,
+            tabSize: 6,
             scrollBeyondLastLine: false,
-            lineNumbersMinChars: 10,
+            lineNumbersMinChars,
             autoIndent: 'brackets',
             copyWithSyntaxHighlighting: true,
             fontLigatures: true,
@@ -200,41 +240,6 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
             })
           }}
         />
-      )
-    }, [result, height])
-
-    return (
-      <div
-        ref={ref}
-        className="relative"
-      >
-        <Button
-          type="button"
-          variant="ghost"
-          className="mr-2 flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
-          size="sm"
-          onClick={() => copyResponse()}
-        >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              {isCopiedResponse ? (
-                <Check
-                  className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
-                  size={18}
-                />
-              ) : (
-                <Copy
-                  className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
-                  size={18}
-                />
-              )}
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Copy data</p>
-            </TooltipContent>
-          </Tooltip>
-        </Button>
-        {MemoizedRenderer}
       </div>
     )
   },

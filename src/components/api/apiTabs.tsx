@@ -1,7 +1,7 @@
+import { cn } from '@/lib/utils'
+import useTabRenderStore from '@/store/tabView'
 import { X } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { cn } from '../../lib/utils'
-import useTabRenderView from '../../store/tabView'
 import { Button } from '../ui/button'
 import {
   Carousel,
@@ -12,7 +12,7 @@ import {
 } from '../ui/carousel'
 
 export default function ApiTabs() {
-  const { tabs, removeTab } = useTabRenderView()
+  const { tabs, removeTab } = useTabRenderStore()
   const { apiId } = useParams()
   const navigate = useNavigate()
 

@@ -130,7 +130,7 @@ export default function RenderNavigation({
                 onClick={() => {
                   setIsFolderOpen(!isFolderOpen)
                 }}
-                className="flex flex-1 h-7 items-center"
+                className="flex flex-1 h-7 text-[13px] items-center"
               >
                 <ChevronRight
                   size={15}
@@ -271,12 +271,12 @@ export default function RenderNavigation({
                             : api.method === 'PATCH'
                             ? 'bg-purple-700 border-purple-500'
                             : 'bg-red-700 border-red-500',
-                          'font-medium text-white mr-2 text-xs px-1 py-0.5 rounded-md',
+                          'font-medium text-white mr-2 text-[10px] px-1 py-0.5 rounded-md',
                         )}
                       >
                         {api.method}
                       </span>
-                      <span className="truncate text-sm">{api.name}</span>
+                      <span className="truncate text-[13px]">{api.name}</span>
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

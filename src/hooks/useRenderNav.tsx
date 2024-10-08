@@ -6,8 +6,9 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { v4 as uuid } from 'uuid'
 import { z } from 'zod'
 import { toast } from '../components/ui/use-toast'
+import { updateRecentlyOpenedApis } from '../lib/utils'
 import useApiStore from '../store/store'
-import useTabRenderView from '../store/tabView'
+import useTabRenderStore from '../store/tabView'
 import { ApiType, CollectionSchema, FolderType } from '../types/api'
 import useImportJSON from './useImportJSON'
 
@@ -21,14 +22,15 @@ export default function useRenderNav({
   const { InputFile } = useImportJSON()
   const [apiDetails, setApiDetails] = useState<ApiType>()
   const deleteButtonRef = useRef<HTMLButtonElement>(null)
-  const { updateFolder, deleteFolder, createFolder, deleteApi } = useApiStore()
+  const { updateFolder, deleteFolder, createFolder, deleteApi, createApi } =
+    useApiStore()
   const [selectedApis, setSelectedApis] = useState<ApiType[]>([])
   const [collectionId, setCollectionId] = useState<string>('')
   const [isCreatingFolder, setIsCreatingFolder] = useState(false)
   const [isFolderNameUpdating, setIsFolderNameUpdating] = useState(false)
   const [isMoveToFolderDialogOpen, setIsMoveToFolderDialogOpen] =
     useState(false)
-  const { addTab } = useTabRenderView()
+  const { addTab, tabs, updateTab } = useTabRenderStore()
 
   // Rename collection
   const renameCollectionName: SubmitHandler<
@@ -47,11 +49,12 @@ export default function useRenderNav({
 
   // Delete Collection
   const deleteCollection = (id: string) => {
+    updateTab(updateRecentlyOpenedApis(tabs, collection))
     deleteFolder(id)
     toast({
       variant: 'success',
       title: `Success`,
-      description: `${collection.type} is deleted successfully`,
+      description: `${collection.name} is deleted successfully`,
     })
     navigate('/')
   }
@@ -138,6 +141,33 @@ export default function useRenderNav({
     }
   }
 
+  const addApi = () => {
+    let data: ApiType = {
+      id: uuid(),
+      url: 'https://example.com',
+      name: 'New Api',
+      method: 'GET',
+      params: [],
+      headers: [],
+      dynamicVariables: [],
+      body: [],
+      jsonBody: '',
+      pathVariables: [],
+    }
+    createApi(data, collection.id)
+    navigate(`/api/${collection.id}/${data.id}`, {
+      state: {
+        isUrlEditing: true,
+        isApiNameEditing: true,
+      },
+    })
+    addTab({
+      id: data.id,
+      name: data.name,
+      folderId: collection.id,
+    })
+  }
+
   const folderDropDownMenu: {
     name: React.ReactNode | string
     onClick: (e: any) => void
@@ -155,7 +185,8 @@ export default function useRenderNav({
       name: 'Add Request',
       onClick: (e) => {
         e?.stopPropagation()
-        navigate(`/api/${collection.id}/add`)
+        // navigate(`/api/${collection.id}/add`)
+        addApi()
       },
     },
     {

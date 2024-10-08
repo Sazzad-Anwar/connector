@@ -3,7 +3,7 @@
 import QueryString from 'qs'
 import { twMerge } from 'tailwind-merge'
 
-import { ApiType, FolderType, ParamsType } from '@/types/api'
+import { ApiType, FolderType, ParamsType, TabType } from '@/types/api'
 import clsx, { ClassValue } from 'clsx'
 import dayjs from 'dayjs'
 import { v4 as uuid } from 'uuid'
@@ -563,4 +563,38 @@ export const findRootCollection = (
   return currentFolder && currentFolder.type === 'collection'
     ? currentFolder
     : null
+}
+
+// Function to update recently opened APIs based on deleted collection
+export function updateRecentlyOpenedApis(
+  recentlyOpenedApis: TabType[],
+  deletedCollection: FolderType,
+): TabType[] {
+  // Create an array to collect all API IDs that should be removed (from the deleted collection)
+  const apiIdsToRemove: string[] = []
+
+  if (deletedCollection?.children && deletedCollection.children.length > 0) {
+    deletedCollection?.children?.forEach((folder: FolderType) => {
+      if (folder?.children && folder.children.length > 0) {
+        folder.children.forEach((child: FolderType) => {
+          updateRecentlyOpenedApis(recentlyOpenedApis, child)
+        })
+      } else {
+        folder?.apis?.forEach((api) => {
+          apiIdsToRemove.push(api.id)
+        })
+      }
+    })
+  } else {
+    deletedCollection.apis?.forEach((api) => {
+      apiIdsToRemove.push(api.id)
+    })
+  }
+
+  // Iterate through the folders in the deleted collection and collect their API IDs
+
+  console.log({ apiIdsToRemove })
+
+  // Filter the recently opened APIs and remove the ones whose id is in apiIdsToRemove
+  return recentlyOpenedApis.filter((api) => !apiIdsToRemove.includes(api.id))
 }
