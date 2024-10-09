@@ -23,7 +23,6 @@ import {
   arrayToObjectConversion,
   checkAndReplaceWithDynamicVariable,
   containsDynamicVariable,
-  extractVariable,
   filterEmptyParams,
   getQueryString,
   replaceVariables,
@@ -418,10 +417,7 @@ export default function useApiComponent() {
               ? error?.response?.data
                 ? error?.response?.data
                 : error?.message === 'Network Error'
-                ? `Unable to reach ${replaceVariables(
-                    `{{${extractVariable(url)}}}`,
-                    env,
-                  )}`
+                ? `Unable to reach ${url}.`
                 : error.message
               : error,
         })
