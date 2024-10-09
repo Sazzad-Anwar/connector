@@ -57,10 +57,10 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
         rules: [
           {
             token: 'comment',
-            foreground: '#EF5B25',
+            foreground: '#1e293b',
             fontStyle: 'normal',
           },
-          { token: 'constant', foreground: '#EF5B25' },
+          { token: 'constant', foreground: '#1e293b' },
         ],
         colors: {
           'editor.background': '#020817',
@@ -195,7 +195,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
             formatOnType: true,
             formatOnPaste: true,
             smoothScrolling: true,
-            cursorSmoothCaretAnimation: 'explicit',
+            cursorSmoothCaretAnimation: 'on',
             fastScrollSensitivity: 10,
             mouseWheelScrollSensitivity: 3,
             tabSize: 6,
@@ -212,6 +212,14 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
             foldingStrategy: 'indentation',
             matchBrackets: 'always',
             fontWeight: '400',
+            cursorSurroundingLinesStyle: 'all',
+            cursorBlinking: 'smooth',
+            selectOnLineNumbers: true,
+            selectionHighlight: true,
+            useShadowDOM: true,
+            // unusualLineTerminators: 'auto',
+            renderLineHighlight: 'none', // Disables line highlight
+            // renderLineHighlightBorder: false, // Removes the border around the active line
             readOnly,
             detectIndentation: true,
             minimap: {

@@ -247,7 +247,7 @@ export default function Api() {
 
                 <Input
                   autoComplete="off"
-                  placeholder="Url"
+                  placeholder="https://example.com"
                   autoFocus
                   value={form.watch('url') ?? ''}
                   size={200}
