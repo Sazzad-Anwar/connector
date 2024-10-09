@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { fetch } from '@tauri-apps/plugin-http'
-import axios from 'axios'
+import { fetch as TFetch } from '@tauri-apps/plugin-http'
+import { platform } from '@tauri-apps/plugin-os'
 import { ParamsType } from '../types/api'
 
 const fetcher = async ({
@@ -22,29 +22,27 @@ const fetcher = async ({
   const files = submitDataBody?.filter((item) => item?.type === 'file')
   if (files?.length) {
     files.map((file) => {
-      Array.from(file.value).map((item: any) => {
+      Array.from(file.value)?.map((item: any) => {
         formData.append(file.key, item)
       })
     })
   }
-  Object.keys(requestBody).map((item) => {
+  Object.keys(requestBody)?.map((item) => {
     if (!files?.find((file) => file.key === item)) {
       formData.append(item, requestBody[item])
     }
   })
   try {
-    const response = await fetch(url, {
+    platform()
+    return await TFetch(url, {
       method,
       body: method !== 'GET' ? (isUpload ? formData : requestBody) : undefined,
       headers,
     })
-    return await response.json()
   } catch (error) {
-    console.log(error)
-    return await axios({
-      url,
+    return await fetch(url, {
       method,
-      data: isUpload ? formData : requestBody,
+      body: method !== 'GET' ? (isUpload ? formData : requestBody) : undefined,
       headers,
     })
   }

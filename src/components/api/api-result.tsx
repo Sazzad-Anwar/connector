@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import copy from 'copy-to-clipboard'
-import { Check, Columns2, Copy, Info, Rows2, X } from 'lucide-react'
-import { lazy, memo, Suspense, useEffect, useRef } from 'react'
+import { Check, Columns2, Copy, Rows2, X } from 'lucide-react'
+import { lazy, memo, Suspense, useEffect, useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid'
-import { cn, parseCookie } from '../../lib/utils'
+import { cn } from '../../lib/utils'
 import useResultRenderViewStore from '../../store/resultRenderView'
+import { CookieType } from '../../types/api'
 import Loading from '../loading'
 import { Button } from '../ui/button'
 import {
@@ -29,6 +30,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '../ui/tooltip'
+import { toast } from '../ui/use-toast'
 import { ResponseStatus } from './api'
 const ResultRender = lazy(() => import('../result-renderer'))
 
@@ -40,6 +42,7 @@ type PropsType = {
   headers?: {
     [key: string]: any
   }
+  cookies: CookieType[]
 }
 
 const ApiResult = ({
@@ -48,23 +51,16 @@ const ApiResult = ({
   height,
   responseStatus,
   headers,
+  cookies,
 }: PropsType) => {
   const resultDivRef = useRef<HTMLDivElement>(null)
-  // const [searchParams] = useSearchParams()
-  // const navigate = useNavigate()
   const { resultRenderView, toggleResultRenderView } =
     useResultRenderViewStore()
   const resultContainerRef = useRef<HTMLDivElement>(null)
 
   const payloadSize = (data: any): string => {
-    // Convert JSON data to string
-    // Convert JSON data to string
     const json_string = JSON.stringify(data)
-
-    // Calculate length of string in bytes
     const string_length = new TextEncoder().encode(json_string).length
-
-    // Convert payload size to KB
     const payload_size_kb = +(string_length / 1024).toFixed(2)
     return payload_size_kb > 1 ? `${payload_size_kb} KB` : `${string_length} B`
   }
@@ -88,7 +84,7 @@ const ApiResult = ({
           height={height! - 300}
         />
       ) : (
-        <div className="relative flex justify-between pt-1 pb-3 pl-5 pr-0 text-sm animate__animated animated__fadeIn">
+        <div className="relative flex justify-between pt-1 pb-3 pl-5 pr-0 text-sm animate__animated animated__fadeIn ">
           <Tabs
             defaultValue="response"
             className="w-full"
@@ -99,19 +95,18 @@ const ApiResult = ({
                 Headers{' '}
                 {typeof headers === 'object' &&
                   Object.keys(headers).length > 0 && (
-                    <span className="text-green-500 ml-2">
-                      ({Object.keys(headers).length - 1})
+                    <span className="text-green-500 ml-2 text-xs">
+                      {Object.keys(headers).length - 1}
                     </span>
                   )}
               </TabsTrigger>
               <TabsTrigger value="cookies">
                 Cookies
-                {typeof headers === 'object' &&
-                  headers['set-cookie']?.length > 0 && (
-                    <span className="text-green-500 ml-2">
-                      ({headers['set-cookie']?.length})
-                    </span>
-                  )}
+                {!!cookies?.length && (
+                  <span className="text-green-500 ml-2 text-xs">
+                    {cookies?.length}
+                  </span>
+                )}
               </TabsTrigger>
             </TabsList>
 
@@ -144,7 +139,8 @@ const ApiResult = ({
             </TabsContent>
             <TabsContent
               value="headers"
-              className="max-h-fit overflow-auto"
+              className=" overflow-auto"
+              style={{ height: height! - 220 }}
             >
               <Table>
                 <TableHeader className="border">
@@ -193,7 +189,11 @@ const ApiResult = ({
                 </TableBody>
               </Table>
             </TabsContent>
-            <TabsContent value="cookies">
+            <TabsContent
+              value="cookies"
+              className="overflow-auto"
+              style={{ height: height! - 230 }}
+            >
               <Table>
                 <TableHeader className="border">
                   <TableRow className="w-full">
@@ -211,62 +211,11 @@ const ApiResult = ({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {typeof headers === 'object' &&
-                  headers['set-cookie']?.length ? (
+                  {cookies?.length ? (
                     <>
-                      {headers['set-cookie']?.map((item: string) => {
-                        const {
-                          customKey,
-                          customValue,
-                          expires,
-                          path,
-                          secure,
-                          httpOnly,
-                          sameSite,
-                        } = parseCookie(item)
-
-                        return (
-                          <TableRow key={uuid()}>
-                            <TableCell className="border">
-                              {customKey}
-                            </TableCell>
-                            <TableCell className="border">
-                              <Tooltip>
-                                <TooltipTrigger>{customValue}</TooltipTrigger>
-                                <TooltipContent className="max-w-[600px] w-full break-words relative p-2 pr-5 rounded-md bg-secondary">
-                                  <span className="text-xs w-full">
-                                    {customValue}
-                                    <Copy
-                                      onClick={() => copy(customValue)}
-                                      className="animate__animated animate__fadeIn cursor-pointer absolute right-1 top-1"
-                                      size={16}
-                                    />
-                                  </span>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TableCell>
-                            <TableCell className="border">{path}</TableCell>
-                            <TableCell className="border">{expires}</TableCell>
-                            <TableCell className="border">
-                              <span className="flex justify-center items-center">
-                                {httpOnly ? (
-                                  <Check size={14} />
-                                ) : (
-                                  <X size={14} />
-                                )}
-                              </span>
-                            </TableCell>
-                            <TableCell className="border">
-                              <span className="flex justify-center items-center">
-                                {secure ? <Check size={14} /> : <X size={14} />}
-                              </span>
-                            </TableCell>
-                            <TableCell className="border text-center">
-                              {sameSite}
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })}
+                      {cookies?.map((item) => (
+                        <CookiesTable {...item} />
+                      ))}
                     </>
                   ) : (
                     <TableRow>
@@ -324,15 +273,23 @@ const ApiResult = ({
                         <Button
                           type="button"
                           variant="ghost"
-                          className={cn(
-                            'mr-2 flex h-8 w-8 justify-self-end p-0',
-                            responseStatus.status?.toString().startsWith('2', 0)
-                              ? 'text-green-600 dark:font-normal dark:text-green-400'
-                              : 'font-medium text-red-500',
-                          )}
                           size="sm"
                         >
-                          <Info size={20} />
+                          <p className="text-xs">
+                            Status
+                            <span
+                              className={cn(
+                                responseStatus.status
+                                  ?.toString()
+                                  .startsWith('2', 0)
+                                  ? 'ml-1 font-medium text-green-600 dark:font-normal dark:text-green-400'
+                                  : 'ml-1 font-medium text-red-500 dark:font-normal',
+                                'mr-2',
+                              )}
+                            >
+                              {responseStatus.status}
+                            </span>
+                          </p>
                         </Button>
                       </DropdownMenuTrigger>
                     </TooltipTrigger>
@@ -347,22 +304,6 @@ const ApiResult = ({
                 </TooltipProvider>
 
                 <DropdownMenuContent>
-                  <DropdownMenuItem>
-                    <p className="text-xs">
-                      Status
-                      <span
-                        className={cn(
-                          responseStatus.status?.toString().startsWith('2', 0)
-                            ? 'ml-1 font-medium text-green-600 dark:font-normal dark:text-green-400'
-                            : 'ml-1 font-medium text-red-500 dark:font-normal',
-                          'mr-2',
-                        )}
-                      >
-                        {responseStatus.status}
-                      </span>
-                    </p>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem>
                     <p className="mr-4 text-xs">
                       Time:
@@ -388,6 +329,79 @@ const ApiResult = ({
         </div>
       )}
     </section>
+  )
+}
+
+const CookiesTable = ({
+  customKey,
+  customValue,
+  path,
+  expires,
+  httpOnly,
+  secure,
+  sameSite,
+}: CookieType) => {
+  const [isCopied, setIsCopied] = useState(false)
+  const copyData = (data: string) => {
+    setIsCopied(true)
+    copy(data)
+    toast({
+      variant: 'success',
+      title: 'Success',
+      description: 'Value is copied to clipboard',
+    })
+    setTimeout(() => {
+      setIsCopied(false)
+    }, 2000)
+  }
+  return (
+    <TableRow key={uuid()}>
+      <TableCell className="border">{customKey}</TableCell>
+      <TableCell className="border relative max-w-72 truncate">
+        <span className="truncate text-wrap">{customValue}</span>
+        {customValue && (
+          <Button
+            type="button"
+            variant="secondary"
+            className="flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
+            size="sm"
+            onClick={() => copyData(customValue)}
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {isCopied ? (
+                  <Check
+                    className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                    size={18}
+                  />
+                ) : (
+                  <Copy
+                    className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                    size={18}
+                  />
+                )}
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Copy data</p>
+              </TooltipContent>
+            </Tooltip>
+          </Button>
+        )}
+      </TableCell>
+      <TableCell className="border">{path}</TableCell>
+      <TableCell className="border">{expires}</TableCell>
+      <TableCell className="border">
+        <span className="flex justify-center items-center">
+          {httpOnly ? <Check size={14} /> : <X size={14} />}
+        </span>
+      </TableCell>
+      <TableCell className="border">
+        <span className="flex justify-center items-center">
+          {secure ? <Check size={14} /> : <X size={14} />}
+        </span>
+      </TableCell>
+      <TableCell className="border text-center">{sameSite}</TableCell>
+    </TableRow>
   )
 }
 

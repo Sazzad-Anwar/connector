@@ -154,8 +154,8 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
       >
         <Button
           type="button"
-          variant="ghost"
-          className="mr-2 flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
+          variant="secondary"
+          className="flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
           size="sm"
           onClick={() => copyResponse()}
         >

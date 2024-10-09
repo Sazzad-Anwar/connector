@@ -3,7 +3,13 @@
 import QueryString from 'qs'
 import { twMerge } from 'tailwind-merge'
 
-import { ApiType, FolderType, ParamsType, TabType } from '@/types/api'
+import {
+  ApiType,
+  CookieType,
+  FolderType,
+  ParamsType,
+  TabType,
+} from '@/types/api'
 import clsx, { ClassValue } from 'clsx'
 import dayjs from 'dayjs'
 import { v4 as uuid } from 'uuid'
@@ -367,7 +373,7 @@ export function search(
   return results
 }
 
-export function parseCookie(cookie: string) {
+export function parseCookie(cookie: string): CookieType {
   const getCookieData = (cookieKey: string) => {
     if (
       cookie.split(';').find((item) => item.includes(cookieKey)) &&
@@ -398,14 +404,14 @@ export function parseCookie(cookie: string) {
 
   const customKey = cookie.split(';')[0]?.split('=')[0]
   const customValue = cookie.split(';')[0]?.split('=')[1]
-  const maxAge = getCookieData('Max-Age')
+  const maxAge = getCookieData('Max-Age') ?? ''
   const expires = dayjs(getCookieData('Expires') as string).format(
     'DD ddd MMM YYYY HH:mm:ss',
   )
-  const path = getCookieData('Path')
-  const secure = getCookieData('Secure')
-  const httpOnly = getCookieData('HttpOnly')
-  const sameSite = getCookieData('SameSite')
+  const path = getCookieData('Path') ?? ''
+  const secure = getCookieData('Secure') ?? ''
+  const httpOnly = getCookieData('HttpOnly') ?? ''
+  const sameSite = getCookieData('SameSite') ?? ''
 
   return {
     customKey,

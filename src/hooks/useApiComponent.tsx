@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { platform } from '@tauri-apps/plugin-os'
 import copy from 'copy-to-clipboard'
 import {
   useCallback,
@@ -25,6 +24,7 @@ import {
   containsDynamicVariable,
   filterEmptyParams,
   getQueryString,
+  parseCookie,
   replaceVariables,
   updateEnvWithDynamicVariableValue,
   updateUrlWithPathVariables,
@@ -33,12 +33,13 @@ import useResultRenderViewStore from '../store/resultRenderView'
 import useSidePanelToggleStore from '../store/sidePanelToggle'
 import useApiStore, { isLocalStorageAvailable } from '../store/store'
 import useTabRenderStore from '../store/tabView'
-import { ApiSchema, ApiType, ParamsType } from '../types/api'
+import { ApiSchema, ApiType, CookieType, ParamsType } from '../types/api'
 
 export default function useApiComponent() {
   const { api, getApi, updateApi, collections, env, getEnv, updateEnv } =
     useApiStore()
   const params = useParams()
+  const [cookies, setCookies] = useState<CookieType[]>([])
   const { state } = useLocation()
   const { updateTab } = useTabRenderStore()
   const { resultRenderView } = useResultRenderViewStore()
@@ -291,6 +292,7 @@ export default function useApiComponent() {
       statusText: '',
       time: '',
     }
+    setCookies([])
     // track the time to get the duration of api call
     const startTime = Date.now()
     try {
@@ -330,9 +332,10 @@ export default function useApiComponent() {
       // this is axios call
       url = containsDynamicVariable(url)
         ? replaceVariables(updateUrlWithPathVariables(url, pathVariables!), env)
-        : url.split('://')[1].includes('/:')
+        : url.split('://')[1]?.includes('/:')
         ? updateUrlWithPathVariables(url, pathVariables!)
         : url
+      url = !url.includes('http') ? `http://${url}` : url
       const response = await fetcher({
         method: api.method,
         url,
@@ -346,38 +349,17 @@ export default function useApiComponent() {
 
       // This will get the response time duration
       const responseTime = endTime - startTime
-      let resultText: string = ''
 
-      // setting up headers
-      try {
-        await platform()
-        setHeaders({
-          ...response?.headers,
-          'set-cookie':
-            response && (response as any).rawHeaders['set-cookie']
-              ? (response as any).rawHeaders['set-cookie']
-              : '',
-        })
-        const arrayBuffer = new Uint8Array(response && response.data).buffer
-        resultText = new TextDecoder('utf-8').decode(arrayBuffer)
-        try {
-          responseData = JSON.parse(resultText)
-          setResult(responseData)
-        } catch (error) {
-          responseData = resultText
-          setResult(responseData)
+      response.headers.forEach((value, key) => {
+        setHeaders((prev) => ({ ...prev, [key]: value }))
+        if (key === 'set-cookie') {
+          setCookies((prev) => [...prev, { ...parseCookie(value) }])
         }
-      } catch (error) {
-        setHeaders({
-          ...response?.headers,
-          'set-cookie':
-            response && response.headers['set-cookie']
-              ? response.headers['set-cookie']
-              : '',
-        })
-        responseData = response && response.data
-        setResult(responseData)
-      }
+      })
+
+      responseData = await response.json()
+      setResult(responseData)
+
       responseStatusData = {
         status: response && response?.status,
         statusText: 'ok',
@@ -409,6 +391,7 @@ export default function useApiComponent() {
         responseData = error?.response ? error?.response?.data : error?.message
         setResult(responseData)
       } else {
+        console.log(error)
         toast({
           variant: 'error',
           title: 'Error',
@@ -480,9 +463,10 @@ export default function useApiComponent() {
     setIsUrlCopied(true)
     url = containsDynamicVariable(url)
       ? replaceVariables(updateUrlWithPathVariables(url, pathVariables!), env)
-      : url.split('://')[1].includes('/:')
+      : url.split('://')[1]?.includes('/:')
       ? updateUrlWithPathVariables(url, pathVariables!)
       : url
+    url = url.includes('http') ? url : `http://${url}`
     copy(url)
     toast({
       variant: 'success',
@@ -535,5 +519,6 @@ export default function useApiComponent() {
     setIsUrlEditing,
     isApiNameEditing,
     setIsApiNameEditing,
+    cookies,
   }
 }

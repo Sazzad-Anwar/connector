@@ -80,3 +80,14 @@ export type TabType = {
   id: string
   name: string
 }
+
+export type CookieType = {
+  customKey?: string
+  customValue?: string
+  maxAge?: string | boolean
+  expires?: string
+  path?: string | boolean
+  secure?: string | boolean
+  httpOnly?: string | boolean
+  sameSite?: string | boolean
+}

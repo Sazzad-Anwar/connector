@@ -79,6 +79,7 @@ export default function Api() {
     isApiNameEditing,
     setIsApiNameEditing,
     getApi,
+    cookies,
   } = useApiComponent()
   const { resultRenderView } = useResultRenderViewStore()
   const [isUrlError, setIsUrlError] = useState<boolean>(false)
@@ -129,7 +130,7 @@ export default function Api() {
       >
         <div
           ref={breadCrumbDivRef}
-          className="flex items-center px-5 py-3"
+          className="flex items-center ml-5 py-3"
         >
           <SideNavToggler />
           <Breadcrumbs
@@ -182,251 +183,256 @@ export default function Api() {
             )}
           </div>
         </div>
-        <div
-          ref={urlDivRef}
-          className={cn(
-            'mx-auto relative h-10 flex w-[calc(100%-40px)] items-center justify-between rounded overflow-hidden border p-0',
-            isUrlError ? 'text-red-500' : '',
-          )}
-        >
-          {isUrlEditing ? (
-            <div className="flex w-full items-center">
-              <Select
-                onValueChange={(value) =>
-                  form.setValue(
-                    'method',
-                    value as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
-                  )
-                }
-                value={form.watch('method') ?? 'GET'}
-              >
-                <SelectTrigger
-                  className={cn(
-                    form.getValues('method') === 'GET'
-                      ? ' bg-green-700 border border-green-500'
-                      : form.getValues('method') === 'POST'
-                      ? 'bg-yellow-700 border-yellow-500'
-                      : form.getValues('method') === 'PUT'
-                      ? 'bg-cyan-700 border-cyan-500'
-                      : form.getValues('method') === 'PATCH'
-                      ? 'bg-purple-700 border-purple-500'
-                      : 'bg-red-700 border-red-500',
-                    'w-auto h-6 mx-h-6 border-0 font-medium text-white ml-1.5 text-xs pl-2 pr-1 py-0',
-
-                    setBorderColor(
-                      !!form.formState.errors.method || isUrlError,
-                    ),
-                  )}
-                >
-                  <SelectValue placeholder="Method" />
-                </SelectTrigger>
-                <SelectContent>
-                  {['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map((item) => (
-                    <SelectItem
-                      className={
-                        (item === 'GET'
-                          ? 'text-green-500'
-                          : item === 'POST'
-                          ? 'text-yellow-500'
-                          : item === 'PUT'
-                          ? 'text-cyan-500'
-                          : item === 'PATCH'
-                          ? 'text-purple-500'
-                          : 'text-red-500') + ' font-bold'
-                      }
-                      key={item}
-                      value={item}
-                    >
-                      {item}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Input
-                autoComplete="off"
-                placeholder="Url"
-                autoFocus
-                value={form.watch('url') ?? ''}
-                size={200}
-                onChange={(e) => {
-                  if (
-                    e.target.value.includes('?') ||
-                    e.target.value.includes('&')
-                  ) {
-                    e.target.value = e.target.value
-                      .replace('?', '')
-                      .replace('&', '')
-                  } else {
-                    form.setValue('url', e.target.value, {
-                      shouldDirty: true,
-                    })
+        <div className="ml-5">
+          <div
+            ref={urlDivRef}
+            className={cn(
+              'relative h-10 flex w-full items-center justify-between rounded overflow-hidden border',
+              isUrlError ? 'text-red-500' : '',
+            )}
+          >
+            {isUrlEditing ? (
+              <div className="flex w-full items-center">
+                <Select
+                  onValueChange={(value) =>
+                    form.setValue(
+                      'method',
+                      value as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+                    )
                   }
-                }}
-                className={cn(
-                  setBorderColor(isUrlError),
-                  'text-base rounded-l-none pl-1 h-full border-0',
-                )}
-              />
+                  value={form.watch('method') ?? 'GET'}
+                >
+                  <SelectTrigger
+                    className={cn(
+                      form.getValues('method') === 'GET'
+                        ? ' bg-green-700 border border-green-500'
+                        : form.getValues('method') === 'POST'
+                        ? 'bg-yellow-700 border-yellow-500'
+                        : form.getValues('method') === 'PUT'
+                        ? 'bg-cyan-700 border-cyan-500'
+                        : form.getValues('method') === 'PATCH'
+                        ? 'bg-purple-700 border-purple-500'
+                        : 'bg-red-700 border-red-500',
+                      'w-auto h-6 mx-h-6 border-0 font-medium text-white ml-1.5 text-xs pl-2 pr-1 py-0',
 
-              <Tooltip>
-                <TooltipTrigger>
-                  {isUrlError && (
-                    <InfoIcon className="mb-2 ml-2 text-destructive" />
+                      setBorderColor(
+                        !!form.formState.errors.method || isUrlError,
+                      ),
+                    )}
+                  >
+                    <SelectValue placeholder="Method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map((item) => (
+                      <SelectItem
+                        className={
+                          (item === 'GET'
+                            ? 'text-green-500'
+                            : item === 'POST'
+                            ? 'text-yellow-500'
+                            : item === 'PUT'
+                            ? 'text-cyan-500'
+                            : item === 'PATCH'
+                            ? 'text-purple-500'
+                            : 'text-red-500') + ' font-bold'
+                        }
+                        key={item}
+                        value={item}
+                      >
+                        {item}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Input
+                  autoComplete="off"
+                  placeholder="Url"
+                  autoFocus
+                  value={form.watch('url') ?? ''}
+                  size={200}
+                  onChange={(e) => {
+                    if (
+                      e.target.value.includes('?') ||
+                      e.target.value.includes('&')
+                    ) {
+                      e.target.value = e.target.value
+                        .replace('?', '')
+                        .replace('&', '')
+                    } else {
+                      form.setValue('url', e.target.value, {
+                        shouldDirty: true,
+                      })
+                    }
+                  }}
+                  className={cn(
+                    setBorderColor(isUrlError),
+                    'text-base rounded-l-none pl-1 h-full border-0',
                   )}
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>It is not a valid variable</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          ) : (
-            <div className="flex items-center">
-              <span
-                className={cn(
-                  api.method === 'GET'
-                    ? ' bg-green-700 border border-green-500'
-                    : api.method === 'POST'
-                    ? 'bg-yellow-700 border-yellow-500'
-                    : api.method === 'PUT'
-                    ? 'bg-cyan-700 border-cyan-500'
-                    : api.method === 'PATCH'
-                    ? 'bg-purple-700 border-purple-500'
-                    : 'bg-red-700 border-red-500',
-                  'font-medium text-white ml-1.5 text-xs px-1 py-0.5 rounded-md',
-                )}
-              >
-                {api.method}
-              </span>
-              <div
-                onDoubleClick={() => setIsUrlEditing(true)}
-                className="truncate px-2"
-              >
-                {containsDynamicVariable(url) ? (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="text-cyan-500">{`{{${extractVariable(
-                        url,
-                      )}}}`}</span>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      className="flex items-center text-base"
-                      onClick={() => {
-                        copyUrl()
-                        toast({
-                          variant: 'success',
-                          title: 'Success',
-                          description: 'Env value is copied to clipboard',
-                        })
-                      }}
-                    >
-                      {replaceVariables(`{{${extractVariable(url)}}}`, env)}
+                />
 
-                      <Copy
-                        className="h-4 w-4 justify-self-end p-0 ml-2 cursor-pointer"
-                        size={16}
-                      />
-                    </TooltipContent>
-                  </Tooltip>
-                ) : (
-                  form.watch('url')
-                  // url
-                )}
                 <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span>{url?.split('}}')[1]}</span>
+                  <TooltipTrigger>
+                    {isUrlError && (
+                      <InfoIcon className="mb-2 ml-2 text-destructive" />
+                    )}
                   </TooltipTrigger>
-                  <TooltipContent>Double click to edit this URL</TooltipContent>
+                  <TooltipContent>
+                    <p>It is not a valid variable</p>
+                  </TooltipContent>
                 </Tooltip>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="flex items-center">
+                <span
+                  className={cn(
+                    api.method === 'GET'
+                      ? ' bg-green-700 border border-green-500'
+                      : api.method === 'POST'
+                      ? 'bg-yellow-700 border-yellow-500'
+                      : api.method === 'PUT'
+                      ? 'bg-cyan-700 border-cyan-500'
+                      : api.method === 'PATCH'
+                      ? 'bg-purple-700 border-purple-500'
+                      : 'bg-red-700 border-red-500',
+                    'font-medium text-white ml-1.5 text-xs px-1 py-0.5 rounded-md',
+                  )}
+                >
+                  {api.method}
+                </span>
+                <div
+                  onDoubleClick={() => setIsUrlEditing(true)}
+                  className="truncate px-2"
+                >
+                  {containsDynamicVariable(url) ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-cyan-500">{`{{${extractVariable(
+                          url,
+                        )}}}`}</span>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        className="flex items-center text-base"
+                        onClick={() => {
+                          copyUrl()
+                          toast({
+                            variant: 'success',
+                            title: 'Success',
+                            description: 'Env value is copied to clipboard',
+                          })
+                        }}
+                      >
+                        {replaceVariables(`{{${extractVariable(url)}}}`, env)}
 
-          <div className="flex items-center justify-end absolute right-0 h-auto bg-background pl-1">
-            {!isUrlEditing && (
-              <>
+                        <Copy
+                          className="h-4 w-4 justify-self-end p-0 ml-2 cursor-pointer"
+                          size={16}
+                        />
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    form.watch('url')
+                    // url
+                  )}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>{url?.split('}}')[1]}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Double click to edit this URL
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-end absolute right-0 h-auto bg-background pl-1">
+              {!isUrlEditing && (
+                <>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="flex justify-self-end px-3 rounded-none"
+                        size="sm"
+                        onClick={() => copyUrl()}
+                      >
+                        {isUrlCopied ? (
+                          <Check
+                            className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                            size={18}
+                          />
+                        ) : (
+                          <Copy
+                            className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                            size={18}
+                          />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Copy url</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="flex justify-self-end px-3 rounded-none"
+                        size="sm"
+                        onClick={() => setIsUrlEditing(true)}
+                      >
+                        <Pencil
+                          className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                          size={17}
+                        />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Edit Url</TooltipContent>
+                  </Tooltip>
+                </>
+              )}
+              {isUrlEditing ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      onClick={() => {
+                        saveUpdate()
+                        getApi(api?.id)
+                      }}
+                      className={buttonVariants({
+                        className: 'p-1 rounded-l-none cursor-pointer',
+                        variant: 'secondary',
+                        size: 'icon',
+                      })}
+                    >
+                      <Save size={18} />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Save Url</TooltipContent>
+                </Tooltip>
+              ) : (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      type="button"
-                      variant="ghost"
-                      className="flex justify-self-end px-3 rounded-none"
-                      size="sm"
-                      onClick={() => copyUrl()}
+                      className="p-1 rounded-l-none"
+                      variant="secondary"
+                      size="icon"
                     >
-                      {isUrlCopied ? (
-                        <Check
-                          className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
-                          size={18}
-                        />
-                      ) : (
-                        <Copy
-                          className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
-                          size={18}
-                        />
-                      )}
+                      <i className="bi bi-plugin text-xl font-bold" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Copy url</p>
+                    <p>Send request</p>
                   </TooltipContent>
                 </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="flex justify-self-end px-3 rounded-none"
-                      size="sm"
-                      onClick={() => setIsUrlEditing(true)}
-                    >
-                      <Pencil
-                        className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
-                        size={17}
-                      />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Edit Url</TooltipContent>
-                </Tooltip>
-              </>
-            )}
-            {isUrlEditing ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div
-                    onClick={() => {
-                      saveUpdate()
-                      getApi(api?.id)
-                    }}
-                    className={buttonVariants({
-                      className: 'p-1 rounded-l-none cursor-pointer',
-                      variant: 'secondary',
-                      size: 'icon',
-                    })}
-                  >
-                    <Save size={18} />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>Save Url</TooltipContent>
-              </Tooltip>
-            ) : (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    className="p-1 rounded-l-none"
-                    variant="secondary"
-                    size="icon"
-                  >
-                    <i className="bi bi-plugin text-xl font-bold" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Send request</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+              )}
+            </div>
           </div>
         </div>
+
         <SplitPane
           sashRender={() => <></>}
           split={resultRenderView}
@@ -455,7 +461,7 @@ export default function Api() {
             >
               <InputTabs
                 className={cn(
-                  'px-5 pt-2',
+                  'pl-5 pt-2',
                   resultRenderView === 'horizontal'
                     ? `w-[${sizes[0] - 120}px]`
                     : '',
@@ -500,6 +506,7 @@ export default function Api() {
                 isLoading={isLoading}
                 result={result}
                 headers={headers}
+                cookies={cookies}
                 responseStatus={responseStatus}
               />
             </Suspense>

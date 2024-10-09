@@ -2,20 +2,25 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "app.vercel.connector-ten",
   "description": "enables the default permissions",
+  "theme": "dark",
+  "icons": ["./public/512x512.png"],
+  "mac": ["main"],
+  "linux": ["main"],
   "windows": ["main"],
   "permissions": [
-    "http:default",
-    "http:allow-fetch",
-    "http:allow-fetch-cancel",
-    "http:allow-fetch-read-body",
-    "http:allow-fetch-send",
-    "http:deny-fetch",
-    "http:deny-fetch-cancel",
-    "http:deny-fetch-read-body",
-    "http:deny-fetch-send",
     "core:default",
     "os:default",
     "fs:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        { "url": "https://*" },
+        { "url": "http://*" },
+        { "url": "wss://*" },
+        { "url": "ws://*" },
+        { "url": "http://localhost:*" }
+      ]
+    },
     {
       "identifier": "fs:allow-app-write-recursive",
       "allow": [
