@@ -71,6 +71,7 @@ export default function RenderNavigation({
     setIsMoveToFolderDialogOpen,
     handleClickApi,
     setSelectedApis,
+    downloadFile,
   } = useRenderNav({ collection })
 
   return (
@@ -270,6 +271,19 @@ export default function RenderNavigation({
                         >
                           Move
                         </DropdownMenuItem>
+                        {!selectedApis.map((a) => a.id).includes(api.id) && (
+                          <DropdownMenuItem
+                            onClick={() => {
+                              downloadFile({
+                                data: api,
+                                fileName: api.name + '.json',
+                                fileType: 'text/json',
+                              })
+                            }}
+                          >
+                            Export
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem
                           onClick={(e) => {
                             setApiDetails(api)
@@ -295,6 +309,20 @@ export default function RenderNavigation({
                   >
                     Move
                   </ContextMenuItem>
+                  {!selectedApis.map((a) => a.id).includes(api.id) && (
+                    <ContextMenuItem
+                      onClick={() => {
+                        downloadFile({
+                          data: api,
+                          fileName: api.name + '.json',
+                          fileType: 'text/json',
+                        })
+                      }}
+                    >
+                      Export
+                    </ContextMenuItem>
+                  )}
+
                   <ContextMenuItem
                     onClick={(e) => {
                       setApiDetails(api)

@@ -11,7 +11,7 @@ export default function Breadcrumbs({
         ? breadcrumbs?.map((breadcrumb, index) => (
             <span
               key={breadcrumb}
-              className="ml-2 flex w-auto min-w-max items-center"
+              className="ml-2 text-sm flex w-auto min-w-max items-center"
             >
               {index > 0 && (
                 <ChevronsRight

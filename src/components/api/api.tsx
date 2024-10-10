@@ -151,12 +151,12 @@ export default function Api() {
                 }}
                 autoFocus
                 className={cn(
-                  'bg-transparent h-auto px-1 py-px text-base w-auto border',
+                  'bg-transparent h-auto px-1 py-px text-sm w-auto border',
                 )}
                 // onBlur={() => setIsApiNameEditing(false)}
               />
             ) : (
-              <span className="text-base h-auto px-1 py-px w-auto border border-transparent">
+              <span className="text-sm h-auto px-1 py-px w-auto border border-transparent">
                 {form.watch('name')}
               </span>
             )}
@@ -171,7 +171,7 @@ export default function Api() {
                 className={buttonVariants({
                   size: 'icon',
                   variant: 'secondary',
-                  className: 'p-0 w-7 h-7 ml-1 cursor-pointer',
+                  className: 'p-0 w-6 h-6 ml-1 cursor-pointer',
                 })}
                 onClick={() => {
                   saveUpdate()
@@ -267,7 +267,7 @@ export default function Api() {
                   }}
                   className={cn(
                     setBorderColor(isUrlError),
-                    'text-base rounded-l-none pl-1 h-full border-0',
+                    'text-sm rounded-l-none pl-1 h-full border-0',
                   )}
                 />
 
@@ -302,7 +302,7 @@ export default function Api() {
                 </span>
                 <div
                   onDoubleClick={() => setIsUrlEditing(true)}
-                  className="truncate px-2"
+                  className="truncate px-2 text-sm"
                 >
                   {containsDynamicVariable(url) ? (
                     <Tooltip>
@@ -312,7 +312,7 @@ export default function Api() {
                         )}}}`}</span>
                       </TooltipTrigger>
                       <TooltipContent
-                        className="flex items-center text-base"
+                        className="flex items-center text-sm"
                         onClick={() => {
                           copyUrl()
                           toast({

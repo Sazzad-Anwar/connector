@@ -102,7 +102,7 @@ export default function useRenderNav({
     fileName,
     fileType,
   }: {
-    data: FolderType
+    data: FolderType | ApiType
     fileName: string
     fileType: string
   }) => {
@@ -124,7 +124,7 @@ export default function useRenderNav({
     }
 
     try {
-      const platformName = await platform()
+      const platformName = platform()
       if (
         platformName === 'macos' ||
         platformName === 'windows' ||
@@ -295,5 +295,6 @@ export default function useRenderNav({
     isMoveToFolderDialogOpen,
     setIsMoveToFolderDialogOpen,
     handleClickApi,
+    downloadFile,
   }
 }

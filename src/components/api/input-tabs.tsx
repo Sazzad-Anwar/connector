@@ -256,15 +256,6 @@ export const InputTabs = ({
                 height: (height as number) - (type === 'create' ? 96 : 0),
               }}
             >
-              <div className="flex items-center justify-between">
-                {jsonError?.isError ? (
-                  <div className="h-4 text-xs font-bold text-red-500">
-                    {jsonError.error}
-                  </div>
-                ) : (
-                  <div className="h-4"></div>
-                )}
-              </div>
               {isTimedOut ? (
                 <Suspense
                   fallback={
@@ -295,7 +286,6 @@ export const InputTabs = ({
                     }
                     readOnly={false}
                     setData={setInteractiveQuery}
-                    setError={setJsonError}
                     className="border-t pt-3"
                   />
                 </Suspense>
@@ -392,8 +382,7 @@ export const InputTabs = ({
                     }
                     readOnly={false}
                     setData={setJsonBody}
-                    className="border-t pt-3"
-                    setError={setJsonError}
+                    className="pt-2"
                   />
                 </Suspense>
               ) : (

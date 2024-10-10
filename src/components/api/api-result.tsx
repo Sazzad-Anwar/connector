@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import copy from 'copy-to-clipboard'
 import { Check, Columns2, Copy, Rows2, X } from 'lucide-react'
-import { lazy, memo, Suspense, useEffect, useRef, useState } from 'react'
+import { memo, useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import { cn } from '../../lib/utils'
 import useResultRenderViewStore from '../../store/resultRenderView'
 import { CookieType } from '../../types/api'
 import Loading from '../loading'
+import ResultRenderer from '../result-renderer'
 import { Button } from '../ui/button'
 import {
   DropdownMenu,
@@ -15,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
+import { Separator } from '../ui/separator'
 import {
   Table,
   TableBody,
@@ -32,7 +34,6 @@ import {
 } from '../ui/tooltip'
 import { toast } from '../ui/use-toast'
 import { ResponseStatus } from './api'
-const ResultRender = lazy(() => import('../result-renderer'))
 
 type PropsType = {
   isLoading: boolean
@@ -64,8 +65,6 @@ const ApiResult = ({
     const payload_size_kb = +(string_length / 1024).toFixed(2)
     return payload_size_kb > 1 ? `${payload_size_kb} KB` : `${string_length} B`
   }
-
-  useEffect(() => {}, [resultRenderView])
 
   return (
     <section
@@ -114,28 +113,20 @@ const ApiResult = ({
               value="response"
               className="w-full"
             >
-              <Suspense
-                fallback={
+              <ResultRenderer
+                ref={resultContainerRef}
+                readOnly={true}
+                height={height! - 220}
+                // height={height}
+                type="response"
+                loading={
                   <Loading
-                    name="Loading"
+                    name="Connecting"
                     height={height! - 220}
                   />
                 }
-              >
-                <ResultRender
-                  ref={resultContainerRef}
-                  readOnly={true}
-                  height={height! - 220}
-                  type="response"
-                  loading={
-                    <Loading
-                      name="Connecting"
-                      height={height! - 220}
-                    />
-                  }
-                  result={result ?? {}}
-                />
-              </Suspense>
+                result={result ?? {}}
+              />
             </TabsContent>
             <TabsContent
               value="headers"
@@ -145,8 +136,10 @@ const ApiResult = ({
               <Table>
                 <TableHeader className="border">
                   <TableRow className="w-full">
-                    <TableHead className="border w-1/2">Key</TableHead>
-                    <TableHead className="border w-1/2">Value</TableHead>
+                    <TableHead className="border w-1/2 min-w-52">Key</TableHead>
+                    <TableHead className="border w-1/2 min-w-80">
+                      Value
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -197,15 +190,25 @@ const ApiResult = ({
               <Table>
                 <TableHeader className="border">
                   <TableRow className="w-full">
-                    <TableHead className="border">Key</TableHead>
-                    <TableHead className="border">Value</TableHead>
-                    <TableHead className="border">Path</TableHead>
-                    <TableHead className="border">Expires</TableHead>
-                    <TableHead className="border text-center">
+                    <TableHead className="border text-center min-w-52">
+                      Key
+                    </TableHead>
+                    <TableHead className="border text-center min-w-52">
+                      Value
+                    </TableHead>
+                    <TableHead className="border text-center min-w-52">
+                      Path
+                    </TableHead>
+                    <TableHead className="border text-center min-w-52">
+                      Expires
+                    </TableHead>
+                    <TableHead className="border text-center min-w-52">
                       HttpOnly
                     </TableHead>
-                    <TableHead className="border text-center">Secure</TableHead>
-                    <TableHead className="border text-center">
+                    <TableHead className="border text-center min-w-52">
+                      Secure
+                    </TableHead>
+                    <TableHead className="border text-center min-w-52">
                       SameSite
                     </TableHead>
                   </TableRow>
@@ -265,65 +268,72 @@ const ApiResult = ({
               </Tooltip>
             </Button>
             {responseStatus?.status ? (
-              <DropdownMenu>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                        >
-                          <p className="text-xs">
-                            Status
-                            <span
-                              className={cn(
-                                responseStatus.status
-                                  ?.toString()
-                                  .startsWith('2', 0)
-                                  ? 'ml-1 font-medium text-green-600 dark:font-normal dark:text-green-400'
-                                  : 'ml-1 font-medium text-red-500 dark:font-normal',
-                                'mr-2',
-                              )}
-                            >
-                              {responseStatus.status}
-                            </span>
-                          </p>
-                        </Button>
-                      </DropdownMenuTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      See{' '}
-                      {responseStatus.status?.toString().startsWith('2', 0)
-                        ? 'success'
-                        : 'failed'}{' '}
-                      response status
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              <>
+                <Separator
+                  orientation="vertical"
+                  className="h-5 text-muted-foreground mr-1"
+                />
+                <DropdownMenu>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-8"
+                          >
+                            <p className="text-xs">
+                              Status
+                              <span
+                                className={cn(
+                                  responseStatus.status
+                                    ?.toString()
+                                    .startsWith('2', 0)
+                                    ? 'ml-1 font-medium text-green-600 dark:font-normal dark:text-green-400'
+                                    : 'ml-1 font-medium text-red-500 dark:font-normal',
+                                  'mr-2',
+                                )}
+                              >
+                                {responseStatus.status}
+                              </span>
+                            </p>
+                          </Button>
+                        </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        See{' '}
+                        {responseStatus.status?.toString().startsWith('2', 0)
+                          ? 'success'
+                          : 'failed'}{' '}
+                        response status
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
-                <DropdownMenuContent>
-                  <DropdownMenuItem>
-                    <p className="mr-4 text-xs">
-                      Time:
-                      <span className={'pl-1 text-green-500'}>
-                        {responseStatus.time}
-                      </span>
-                    </p>
-                  </DropdownMenuItem>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem>
+                      <p className="mr-4 text-xs">
+                        Time:
+                        <span className={'pl-1 text-green-500'}>
+                          {responseStatus.time}
+                        </span>
+                      </p>
+                    </DropdownMenuItem>
 
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <p className="mr-2 text-xs">
-                      Size:
-                      <span className={'ml-1 text-green-500'}>
-                        {payloadSize(result)}
-                      </span>
-                    </p>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <p className="mr-2 text-xs">
+                        Size:
+                        <span className={'ml-1 text-green-500'}>
+                          {payloadSize(result)}
+                        </span>
+                      </p>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
             ) : null}
           </div>
         </div>
@@ -356,8 +366,8 @@ const CookiesTable = ({
   }
   return (
     <TableRow key={uuid()}>
-      <TableCell className="border">{customKey}</TableCell>
-      <TableCell className="border relative max-w-72 truncate">
+      <TableCell className="border text-center">{customKey}</TableCell>
+      <TableCell className="border text-center relative max-w-72 truncate">
         <span className="truncate text-wrap">{customValue}</span>
         {customValue && (
           <Button
@@ -388,14 +398,14 @@ const CookiesTable = ({
           </Button>
         )}
       </TableCell>
-      <TableCell className="border">{path}</TableCell>
-      <TableCell className="border">{expires}</TableCell>
-      <TableCell className="border">
+      <TableCell className="border text-center">{path}</TableCell>
+      <TableCell className="border text-center">{expires}</TableCell>
+      <TableCell className="border text-center">
         <span className="flex justify-center items-center">
           {httpOnly ? <Check size={14} /> : <X size={14} />}
         </span>
       </TableCell>
-      <TableCell className="border">
+      <TableCell className="border text-center">
         <span className="flex justify-center items-center">
           {secure ? <Check size={14} /> : <X size={14} />}
         </span>

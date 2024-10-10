@@ -68,14 +68,14 @@ export default function MoveToFolder({
       <div
         className={cn(
           'w-full h-full flex gap-2 flex-wrap',
-          nestedFolders?.length < 3 ? '' : 'justify-around',
+          nestedFolders?.length < 3 ? '' : 'justify-start items-end',
         )}
       >
         {nestedFolders?.map((item) => (
           <button
             key={item?.id}
             className={cn(
-              'flex flex-col items-center gap-2 hover:bg-secondary p-3 w-24 rounded-lg relative',
+              'flex flex-col items-center gap-2 hover:bg-secondary px-3 pt-3 pb-1.5 w-24 rounded-lg relative',
               item?.id === selectedFolder ? 'bg-secondary' : '',
             )}
             onClick={() => {
@@ -96,7 +96,7 @@ export default function MoveToFolder({
             )}
 
             <Folder size={30} />
-            <span className="text-xs truncate">{item?.name}</span>
+            <span className="text-xs truncate px-2 w-24">{item?.name}</span>
           </button>
         ))}
       </div>

@@ -74,6 +74,7 @@
   ::-webkit-scrollbar {
     width: 5px;
     border-radius: 7px;
+    height: 5px;
   }
 
   /* Track */
