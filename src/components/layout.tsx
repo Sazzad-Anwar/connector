@@ -2,34 +2,25 @@
 import { cn } from '@/lib/utils'
 import useSidePanelToggleStore from '@/store/sidePanelToggle'
 
-import { relaunch } from '@tauri-apps/plugin-process'
-import { check, Update } from '@tauri-apps/plugin-updater'
 import React, { useEffect, useState } from 'react'
 import { Pane } from 'split-pane-react'
 import SplitPane from 'split-pane-react/esm/SplitPane'
+import useUpdate from '../hooks/useUpdate'
 import SideNav from './nav/nav'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from './ui/alert-dialog'
 import { Toaster } from './ui/toaster'
-import { toast } from './ui/use-toast'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { isOpen } = useSidePanelToggleStore()
-  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false)
-  const [updateDetails, setUpdateDetails] = useState<Update>({} as Update)
+  const { checkUpdate, RestartApp } = useUpdate()
   const sideNavWidth = 300
   const [sizes, setSizes] = useState([
     window.innerWidth >= 1024 ? 250 : sideNavWidth,
     window.innerWidth - sideNavWidth,
   ])
+
+  useEffect(() => {
+    checkUpdate()
+  }, [])
 
   useEffect(() => {
     if (!isOpen) {
@@ -38,54 +29,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       setSizes([sideNavWidth, window.innerWidth - sideNavWidth])
     }
   }, [isOpen])
-
-  useEffect(() => {
-    const checkUpdate = async () => {
-      const update = await check()
-      if (update) {
-        setUpdateDetails(update)
-        toast({
-          variant: 'default',
-          title: 'Update available',
-          description: `Found update ${update.version} from ${update.date} with notes ${update.body}`,
-        })
-      }
-      let downloaded = 0
-      let contentLength = 0
-      // alternatively we could also call update.download() and update.install() separately
-      if (update) {
-        await update.downloadAndInstall((event) => {
-          switch (event.event) {
-            case 'Started':
-              contentLength = event.data.contentLength!
-              toast({
-                variant: 'default',
-                title: 'Started Downloading',
-                description: `Started downloading ${event.data.contentLength} bytes`,
-              })
-              break
-            case 'Progress':
-              downloaded += event.data.chunkLength
-              toast({
-                variant: 'default',
-                title: 'Downloading',
-                description: `Downloaded ${downloaded} from ${contentLength}`,
-              })
-              break
-            case 'Finished':
-              toast({
-                variant: 'default',
-                title: 'Downloaded',
-                description: `Downloaded finished`,
-              })
-              break
-          }
-        })
-        setIsAlertDialogOpen(true)
-      }
-    }
-    checkUpdate()
-  }, [])
 
   useEffect(() => {
     const resizeWindow = () => {
@@ -155,28 +98,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <Toaster />
         </div>
       </main>
-      <AlertDialog
-        open={isAlertDialogOpen}
-        onOpenChange={setIsAlertDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Do you want to restart your app now?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Connector has been updated to {updateDetails.version}. Please
-              restart your app to load the new version.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={async () => await relaunch()}>
-              Restart
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <RestartApp />
     </>
   )
 }
