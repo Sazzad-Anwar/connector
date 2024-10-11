@@ -3,16 +3,28 @@ import { cn } from '@/lib/utils'
 import useSidePanelToggleStore from '@/store/sidePanelToggle'
 
 import { relaunch } from '@tauri-apps/plugin-process'
-import { check } from '@tauri-apps/plugin-updater'
+import { check, Update } from '@tauri-apps/plugin-updater'
 import React, { useEffect, useState } from 'react'
 import { Pane } from 'split-pane-react'
 import SplitPane from 'split-pane-react/esm/SplitPane'
 import SideNav from './nav/nav'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog'
 import { Toaster } from './ui/toaster'
 import { toast } from './ui/use-toast'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { isOpen } = useSidePanelToggleStore()
+  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false)
+  const [updateDetails, setUpdateDetails] = useState<Update>({} as Update)
   const sideNavWidth = 300
   const [sizes, setSizes] = useState([
     window.innerWidth >= 1024 ? 250 : sideNavWidth,
@@ -31,6 +43,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     const checkUpdate = async () => {
       const update = await check()
       if (update) {
+        setUpdateDetails(update)
         toast({
           variant: 'default',
           title: 'Update available',
@@ -68,8 +81,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               break
           }
         })
-
-        await relaunch()
+        setIsAlertDialogOpen(true)
       }
     }
     checkUpdate()
@@ -117,30 +129,54 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <main className={cn('min-h-screen bg-background font-sans antialiased')}>
-      <div className="relative flex min-h-screen flex-col transition-all duration-200 ease-linear">
-        <SplitPane
-          sashRender={() => <></>}
-          split="vertical"
-          sizes={sizes}
-          onChange={(sizes) => setSizes(sizes)}
-        >
-          <Pane
-            minSize={isOpen ? sideNavWidth : 0}
-            maxSize={sideNavWidth * 2}
+    <>
+      <main className={cn('min-h-screen bg-background font-sans antialiased')}>
+        <div className="relative flex min-h-screen flex-col transition-all duration-200 ease-linear">
+          <SplitPane
+            sashRender={() => <></>}
+            split="vertical"
+            sizes={sizes}
+            onChange={(sizes) => setSizes(sizes)}
           >
-            <SideNav />
-          </Pane>
+            <Pane
+              minSize={isOpen ? sideNavWidth : 0}
+              maxSize={sideNavWidth * 2}
+            >
+              <SideNav />
+            </Pane>
 
-          <Pane
-            minSize={window.innerWidth / 2}
-            maxSize="100%"
-          >
-            {children}
-          </Pane>
-        </SplitPane>
-        <Toaster />
-      </div>
-    </main>
+            <Pane
+              minSize={window.innerWidth / 2}
+              maxSize="100%"
+            >
+              {children}
+            </Pane>
+          </SplitPane>
+          <Toaster />
+        </div>
+      </main>
+      <AlertDialog
+        open={isAlertDialogOpen}
+        onOpenChange={setIsAlertDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Do you want to restart your app now?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Connector has been updated to {updateDetails.version}. Please
+              restart your app to load the new version.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => await relaunch()}>
+              Restart
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
