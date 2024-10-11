@@ -72,6 +72,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
         </Button>
         <Suspense fallback={loading}>
           <Editor
+            ref={ref}
             loading={loading}
             height={height!}
             content={JSON.stringify(result, null, '\t')}

@@ -258,11 +258,9 @@ export default function useApiComponent() {
         (event.metaKey && event.key === 's')
       ) {
         event.preventDefault()
-        if (form.formState.isDirty) {
-          saveUpdate()
-          getApi(api?.id)
-          form.reset(api)
-        }
+        saveUpdate()
+        getApi(api?.id)
+        form.reset(api)
       }
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here

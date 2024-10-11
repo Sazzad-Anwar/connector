@@ -1,13 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import MonacoEditor, { Monaco } from '@monaco-editor/react'
 import copy from 'copy-to-clipboard'
 import { Check, Columns2, Copy, Rows2, X } from 'lucide-react'
 import { memo, useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid'
+import { editorOptions, setEditorTheme } from '../../config/editorOptions'
 import { cn } from '../../lib/utils'
 import useResultRenderViewStore from '../../store/resultRenderView'
 import { CookieType } from '../../types/api'
 import Loading from '../loading'
-import ResultRenderer from '../result-renderer'
+import { useTheme } from '../theme-provider'
 import { Button } from '../ui/button'
 import {
   DropdownMenu,
@@ -54,9 +56,11 @@ const ApiResult = ({
   headers,
   cookies,
 }: PropsType) => {
+  const { theme } = useTheme()
   const resultDivRef = useRef<HTMLDivElement>(null)
   const { resultRenderView, toggleResultRenderView } =
     useResultRenderViewStore()
+  const editorRef = useRef<Monaco>(null)
   const resultContainerRef = useRef<HTMLDivElement>(null)
 
   const payloadSize = (data: any): string => {
@@ -113,20 +117,27 @@ const ApiResult = ({
               value="response"
               className="w-full"
             >
-              <ResultRenderer
+              <div
                 ref={resultContainerRef}
-                readOnly={true}
-                height={height! - 220}
-                // height={height}
-                type="response"
-                loading={
-                  <Loading
-                    name="Connecting"
-                    height={height! - 220}
-                  />
-                }
-                result={result ?? {}}
-              />
+                style={{ height: height! - 220 }}
+              >
+                <MonacoEditor
+                  beforeMount={setEditorTheme}
+                  height={height}
+                  saveViewState={true}
+                  defaultLanguage="json"
+                  value={JSON.stringify(result ? result : {}, null, '\t')}
+                  theme={theme === 'dark' ? 'onedark' : 'light'}
+                  options={editorOptions({ readOnly: true })}
+                  loading={
+                    <Loading
+                      name="Connecting"
+                      height={height! - 220}
+                    />
+                  }
+                  onMount={(editor: Monaco) => (editorRef.current = editor)}
+                />
+              </div>
             </TabsContent>
             <TabsContent
               value="headers"

@@ -1,5 +1,6 @@
 import MonacoEditor, { Monaco } from '@monaco-editor/react'
-import { memo, ReactElement, useEffect, useRef, useState } from 'react'
+import { forwardRef, ReactElement, useEffect, useRef, useState } from 'react'
+import { editorOptions, setEditorTheme } from '../config/editorOptions'
 import LoadingComponent from './loading'
 type Props = {
   theme: 'dark' | 'light' | 'system'
@@ -10,15 +11,10 @@ type Props = {
   className?: string
   readOnly?: boolean
 }
-const Editor = ({
-  theme,
-  content,
-  loading,
-  height,
-  className,
-  setContent,
-  readOnly,
-}: Props) => {
+const Editor = forwardRef<HTMLDivElement, Props>(function Editor(
+  { theme, content, loading, height, className, setContent, readOnly }: Props,
+  ref,
+) {
   const [value, setValue] = useState<string>(content ?? '')
 
   // The Monaco Editor instance reference
@@ -28,10 +24,6 @@ const Editor = ({
   const handleEditorDidMount = (editor: Monaco) => {
     editorRef.current = editor
   }
-
-  useEffect(() => {
-    setValue(content ?? '{}')
-  }, [content])
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -60,7 +52,7 @@ const Editor = ({
 
       // Set the new content only if it has changed
       if (value !== content) {
-        setValue(value)
+        // setValue(value)
         setContent(value)
       }
 
@@ -72,51 +64,29 @@ const Editor = ({
     }
   }
 
-  function setEditorTheme(monaco: Monaco) {
-    monaco.editor.defineTheme('onedark', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        {
-          token: 'comment',
-          foreground: '#1e293b',
-          fontStyle: 'normal',
-        },
-        { token: 'constant', foreground: '#1e293b' },
-      ],
-      colors: {
-        'editor.background': '#020817',
-      },
-    })
-  }
   return (
-    <MonacoEditor
-      beforeMount={setEditorTheme}
-      height={height}
-      saveViewState={true}
-      defaultLanguage="json"
-      value={value}
-      theme={
-        theme === 'system' ? 'onedark' : theme === 'dark' ? 'onedark' : 'light'
-      }
-      className={className}
-      onChange={handleEditorChange}
-      options={{
-        readOnly,
-        wordWrap: 'on',
-        automaticLayout: true,
-        scrollBeyondLastLine: false,
-        minimap: { enabled: false },
-        renderLineHighlight: 'none',
-        fastScrollSensitivity: 10,
-        mouseWheelScrollSensitivity: 3,
-        tabSize: 6,
-        smoothScrolling: true,
-      }}
-      loading={loading ?? <LoadingComponent />}
-      onMount={handleEditorDidMount}
-    />
+    <div ref={ref}>
+      <MonacoEditor
+        beforeMount={setEditorTheme}
+        height={height}
+        saveViewState={true}
+        defaultLanguage="json"
+        value={value}
+        theme={
+          theme === 'system'
+            ? 'onedark'
+            : theme === 'dark'
+            ? 'onedark'
+            : 'light'
+        }
+        className={className}
+        onChange={handleEditorChange}
+        options={editorOptions({ readOnly: readOnly ?? false })}
+        loading={loading ?? <LoadingComponent />}
+        onMount={handleEditorDidMount}
+      />
+    </div>
   )
-}
+})
 
-export default memo(Editor)
+export default Editor
