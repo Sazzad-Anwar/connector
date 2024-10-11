@@ -123,7 +123,7 @@ const ApiResult = ({
               >
                 <MonacoEditor
                   beforeMount={setEditorTheme}
-                  height={height}
+                  height={height! - 220}
                   saveViewState={true}
                   defaultLanguage="json"
                   value={JSON.stringify(result ? result : {}, null, '\t')}

@@ -87,7 +87,6 @@ export default function Api() {
   const rootParent = collections.find(
     (item: FolderType) => item.id === rootParentId,
   )
-
   useEffect(() => {
     if (
       containsDynamicVariable(url) &&
@@ -331,8 +330,7 @@ export default function Api() {
                       </TooltipContent>
                     </Tooltip>
                   ) : (
-                    form.watch('url')
-                    // url
+                    url
                   )}
                   <Tooltip>
                     <TooltipTrigger asChild>

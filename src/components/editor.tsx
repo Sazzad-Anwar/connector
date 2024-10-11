@@ -15,7 +15,7 @@ const Editor = forwardRef<HTMLDivElement, Props>(function Editor(
   { theme, content, loading, height, className, setContent, readOnly }: Props,
   ref,
 ) {
-  const [value, setValue] = useState<string>(content ?? '')
+  const [value, setValue] = useState<string>(content ?? '{}')
 
   // The Monaco Editor instance reference
   const editorRef = useRef<Monaco>(null)
@@ -30,9 +30,6 @@ const Editor = forwardRef<HTMLDivElement, Props>(function Editor(
       if (event.key === 'Escape' && !readOnly) {
         setValue(content ?? '{}')
       }
-      // if (event.ctrlKey && event.key === 's') {
-      //   setContent(value)
-      // }
     }
 
     // Add the event listener when the component mounts
