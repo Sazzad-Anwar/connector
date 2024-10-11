@@ -1,3 +1,4 @@
+import configs from '@/../package.json'
 import { Link } from 'react-router-dom'
 import { ThemeToggle } from '../theme-toggler'
 
@@ -10,6 +11,7 @@ export function SideNavHeader() {
       >
         <i className="bi bi-plugin text-2xl" />
         <span className="inline-block font-bold text-xl">Connector</span>
+        <sup className="text-[9px]">{configs.version}</sup>
       </Link>
       <ThemeToggle />
     </div>

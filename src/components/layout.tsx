@@ -1,12 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { cn } from '@/lib/utils'
 import useSidePanelToggleStore from '@/store/sidePanelToggle'
-import { platform } from '@tauri-apps/api/os'
-import {
-  checkUpdate,
-  installUpdate,
-  onUpdaterEvent,
-} from '@tauri-apps/api/updater'
+
+import { relaunch } from '@tauri-apps/plugin-process'
+import { check } from '@tauri-apps/plugin-updater'
 import React, { useEffect, useState } from 'react'
 import { Pane } from 'split-pane-react'
 import SplitPane from 'split-pane-react/esm/SplitPane'
@@ -31,42 +28,51 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [isOpen])
 
   useEffect(() => {
-    const checkUpdateHandler = async () => {
-      try {
-        const platformName = await platform()
-        if (platformName) {
-          const update = await checkUpdate()
-          if (update.shouldUpdate) {
-            await installUpdate()
-          }
-        }
-      } catch (error: any) {
-        return null
+    const checkUpdate = async () => {
+      const update = await check()
+      if (update) {
+        toast({
+          variant: 'default',
+          title: 'Update available',
+          description: `Found update ${update.version} from ${update.date} with notes ${update.body}`,
+        })
       }
-    }
-    const unlisten = async () => {
-      try {
-        await onUpdaterEvent(({ error }) => {
-          if (error) {
-            toast({
-              variant: 'error',
-              title: 'Error',
-              description: error,
-            })
-          } else {
-            toast({
-              variant: 'success',
-              title: 'Success',
-              description: 'Update available',
-            })
+      let downloaded = 0
+      let contentLength = 0
+      // alternatively we could also call update.download() and update.install() separately
+      if (update) {
+        await update.downloadAndInstall((event) => {
+          switch (event.event) {
+            case 'Started':
+              contentLength = event.data.contentLength!
+              toast({
+                variant: 'default',
+                title: 'Started Downloading',
+                description: `Started downloading ${event.data.contentLength} bytes`,
+              })
+              break
+            case 'Progress':
+              downloaded += event.data.chunkLength
+              toast({
+                variant: 'default',
+                title: 'Downloading',
+                description: `Downloaded ${downloaded} from ${contentLength}`,
+              })
+              break
+            case 'Finished':
+              toast({
+                variant: 'default',
+                title: 'Downloaded',
+                description: `Downloaded finished`,
+              })
+              break
           }
         })
-      } catch (error: any) {
-        return null
+
+        await relaunch()
       }
     }
-    checkUpdateHandler()
-    unlisten()
+    checkUpdate()
   }, [])
 
   useEffect(() => {
