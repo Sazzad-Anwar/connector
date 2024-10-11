@@ -152,10 +152,12 @@ export default function Api() {
                 className={cn(
                   'bg-transparent h-auto px-1 py-px text-sm w-auto border',
                 )}
-                // onBlur={() => setIsApiNameEditing(false)}
               />
             ) : (
-              <span className="text-sm h-auto px-1 py-px w-auto border border-transparent">
+              <span
+                onDoubleClick={() => setIsApiNameEditing(true)}
+                className="text-sm h-auto px-1 py-px w-auto border border-transparent"
+              >
                 {form.watch('name')}
               </span>
             )}
@@ -163,7 +165,7 @@ export default function Api() {
               <Pencil
                 onClick={() => setIsApiNameEditing(true)}
                 size={12}
-                className="ml-1 group-hover:visible invisible cursor-pointer"
+                className="ml-1 cursor-pointer"
               />
             ) : (
               <span

@@ -286,7 +286,7 @@ export const InputTabs = ({
                     }
                     readOnly={false}
                     setData={setInteractiveQuery}
-                    className="border-t pt-3"
+                    className="pt-2"
                   />
                 </Suspense>
               ) : (
