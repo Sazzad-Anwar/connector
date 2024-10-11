@@ -65,17 +65,12 @@ export default function MoveToFolder({
 
   return (
     <>
-      <div
-        className={cn(
-          'w-full h-full flex gap-2 flex-wrap',
-          nestedFolders?.length < 3 ? '' : 'justify-start items-end',
-        )}
-      >
+      <div className={cn('w-full h-auto inline-flex gap-2 flex-wrap')}>
         {nestedFolders?.map((item) => (
           <button
             key={item?.id}
             className={cn(
-              'flex flex-col items-center gap-2 hover:bg-secondary px-3 pt-3 pb-1.5 w-24 rounded-lg relative',
+              'flex flex-col items-center gap-2 hover:bg-secondary h-[70px] px-3 pt-3 pb-1.5 w-24 rounded-lg relative',
               item?.id === selectedFolder ? 'bg-secondary' : '',
             )}
             onClick={() => {
