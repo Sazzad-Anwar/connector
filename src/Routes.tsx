@@ -6,7 +6,6 @@ import Layout from './components/layout'
 import Loading from './components/loading'
 const Api = lazy(() => import('./pages/api/page'))
 const Home = lazy(() => import('./pages/page'))
-const Variables = lazy(() => import('./pages/variables/page'))
 
 const RouterConfigs = createBrowserRouter([
   {
@@ -17,18 +16,6 @@ const RouterConfigs = createBrowserRouter([
         <Suspense fallback={<Loading className="h-screen" />}>
           <ErrorBoundary fallback={<Error />}>
             <Home />
-          </ErrorBoundary>
-        </Suspense>
-      </Layout>
-    ),
-  },
-  {
-    path: '/api/variables/:folderId',
-    element: (
-      <Layout>
-        <Suspense fallback={<Loading className="h-screen" />}>
-          <ErrorBoundary fallback={<Error />}>
-            <Variables />
           </ErrorBoundary>
         </Suspense>
       </Layout>

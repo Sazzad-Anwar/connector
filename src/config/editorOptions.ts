@@ -10,6 +10,7 @@ export const editorOptions = ({ readOnly }: { readOnly: boolean }) => {
     renderLineHighlight: 'none',
     fastScrollSensitivity: 10,
     mouseWheelScrollSensitivity: 3,
+    fontSize: 14,
     tabSize: 6,
     smoothScrolling: true,
   }

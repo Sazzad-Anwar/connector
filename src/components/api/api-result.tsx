@@ -57,6 +57,7 @@ const ApiResult = ({
   cookies,
 }: PropsType) => {
   const { theme } = useTheme()
+  const [isCopiedResponse, setIsCopiedResponse] = useState<boolean>(false)
   const resultDivRef = useRef<HTMLDivElement>(null)
   const { resultRenderView, toggleResultRenderView } =
     useResultRenderViewStore()
@@ -68,6 +69,19 @@ const ApiResult = ({
     const string_length = new TextEncoder().encode(json_string).length
     const payload_size_kb = +(string_length / 1024).toFixed(2)
     return payload_size_kb > 1 ? `${payload_size_kb} KB` : `${string_length} B`
+  }
+
+  const copyResponse = () => {
+    setIsCopiedResponse(true)
+    copy(JSON.stringify(result))
+    toast({
+      variant: 'success',
+      title: 'Success',
+      description: 'Data is copied to clipboard',
+    })
+    setTimeout(() => {
+      setIsCopiedResponse(false)
+    }, 2000)
   }
 
   return (
@@ -120,7 +134,37 @@ const ApiResult = ({
               <div
                 ref={resultContainerRef}
                 style={{ height: height! - 220 }}
+                className="relative"
               >
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
+                  size="sm"
+                  onClick={() => copyResponse()}
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {isCopiedResponse ? (
+                        <Check
+                          className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                          size={18}
+                        />
+                      ) : (
+                        <Copy
+                          className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                          size={18}
+                        />
+                      )}
+                    </TooltipTrigger>
+                    <TooltipContent
+                      align="end"
+                      className=""
+                    >
+                      <p>Copy data</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Button>
                 <MonacoEditor
                   beforeMount={setEditorTheme}
                   height={height! - 220}

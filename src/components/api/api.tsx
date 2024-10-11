@@ -121,9 +121,8 @@ export default function Api() {
           isEdited={!!Object.entries(form.formState.dirtyFields).length}
         />
       </Suspense>
-      <form
+      <div
         ref={formDivRef}
-        onSubmit={form.handleSubmit(onSubmit)}
         className="overflow-hidden"
         style={{ height: window.innerHeight }}
       >
@@ -284,7 +283,10 @@ export default function Api() {
                 </Tooltip>
               </div>
             ) : (
-              <div className="flex items-center">
+              <div
+                className="flex items-center w-full"
+                onDoubleClick={() => setIsUrlEditing(true)}
+              >
                 <span
                   className={cn(
                     api.method === 'GET'
@@ -301,10 +303,7 @@ export default function Api() {
                 >
                   {api.method}
                 </span>
-                <div
-                  onDoubleClick={() => setIsUrlEditing(true)}
-                  className="truncate px-2 text-sm"
-                >
+                <div className="truncate px-2 text-sm">
                   {containsDynamicVariable(url) ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -420,6 +419,7 @@ export default function Api() {
                       className="p-1 rounded-l-none"
                       variant="secondary"
                       size="icon"
+                      onClick={() => form.handleSubmit(onSubmit)()}
                     >
                       <i className="bi bi-plugin text-xl font-bold" />
                     </Button>
@@ -512,7 +512,7 @@ export default function Api() {
             </Suspense>
           </Pane>
         </SplitPane>
-      </form>
+      </div>
     </>
   )
 }

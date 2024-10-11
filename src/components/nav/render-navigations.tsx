@@ -22,6 +22,7 @@ import useRenderNav from '../../hooks/useRenderNav'
 import useApiStore from '../../store/store'
 import { default as CreateFolder } from '../collections/create-folder'
 import MoveToFolderDialog from '../collections/move-to-folder-dialog'
+import EnvVariables from '../env/env-variables'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,6 +55,8 @@ export default function RenderNavigation({
   const navWidthRef = useRef<HTMLDivElement>(null)
   const params = useParams()
   const {
+    isEnvDialogOpen,
+    setIsEnvDialogOpen,
     renameCollectionName,
     deleteCollection,
     addFolder,
@@ -384,6 +387,23 @@ export default function RenderNavigation({
               Yes
             </AlertDialogAction>
           </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Env Dialog */}
+      <AlertDialog
+        open={isEnvDialogOpen}
+        onOpenChange={setIsEnvDialogOpen}
+      >
+        <AlertDialogContent className="min-w-[80%] w-auto h-auto block">
+          <AlertDialogHeader className="h-auto">
+            <AlertDialogTitle>Env Variables</AlertDialogTitle>
+            <AlertDialogDescription>
+              You can add, edit or delete env variables here.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <EnvVariables setIsEnvDialogOpen={setIsEnvDialogOpen} />
+          <AlertDialogFooter />
         </AlertDialogContent>
       </AlertDialog>
       <MoveToFolderDialog

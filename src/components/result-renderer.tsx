@@ -65,7 +65,10 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
                 />
               )}
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent
+              align="end"
+              className=""
+            >
               <p>Copy data</p>
             </TooltipContent>
           </Tooltip>

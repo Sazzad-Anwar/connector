@@ -14,7 +14,7 @@ export default function SideNavToggler({ className }: { className?: string }) {
       <Button
         variant="outline"
         size="xs"
-        className="hidden p-1 xl:block size-6"
+        className="hidden p-1 xl:flex justify-center items-center size-6"
         type="button"
         onClick={() => toggle()}
       >
@@ -25,7 +25,7 @@ export default function SideNavToggler({ className }: { className?: string }) {
           asChild
           className={cn(
             buttonVariants({ variant: 'outline', size: 'xs' }),
-            'flex h-6 w-6 p-1 xl:hidden cursor-pointer',
+            'flex justify-center items-center h-6 w-6 p-1 xl:hidden cursor-pointer',
           )}
         >
           <Menu size={20} />

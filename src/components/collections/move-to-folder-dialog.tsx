@@ -35,11 +35,9 @@ export default function MoveToFolderDialog({
       onOpenChange={setIsDialogOpen}
     >
       <AlertDialogContent className="min-w-[800px] w-auto h-auto">
-        <AlertDialogHeader className="max-h-40 h-auto">
-          <AlertDialogTitle className="block">
-            Move APIs To Folder
-          </AlertDialogTitle>
-          <AlertDialogDescription className="block">
+        <AlertDialogHeader className="block">
+          <AlertDialogTitle>Move APIs To Folder</AlertDialogTitle>
+          <AlertDialogDescription>
             You've selected{' '}
             <b className="text-primary">
               {apis

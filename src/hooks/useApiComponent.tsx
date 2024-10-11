@@ -45,7 +45,7 @@ export default function useApiComponent() {
   const { resultRenderView } = useResultRenderViewStore()
   const { isOpen } = useSidePanelToggleStore()
   const [urlWidth, setUrlWidth] = useState<number>()
-  const formDivRef = useRef<HTMLFormElement>(null)
+  const formDivRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const [result, setResult] = useState<any>()
   const [isUrlEditing, setIsUrlEditing] = useState(state?.isUrlEditing ?? false)
@@ -252,16 +252,29 @@ export default function useApiComponent() {
       )
     }
 
+    const saveAll = () => {
+      saveUpdate()
+      getApi(api?.id)
+      form.reset(api)
+    }
+
     const handleKeyPress = (event: KeyboardEvent) => {
       if (
         (event.ctrlKey && event.key === 's') ||
         (event.metaKey && event.key === 's')
       ) {
-        event.preventDefault()
-        saveUpdate()
-        getApi(api?.id)
-        form.reset(api)
+        saveAll()
       }
+      if (event.key === 'Enter' && form.formState.isDirty) {
+        setIsApiNameEditing(false)
+        setIsUrlEditing(false)
+        saveAll()
+      }
+      if (event.key === 'Enter' && !form.formState.isDirty) {
+        setIsApiNameEditing(false)
+        setIsUrlEditing(false)
+      }
+
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
         // getApi(api?.id)

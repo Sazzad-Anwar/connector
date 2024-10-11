@@ -27,6 +27,7 @@ export default function useRenderNav({
   const [selectedApis, setSelectedApis] = useState<ApiType[]>([])
   const [collectionId, setCollectionId] = useState<string>('')
   const [isCreatingFolder, setIsCreatingFolder] = useState(false)
+  const [isEnvDialogOpen, setIsEnvDialogOpen] = useState(false)
   const [isFolderNameUpdating, setIsFolderNameUpdating] = useState(false)
   const [isMoveToFolderDialogOpen, setIsMoveToFolderDialogOpen] =
     useState(false)
@@ -185,7 +186,7 @@ export default function useRenderNav({
       name: 'Env Variables',
       onClick: (e) => {
         e.stopPropagation()
-        navigate(`/api/variables/${collection.id}`)
+        setIsEnvDialogOpen(true)
       },
       isHidden: collection.type === 'folder',
     },
@@ -193,7 +194,6 @@ export default function useRenderNav({
       name: 'Add Request',
       onClick: (e) => {
         e?.stopPropagation()
-        // navigate(`/api/${collection.id}/add`)
         addApi()
       },
     },
@@ -203,7 +203,6 @@ export default function useRenderNav({
         e?.stopPropagation()
         setCollectionId(collection.id)
         setIsCreatingFolder(true)
-        // addFolderButtonRef.current?.click()
       },
     },
     {
@@ -241,6 +240,7 @@ export default function useRenderNav({
         setIsFolderNameUpdating(false)
         setCollectionId('')
         setIsCreatingFolder(false)
+        setIsEnvDialogOpen(false)
         setSelectedApis([])
       }
     }
@@ -296,5 +296,7 @@ export default function useRenderNav({
     setIsMoveToFolderDialogOpen,
     handleClickApi,
     downloadFile,
+    isEnvDialogOpen,
+    setIsEnvDialogOpen,
   }
 }

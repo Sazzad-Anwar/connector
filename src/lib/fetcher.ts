@@ -46,7 +46,6 @@ const fetcher = async ({
       'Content-Type': 'application/json',
     }
   }
-  console.log(requestConfigs)
   try {
     platform()
     return await TFetch(url, requestConfigs)
