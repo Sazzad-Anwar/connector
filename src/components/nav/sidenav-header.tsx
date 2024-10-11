@@ -62,7 +62,7 @@ export function SideNavHeader() {
                 </DialogHeader>
                 <div className="flex flex-col mt-10 items-center justify-center">
                   <h1 className="text-2xl text-muted-foreground">
-                    v{updateDetails?.version}
+                    v{updateDetails?.currentVersion}
                   </h1>
                   <Button
                     variant="secondary"
