@@ -16,7 +16,7 @@ import {
 } from '../ui/dialog'
 
 export function SideNavHeader() {
-  const { RestartApp, checkUpdate } = useUpdate()
+  const { RestartApp, checkUpdate, updateDetails } = useUpdate()
   const [isDesktop, setIsDesktop] = useState(false)
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export function SideNavHeader() {
                 </DialogHeader>
                 <div className="flex flex-col mt-10 items-center justify-center">
                   <h1 className="text-2xl text-muted-foreground">
-                    v{configs.version}
+                    v{updateDetails?.version}
                   </h1>
                   <Button
                     variant="secondary"
