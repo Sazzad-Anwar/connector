@@ -8,7 +8,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import useResultRenderViewStore from '../../store/resultRenderView'
 import Loading from '../loading'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
-import { JSONErrorType } from './api'
 const MultipleInput = lazy(() => import('../multiple-input'))
 const ResultRender = lazy(() => import('../result-renderer'))
 
@@ -36,7 +35,6 @@ export const InputTabs = ({
     'x-form-urlencoded' | 'json'
   >()
   const navigate = useNavigate()
-  const [jsonError, setJsonError] = useState<JSONErrorType | undefined>()
   const [defaultOpen, setDefaultOpen] = useState<string>('params')
   const { resultRenderView } = useResultRenderViewStore()
 
@@ -48,11 +46,6 @@ export const InputTabs = ({
       if (activeBodyPayloadType === 'json') {
         form.setValue('jsonBody', jsonData, { shouldDirty: true })
       }
-
-      setJsonError({
-        isError: false,
-        error: '',
-      })
     } catch (error: any) {
       console.log(error)
     }
@@ -63,11 +56,6 @@ export const InputTabs = ({
       const jsonData = JSON.parse(data)
       setInteractiveQueryData(jsonData)
       form.setValue('interactiveQuery', jsonData, { shouldDirty: true })
-
-      setJsonError({
-        isError: false,
-        error: '',
-      })
     } catch (error: any) {
       // console.log(error)
     }
@@ -286,7 +274,6 @@ export const InputTabs = ({
                     }
                     readOnly={false}
                     setData={setInteractiveQuery}
-                    className="pt-2"
                   />
                 </Suspense>
               ) : (
@@ -353,15 +340,6 @@ export const InputTabs = ({
                 height: (height as number) - (type === 'create' ? 95 : 0),
               }}
             >
-              <div className="flex items-center justify-between">
-                {jsonError?.isError ? (
-                  <div className="h-4 text-xs font-bold text-red-500">
-                    {jsonError.error}
-                  </div>
-                ) : (
-                  <div className="h-4"></div>
-                )}
-              </div>
               {isTimedOut ? (
                 <Suspense
                   fallback={
@@ -382,7 +360,6 @@ export const InputTabs = ({
                     }
                     readOnly={false}
                     setData={setJsonBody}
-                    className="pt-2"
                   />
                 </Suspense>
               ) : (

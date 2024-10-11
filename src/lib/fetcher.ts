@@ -32,19 +32,26 @@ const fetcher = async ({
       formData.append(item, requestBody[item])
     }
   })
+  const requestConfigs = {
+    method,
+    body: isUpload ? formData : JSON.stringify(requestBody),
+    headers,
+  }
+  if (isUpload) {
+    requestConfigs['headers'] = {
+      'Content-Type': 'multipart/form-data',
+    }
+  } else {
+    requestConfigs['headers'] = {
+      'Content-Type': 'application/json',
+    }
+  }
+  console.log(requestConfigs)
   try {
     platform()
-    return await TFetch(url, {
-      method,
-      body: method !== 'GET' ? (isUpload ? formData : requestBody) : undefined,
-      headers,
-    })
+    return await TFetch(url, requestConfigs)
   } catch (error) {
-    return await fetch(url, {
-      method,
-      body: method !== 'GET' ? (isUpload ? formData : requestBody) : undefined,
-      headers,
-    })
+    return await fetch(url, requestConfigs)
   }
 }
 
