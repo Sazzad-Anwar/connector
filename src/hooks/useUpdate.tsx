@@ -29,6 +29,11 @@ export default function useUpdate() {
           description: `Found update ${update.version} from ${update.date} with notes ${update.body}`,
         })
       }
+      toast({
+        variant: 'default',
+        title: 'Checking for updates',
+        description: JSON.stringify(update),
+      })
       let downloaded = 0
       let contentLength = 0
       // alternatively we could also call update.download() and update.install() separately
@@ -66,6 +71,11 @@ export default function useUpdate() {
       if (process.env.NODE_ENV !== 'production') {
         console.log(error)
       }
+      toast({
+        variant: 'default',
+        title: 'Error checking for updates',
+        description: JSON.stringify(error),
+      })
     }
   }
 
