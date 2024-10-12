@@ -1,12 +1,10 @@
-import { BaseDirectory, writeTextFile } from '@tauri-apps/plugin-fs'
-import { platform } from '@tauri-apps/plugin-os'
 import React, { useEffect, useRef, useState } from 'react'
 import { SubmitHandler } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router-dom'
 import { v4 as uuid } from 'uuid'
 import { z } from 'zod'
 import { toast } from '../components/ui/use-toast'
-import { updateRecentlyOpenedApis } from '../lib/utils'
+import { downloadFile, updateRecentlyOpenedApis } from '../lib/utils'
 import useApiStore from '../store/store'
 import useTabRenderStore from '../store/tabView'
 import { ApiType, CollectionSchema, FolderType } from '../types/api'
@@ -96,59 +94,6 @@ export default function useRenderNav({
       title: `Success`,
       description: `${apiDetails?.name} Api is deleted successfully`,
     })
-  }
-  // Export as JSON
-  const downloadFile = async ({
-    data,
-    fileName,
-    fileType,
-  }: {
-    data: FolderType | ApiType
-    fileName: string
-    fileType: string
-  }) => {
-    const downloadFromBrowser = () => {
-      // Create a blob with the data we want to download as a file
-      const blob = new Blob([JSON.stringify(data)], { type: fileType })
-      // Create an anchor element and dispatch a click event on it
-      // to trigger a download
-      const a = document.createElement('a')
-      a.download = fileName
-      a.href = window.URL.createObjectURL(blob)
-      const clickEvt = new MouseEvent('click', {
-        view: window,
-        bubbles: true,
-        cancelable: true,
-      })
-      a.dispatchEvent(clickEvt)
-      a.remove()
-    }
-
-    try {
-      const platformName = platform()
-      if (
-        platformName === 'macos' ||
-        platformName === 'windows' ||
-        platformName === 'linux'
-      ) {
-        await writeTextFile(`${fileName}`, JSON.stringify(data), {
-          baseDir: BaseDirectory.Download,
-        })
-        toast({
-          variant: 'success',
-          title: `Success`,
-          description: `${fileName} is saved to Downloads`,
-        })
-      }
-    } catch (error: any) {
-      console.log('🚀 ~ error:', error)
-      downloadFromBrowser()
-      toast({
-        variant: 'success',
-        title: `Success`,
-        description: `${fileName} is saved to Downloads`,
-      })
-    }
   }
 
   const addApi = () => {

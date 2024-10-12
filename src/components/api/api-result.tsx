@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import MonacoEditor, { Monaco } from '@monaco-editor/react'
 import copy from 'copy-to-clipboard'
-import { Check, Columns2, Copy, Rows2, X } from 'lucide-react'
+import { Check, Columns2, Copy, Download, Rows2, X } from 'lucide-react'
 import { memo, useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import { editorOptions, setEditorTheme } from '../../config/editorOptions'
-import { cn } from '../../lib/utils'
+import { cn, downloadFile } from '../../lib/utils'
 import useResultRenderViewStore from '../../store/resultRenderView'
 import { CookieType } from '../../types/api'
 import Loading from '../loading'
@@ -139,6 +139,34 @@ const ApiResult = ({
                 <Button
                   type="button"
                   variant="secondary"
+                  className={cn(
+                    result && Object.entries(result)?.length === 0
+                      ? 'hidden'
+                      : !result
+                      ? 'hidden'
+                      : 'flex absolute right-9 top-0 h-8 w-8 justify-self-end p-0 z-10',
+                  )}
+                  size="sm"
+                  onClick={() =>
+                    downloadFile({
+                      data: result,
+                      fileName: `Response-${uuid()}.json`,
+                      fileType: 'text/json',
+                    })
+                  }
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Download size={18} />
+                    </TooltipTrigger>
+                    <TooltipContent align="start">
+                      <p>Download data</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
                   className="flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
                   size="sm"
                   onClick={() => copyResponse()}
@@ -157,10 +185,7 @@ const ApiResult = ({
                         />
                       )}
                     </TooltipTrigger>
-                    <TooltipContent
-                      align="end"
-                      className=""
-                    >
+                    <TooltipContent align="start">
                       <p>Copy data</p>
                     </TooltipContent>
                   </Tooltip>

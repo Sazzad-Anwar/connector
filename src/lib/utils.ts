@@ -10,9 +10,12 @@ import {
   ParamsType,
   TabType,
 } from '@/types/api'
+import { BaseDirectory, writeTextFile } from '@tauri-apps/plugin-fs'
+import { platform } from '@tauri-apps/plugin-os'
 import clsx, { ClassValue } from 'clsx'
 import dayjs from 'dayjs'
 import { v4 as uuid } from 'uuid'
+import { toast } from '../components/ui/use-toast'
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -601,4 +604,58 @@ export function updateRecentlyOpenedApis(
 
   // Filter the recently opened APIs and remove the ones whose id is in apiIdsToRemove
   return recentlyOpenedApis.filter((api) => !apiIdsToRemove.includes(api.id))
+}
+
+// Export as JSON
+export const downloadFile = async ({
+  data,
+  fileName,
+  fileType,
+}: {
+  data: FolderType | ApiType
+  fileName: string
+  fileType: 'text/json'
+}) => {
+  const downloadFromBrowser = () => {
+    // Create a blob with the data we want to download as a file
+    const blob = new Blob([JSON.stringify(data)], { type: fileType })
+    // Create an anchor element and dispatch a click event on it
+    // to trigger a download
+    const a = document.createElement('a')
+    a.download = fileName
+    a.href = window.URL.createObjectURL(blob)
+    const clickEvt = new MouseEvent('click', {
+      view: window,
+      bubbles: true,
+      cancelable: true,
+    })
+    a.dispatchEvent(clickEvt)
+    a.remove()
+  }
+
+  try {
+    const platformName = platform()
+    if (
+      platformName === 'macos' ||
+      platformName === 'windows' ||
+      platformName === 'linux'
+    ) {
+      await writeTextFile(`${fileName}`, JSON.stringify(data), {
+        baseDir: BaseDirectory.Download,
+      })
+      toast({
+        variant: 'success',
+        title: `Success`,
+        description: `${fileName} is saved to Downloads`,
+      })
+    }
+  } catch (error: any) {
+    console.log('🚀 ~ error:', error)
+    downloadFromBrowser()
+    toast({
+      variant: 'success',
+      title: `Success`,
+      description: `${fileName} is saved to Downloads`,
+    })
+  }
 }
