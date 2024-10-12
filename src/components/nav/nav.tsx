@@ -27,7 +27,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
   const { InputFile } = useImportJSON()
   const { isOpen } = useSidePanelToggleStore()
   const [search, setSearch] = useState<string>('')
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false)
+  const { isCreatingFolder, setIsCreatingFolder } = useSidePanelToggleStore()
   const { collections, createFolder, searchApi, getCollections } = useApiStore()
   const debouncedValue = useDebounce(search, 700)
   const form = useForm<z.infer<typeof CollectionSchema>>({

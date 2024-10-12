@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid'
 import { z } from 'zod'
 import { toast } from '../components/ui/use-toast'
 import { downloadFile, updateRecentlyOpenedApis } from '../lib/utils'
+import useSidePanelToggleStore from '../store/sidePanelToggle'
 import useApiStore from '../store/store'
 import useTabRenderStore from '../store/tabView'
 import { ApiType, CollectionSchema, FolderType } from '../types/api'
@@ -24,7 +25,7 @@ export default function useRenderNav({
     useApiStore()
   const [selectedApis, setSelectedApis] = useState<ApiType[]>([])
   const [collectionId, setCollectionId] = useState<string>('')
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false)
+  const { isCreatingFolder, setIsCreatingFolder } = useSidePanelToggleStore()
   const [isEnvDialogOpen, setIsEnvDialogOpen] = useState(false)
   const [isFolderNameUpdating, setIsFolderNameUpdating] = useState(false)
   const [isMoveToFolderDialogOpen, setIsMoveToFolderDialogOpen] =
