@@ -450,11 +450,15 @@ export default function useApiComponent() {
       )
       data.body = filterEmptyParams(form.getValues('body')!)
       data.pathVariables =
-        filterEmptyParams(form.watch('pathVariables')!).length! > 0
+        filterEmptyParams(form.watch('pathVariables')!).length! > 0 &&
+        form.watch('url').includes('/:')
           ? filterEmptyParams(form.watch('pathVariables')!)
           : form.watch('url').includes('/:')
           ? filterEmptyParams(parseURLParameters(form.watch('url'))!)
-          : []
+          : !form.watch('url').includes('/:') &&
+            filterEmptyParams(form.watch('pathVariables')!).length
+          ? []
+          : filterEmptyParams(form.watch('pathVariables')!)
       data.jsonBody = form.getValues('jsonBody')
       data.interactiveQuery = form.getValues('interactiveQuery')
       updateApi(data, params.apiId)
