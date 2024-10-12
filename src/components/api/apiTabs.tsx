@@ -22,13 +22,16 @@ export default function ApiTabs({ isEdited }: Props) {
 
   return (
     <div>
-      <Carousel className="w-full pt-5 px-5 border-b">
+      <Carousel
+        opts={{ slidesToScroll: 1, align: 'start' }}
+        className="w-full pt-5 px-11 border-b"
+      >
         <CarouselContent className="ml-0">
           {tabs.map((tab) => (
             <CarouselItem
               key={`folder-${tab.folderId}-api-${tab.id}`}
               className={cn(
-                'basis-44 mr-0.5  text-left rounded-t-lg border flex items-center pl-2.5 pr-1.5 py-1',
+                'basis-44 mr-0.5  text-left rounded-t-lg border flex items-center pl-2.5 pr-1.5 py-1 selection:bg-transparent',
                 tab.id === apiId ? 'bg-secondary' : 'bg-background',
               )}
               onClick={() => navigate(`/api/${tab.folderId}/${tab.id}`)}
@@ -63,8 +66,8 @@ export default function ApiTabs({ isEdited }: Props) {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
+        <CarouselPrevious className="ml-14 mr-2 mt-2.5" />
+        <CarouselNext className="mr-14 ml-2 mt-2" />
       </Carousel>
     </div>
   )
