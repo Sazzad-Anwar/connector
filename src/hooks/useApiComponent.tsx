@@ -25,6 +25,7 @@ import {
   filterEmptyParams,
   getQueryString,
   parseCookie,
+  parseURLParameters,
   replaceVariables,
   updateEnvWithDynamicVariableValue,
   updateUrlWithPathVariables,
@@ -448,7 +449,12 @@ export default function useApiComponent() {
         form.getValues('dynamicVariables')!,
       )
       data.body = filterEmptyParams(form.getValues('body')!)
-      data.pathVariables = filterEmptyParams(form.getValues('pathVariables')!)
+      data.pathVariables =
+        filterEmptyParams(form.watch('pathVariables')!).length! > 0
+          ? filterEmptyParams(form.watch('pathVariables')!)
+          : form.watch('url').includes('/:')
+          ? filterEmptyParams(parseURLParameters(form.watch('url'))!)
+          : []
       data.jsonBody = form.getValues('jsonBody')
       data.interactiveQuery = form.getValues('interactiveQuery')
       updateApi(data, params.apiId)

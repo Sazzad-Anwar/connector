@@ -45,7 +45,11 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
 
   useEffect(() => {
     if (form.formState.dirtyFields?.url) {
-      form.setValue('pathVariables', parseURLParameters(url))
+      if (url.includes('/:')) {
+        form.setValue('pathVariables', parseURLParameters(url))
+      } else {
+        form.setValue('pathVariables', [])
+      }
     }
   }, [url])
 
