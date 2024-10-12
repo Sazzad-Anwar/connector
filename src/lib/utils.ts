@@ -659,3 +659,116 @@ export const downloadFile = async ({
     })
   }
 }
+
+export function isCurlCall(input: string): boolean {
+  // Basic pattern to detect curl command
+  const curlRegex = /^curl\s+/
+
+  // Check for common elements in a curl call
+  const methodRegex = /-X\s*(GET|POST|PUT|PATCH|DELETE)/i
+  const headerRegex = /-H\s*"([^:]+):\s*([^"]*)"/
+  const dataRegex = /-d\s*'([^']*)'/
+  const urlRegex = /(https?:\/\/[^\s]+)/
+
+  // Check if the input starts with 'curl'
+  if (!curlRegex.test(input)) {
+    return false
+  }
+
+  // Check if the input has at least a URL or a method, headers, or data
+  const hasMethod = methodRegex.test(input)
+  const hasHeader = headerRegex.test(input)
+  const hasData = dataRegex.test(input)
+  const hasUrl = urlRegex.test(input)
+
+  // If it contains any combination of these, it's likely a curl call
+  return hasMethod || hasHeader || hasData || hasUrl
+}
+
+export function parseCurlToJson(curl: string, id: string): ApiType {
+  const result: ApiType = {
+    id,
+    name: '',
+    url: '',
+    method: 'GET',
+    params: [],
+    pathVariables: [],
+    headers: [],
+    body: [],
+    dynamicVariables: [],
+    jsonBody: {},
+    interactiveQuery: {},
+    activeBody: undefined,
+    activeQuery: undefined,
+  }
+
+  const headerRegex = /--header\s+['"]([^:]+):\s*([^'"]+)['"]/g
+  const bodyRegex = /(--data|-d|--data-urlencode)\s*['"]([^'"]*)['"]/g
+  const methodRegex = /-X\s*(\w+)/
+  const urlRegex = /(https?:\/\/[^\s'"]+)/
+
+  // Extract headers
+  let headerMatch
+  while ((headerMatch = headerRegex.exec(curl)) !== null) {
+    result.headers?.push({
+      id: uuid(),
+      isActive: true,
+      key: headerMatch[1].trim(),
+      value: headerMatch[2].trim(),
+    })
+  }
+
+  // Extract body including --data-urlencode
+  let bodyMatch
+  while ((bodyMatch = bodyRegex.exec(curl)) !== null) {
+    result.body?.push({
+      id: uuid(),
+      isActive: true,
+      key: bodyMatch[2].split('=')[0].trim(),
+      value: decodeURIComponent(bodyMatch[2].split('=')[1].trim()),
+    })
+    result.activeBody = 'x-form-urlencoded'
+  }
+
+  // Extract method
+  const methodMatch = methodRegex.exec(curl)
+  if (methodMatch) {
+    result.method = methodMatch[1] as ApiType['method']
+  }
+
+  // Extract URL
+  const urlMatch = urlRegex.exec(curl)
+  if (urlMatch) {
+    result.url = urlMatch[0]
+    result.name = 'Curl Request'
+  }
+
+  return result
+}
+
+export function generateCurlFromJson(apiData: ApiType): string {
+  let curlCommand = `curl --location --request ${apiData.method} '${apiData.url}'`
+
+  // Add headers
+  if (apiData.headers && apiData.headers.length > 0) {
+    apiData.headers.forEach((header) => {
+      if (header.key && header.value) {
+        curlCommand += ` \\\n--header '${header.key}: ${header.value}'`
+      }
+    })
+  }
+
+  // Add body (for urlencoded data)
+  if (apiData.body && apiData.body.length > 0) {
+    apiData.body.forEach((param) => {
+      curlCommand += ` \\\n--data-urlencode '${param.key}=${encodeURIComponent(
+        param.value,
+      )}'`
+    })
+  } else if (apiData.jsonBody && Object.keys(apiData.jsonBody).length > 0) {
+    // If jsonBody is provided, serialize it
+    curlCommand += ` \\\n--data '${JSON.stringify(apiData.jsonBody)}'`
+  }
+
+  return curlCommand
+}

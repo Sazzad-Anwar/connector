@@ -23,8 +23,11 @@ import {
   checkAndReplaceWithDynamicVariable,
   containsDynamicVariable,
   filterEmptyParams,
+  generateCurlFromJson,
   getQueryString,
+  isCurlCall,
   parseCookie,
+  parseCurlToJson,
   parseURLParameters,
   replaceVariables,
   updateEnvWithDynamicVariableValue,
@@ -45,6 +48,7 @@ export default function useApiComponent() {
   const { updateTab } = useTabRenderStore()
   const { resultRenderView } = useResultRenderViewStore()
   const { isOpen } = useSidePanelToggleStore()
+  const [curl, setCurl] = useState<string>('')
   const [urlWidth, setUrlWidth] = useState<number>()
   const formDivRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
@@ -130,6 +134,7 @@ export default function useApiComponent() {
               time: '',
             },
       )
+      setCurl(generateCurlFromJson(api))
     } else {
       setResult(null)
       setResponseStatus({
@@ -499,6 +504,40 @@ export default function useApiComponent() {
     }, 2000)
   }
 
+  const saveRequestFromCurl = (cmd: string, id: string) => {
+    if (isCurlCall(cmd)) {
+      const data = parseCurlToJson(cmd, id)
+
+      if (data) {
+        updateApi(data, id)
+        navigate(`/api/${folderId}/${id}`)
+        getApi(api?.id)
+        toast({
+          variant: 'success',
+          title: 'Success',
+          description: 'Api is updated successfully',
+        })
+      }
+    } else {
+      toast({
+        variant: 'error',
+        title: 'Error',
+        description: 'Invalid curl command',
+      })
+    }
+  }
+
+  const copyCurl = () => {
+    let request = api
+    request.url = url
+    copy(generateCurlFromJson(request))
+    toast({
+      variant: 'success',
+      title: 'Success',
+      description: 'Curl is copied to clipboard',
+    })
+  }
+
   return {
     params,
     urlWidth,
@@ -541,5 +580,9 @@ export default function useApiComponent() {
     isApiNameEditing,
     setIsApiNameEditing,
     cookies,
+    saveRequestFromCurl,
+    curl,
+    setCurl,
+    copyCurl,
   }
 }

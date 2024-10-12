@@ -45,6 +45,7 @@ const ResultRender = forwardRef<HTMLDivElement, PropsType>(
         className="relative"
       >
         <Button
+          disabled={(result && Object.entries(result)?.length === 0) || !result}
           type="button"
           variant="secondary"
           className="flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"

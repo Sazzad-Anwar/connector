@@ -137,15 +137,12 @@ const ApiResult = ({
                 className="relative"
               >
                 <Button
+                  disabled={
+                    (result && Object.entries(result)?.length === 0) || !result
+                  }
                   type="button"
                   variant="secondary"
-                  className={cn(
-                    result && Object.entries(result)?.length === 0
-                      ? 'hidden'
-                      : !result
-                      ? 'hidden'
-                      : 'flex absolute right-9 top-0 h-8 w-8 justify-self-end p-0 z-10',
-                  )}
+                  className="flex absolute right-9 top-0 h-8 w-8 justify-self-end p-0 z-10"
                   size="sm"
                   onClick={() =>
                     downloadFile({
@@ -160,11 +157,14 @@ const ApiResult = ({
                       <Download size={18} />
                     </TooltipTrigger>
                     <TooltipContent align="start">
-                      <p>Download data</p>
+                      Download response
                     </TooltipContent>
                   </Tooltip>
                 </Button>
                 <Button
+                  disabled={
+                    (result && Object.entries(result)?.length === 0) || !result
+                  }
                   type="button"
                   variant="secondary"
                   className="flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
@@ -185,9 +185,7 @@ const ApiResult = ({
                         />
                       )}
                     </TooltipTrigger>
-                    <TooltipContent align="start">
-                      <p>Copy data</p>
-                    </TooltipContent>
+                    <TooltipContent align="start">Copy response</TooltipContent>
                   </Tooltip>
                 </Button>
                 <MonacoEditor

@@ -65,7 +65,7 @@ export default function CreateFolder({
                     }
                     autoFocus
                     autoComplete="off"
-                    className="w-full px-1 h-7 mb-0"
+                    className="w-full px-1 text-[13px] h-7 mb-0"
                     {...field}
                     value={field.value ?? ''}
                   />

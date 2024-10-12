@@ -101,7 +101,7 @@ export default function RenderNavigation({
                   name={collection.name}
                   onSubmit={renameCollectionName}
                   type="folder"
-                  className="w-full flex items-center"
+                  className="w-full flex text-[13px] items-center"
                   actionType={'update'}
                 />
               </>
@@ -368,7 +368,7 @@ export default function RenderNavigation({
               className={buttonVariants({
                 size: 'xs',
                 variant: 'outline',
-                className: '',
+                className: 'h-8',
               })}
             >
               Cancel
@@ -382,6 +382,7 @@ export default function RenderNavigation({
               className={buttonVariants({
                 variant: 'destructive',
                 size: 'xs',
+                className: 'h-8',
               })}
             >
               Yes

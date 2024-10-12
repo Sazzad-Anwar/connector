@@ -27,6 +27,16 @@ import Breadcrumbs from '../breadcrumb'
 import Loading from '../loading'
 import SideNavToggler from '../nav/sidenav-toggler'
 import NotFound from '../notFound'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../ui/alert-dialog'
 import { Button, buttonVariants } from '../ui/button'
 import { Input } from '../ui/input'
 import {
@@ -36,6 +46,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select'
+import { Textarea } from '../ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { toast } from '../ui/use-toast'
 const ApiTabs = lazy(() => import('./apiTabs'))
@@ -54,6 +65,7 @@ export type ResponseStatus = {
 
 export default function Api() {
   const {
+    saveRequestFromCurl,
     copyUrl,
     url,
     apiId,
@@ -80,8 +92,12 @@ export default function Api() {
     setIsApiNameEditing,
     getApi,
     cookies,
+    curl,
+    setCurl,
+    copyCurl,
   } = useApiComponent()
   const { resultRenderView } = useResultRenderViewStore()
+  const [isOpenCurlDialog, setIsOpenCurlDialog] = useState<boolean>(false)
   const [isUrlError, setIsUrlError] = useState<boolean>(false)
   const rootParentId = getRootParentIdForNthChildren(collections, folderId)
   const rootParent = collections.find(
@@ -353,6 +369,20 @@ export default function Api() {
                       <Button
                         type="button"
                         variant="ghost"
+                        className="flex justify-self-end px-3 text-xs rounded-none"
+                        size="sm"
+                        onClick={() => setIsOpenCurlDialog(true)}
+                      >
+                        cURL
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Import cURL request</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
                         className="flex justify-self-end px-3 rounded-none"
                         size="sm"
                         onClick={() => copyUrl()}
@@ -370,9 +400,7 @@ export default function Api() {
                         )}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Copy url</p>
-                    </TooltipContent>
+                    <TooltipContent>Copy url</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -394,24 +422,48 @@ export default function Api() {
                 </>
               )}
               {isUrlEditing ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div
-                      onClick={() => {
-                        saveUpdate()
-                        getApi(api?.id)
-                      }}
-                      className={buttonVariants({
-                        className: 'p-1 rounded-l-none cursor-pointer',
-                        variant: 'secondary',
-                        size: 'icon',
-                      })}
-                    >
-                      <Save size={18} />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>Save Url</TooltipContent>
-                </Tooltip>
+                <>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="flex justify-self-end px-3 text-xs rounded-none"
+                        size="sm"
+                        onClick={() => setIsOpenCurlDialog(true)}
+                      >
+                        cURL
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Import cURL request</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div
+                        onClick={() => {
+                          if (!isUrlError) {
+                            saveUpdate()
+                            getApi(api?.id)
+                          } else {
+                            toast({
+                              variant: 'error',
+                              title: 'Error',
+                              description: 'Url or variable is not valid',
+                            })
+                          }
+                        }}
+                        className={buttonVariants({
+                          className: 'p-1 rounded-l-none cursor-pointer',
+                          variant: 'secondary',
+                          size: 'icon',
+                        })}
+                      >
+                        <Save size={18} />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>Save Url</TooltipContent>
+                  </Tooltip>
+                </>
               ) : (
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -424,9 +476,7 @@ export default function Api() {
                       <i className="bi bi-plugin text-xl font-bold" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Send request</p>
-                  </TooltipContent>
+                  <TooltipContent>Send request</TooltipContent>
                 </Tooltip>
               )}
             </div>
@@ -513,6 +563,43 @@ export default function Api() {
           </Pane>
         </SplitPane>
       </div>
+      <AlertDialog
+        open={isOpenCurlDialog}
+        onOpenChange={setIsOpenCurlDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>cURL</AlertDialogTitle>
+            <AlertDialogDescription>
+              Add cURL request here it will generate as connector request
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Textarea
+            rows={7}
+            value={curl}
+            className="resize-none"
+            onChange={(e) => setCurl(e.target.value)}
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              className="h-8"
+              onClick={() => copyCurl()}
+            >
+              Copy
+            </AlertDialogCancel>
+            <AlertDialogCancel className="h-8">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="h-8"
+              onClick={() => {
+                saveRequestFromCurl(curl, api?.id)
+                setCurl('')
+              }}
+            >
+              Save
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
