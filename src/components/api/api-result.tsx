@@ -213,9 +213,46 @@ const ApiResult = ({
                               </TableCell>
                               <TableCell
                                 key={uuid()}
-                                className="border"
+                                className={cn(
+                                  'border',
+                                  headers[item].startsWith('{') &&
+                                    headers[item].endsWith('}') &&
+                                    'p-0',
+                                )}
                               >
-                                {headers[item]}
+                                {headers[item].startsWith('{') &&
+                                headers[item].endsWith('}') ? (
+                                  <MonacoEditor
+                                    beforeMount={setEditorTheme}
+                                    height={
+                                      JSON.stringify(
+                                        JSON.parse(headers[item]),
+                                        null,
+                                        2,
+                                      ).split('\n').length * 20
+                                    }
+                                    width="100%"
+                                    saveViewState={true}
+                                    defaultLanguage="json"
+                                    value={JSON.stringify(
+                                      JSON.parse(headers[item]),
+                                      null,
+                                      2,
+                                    )}
+                                    theme={
+                                      theme === 'dark' ? 'onedark' : 'light'
+                                    }
+                                    options={editorOptions({
+                                      readOnly: true,
+                                    })}
+                                    loading={<Loading />}
+                                    onMount={(editor: Monaco) =>
+                                      (editorRef.current = editor)
+                                    }
+                                  />
+                                ) : (
+                                  headers[item]
+                                )}
                               </TableCell>
                             </TableRow>
                           )

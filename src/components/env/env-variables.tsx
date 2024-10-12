@@ -89,7 +89,7 @@ export default function EnvVariables({
   }, [form, collection])
 
   useEffect(() => {
-    if (collection.env?.length) {
+    if (collection?.env?.length) {
       const env = collection.env
       form.setValue('env', env)
     } else {

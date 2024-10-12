@@ -18,9 +18,7 @@ export default function useUpdate() {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false)
   const checkUpdate = async () => {
     try {
-      const update = await check({
-        target: 'auto',
-      })
+      const update = await check()
       if (update?.available) {
         setUpdateDetails(update)
         toast({

@@ -34,7 +34,11 @@ const fetcher = async ({
   })
   const requestConfigs = {
     method,
-    body: isUpload ? formData : JSON.stringify(requestBody),
+    body: isUpload
+      ? formData
+      : method === 'GET'
+      ? null
+      : JSON.stringify(requestBody),
     headers,
   }
   if (isUpload) {

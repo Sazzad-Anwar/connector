@@ -38,6 +38,7 @@
   },
   "plugins": {
     "updater": {
+      "version": "2.0.0",
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDEwQjYwMUIyQkQzOEQyRTEKUldUaDBqaTlzZ0cyRU1wVG13TzJGSmFlS0J3YWxMSWhIM1lMNlJmTStNZGgvN0p1c28yV0FELzEK",
       "endpoints": [
         "https://github.com/Sazzad-Anwar/connector/releases/tag/v2.0.0/latest.json"

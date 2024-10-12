@@ -1,38 +1,36 @@
 import configs from '@/../package.json'
-import { platform } from '@tauri-apps/plugin-os'
-import { Settings } from 'lucide-react'
-import { useEffect, useState } from 'react'
+// import { Settings } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import useUpdate from '../../hooks/useUpdate'
+// import useUpdate from '../../hooks/useUpdate'
 import { ThemeToggle } from '../theme-toggler'
-import { Button } from '../ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../ui/dialog'
+// import { Button } from '../ui/button'
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogDescription,
+//   DialogHeader,
+//   DialogTitle,
+//   DialogTrigger,
+// } from '../ui/dialog'
 
 export function SideNavHeader() {
-  const { RestartApp, checkUpdate, updateDetails } = useUpdate()
-  const [isDesktop, setIsDesktop] = useState(false)
+  // const { RestartApp, checkUpdate, updateDetails } = useUpdate()
+  // const [isDesktop, setIsDesktop] = useState(false)
 
-  useEffect(() => {
-    const checkDesktop = async () => {
-      try {
-        const os = platform()
-        if (['windows', 'macos', 'linux'].includes(os)) {
-          setIsDesktop(true)
-        }
-      } catch (error) {
-        setIsDesktop(false)
-      }
-    }
+  // useEffect(() => {
+  //   const checkDesktop = async () => {
+  //     try {
+  //       const os = platform()
+  //       if (['windows', 'macos', 'linux'].includes(os)) {
+  //         setIsDesktop(true)
+  //       }
+  //     } catch (error) {
+  //       setIsDesktop(false)
+  //     }
+  //   }
 
-    checkDesktop()
-  }, [])
+  //   checkDesktop()
+  // }, [])
 
   return (
     <>
@@ -47,7 +45,7 @@ export function SideNavHeader() {
         </Link>
 
         <div className="space-x-2">
-          {isDesktop && (
+          {/* {isDesktop && (
             <Dialog>
               <DialogTrigger>
                 <Settings size={20} />
@@ -75,11 +73,11 @@ export function SideNavHeader() {
                 </div>
               </DialogContent>
             </Dialog>
-          )}
+          )} */}
           <ThemeToggle />
         </div>
       </div>
-      <RestartApp />
+      {/* <RestartApp /> */}
     </>
   )
 }
