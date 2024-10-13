@@ -68,12 +68,12 @@ export default function useUpdate() {
     } catch (error) {
       if (process.env.NODE_ENV !== 'production') {
         console.log(error)
+        toast({
+          variant: 'default',
+          title: 'Error checking for updates',
+          description: JSON.stringify(error),
+        })
       }
-      toast({
-        variant: 'default',
-        title: 'Error checking for updates',
-        description: JSON.stringify(error),
-      })
     }
   }
 

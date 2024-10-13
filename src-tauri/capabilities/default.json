@@ -20,11 +20,21 @@
     {
       "identifier": "http:default",
       "allow": [
-        { "url": "https://*" },
-        { "url": "http://*" },
-        { "url": "wss://*" },
-        { "url": "ws://*" },
-        { "url": "http://localhost:*" }
+        {
+          "url": "https://*"
+        },
+        {
+          "url": "http://*"
+        },
+        {
+          "url": "wss://*"
+        },
+        {
+          "url": "ws://*"
+        },
+        {
+          "url": "http://localhost:*"
+        }
       ]
     },
     {
