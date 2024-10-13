@@ -32,7 +32,7 @@ export const InputTabs = ({
   const [interactiveQueryData, setInteractiveQueryData] = useState<any>({})
   const [isTimedOut, setTimedOut] = useState<boolean>(false)
   const [activeBodyPayloadType, setActiveBodyPayloadType] = useState<
-    'x-form-urlencoded' | 'json'
+    'x-form-urlencoded' | 'json' | 'form-data'
   >()
   const navigate = useNavigate()
   const [defaultOpen, setDefaultOpen] = useState<string>('params')
@@ -83,6 +83,7 @@ export const InputTabs = ({
   useEffect(() => {
     setDefaultOpen(
       (api && api?.body?.find((item: ParamsType) => item.isActive)) ||
+        (api && api?.formData?.find((item: ParamsType) => item.isActive)) ||
         (typeof api?.jsonBody === 'object' && Object.keys(api?.jsonBody).length)
         ? 'body'
         : api?.params?.find((item: ParamsType) => item.isActive) ||
@@ -96,11 +97,13 @@ export const InputTabs = ({
         : 'params',
     )
     setActiveBodyPayloadType(
-      api?.body?.find((item: ParamsType) => item.isActive)
+      api?.formData?.find((item: ParamsType) => item.isActive)
+        ? 'form-data'
+        : api?.body?.find((item: ParamsType) => item.isActive)
         ? 'x-form-urlencoded'
         : 'json',
     )
-  }, [api])
+  }, [])
 
   return (
     <div className={className}>
@@ -136,7 +139,8 @@ export const InputTabs = ({
           >
             Body{' '}
             {api?.body?.find((item: ParamsType) => item.isActive) ||
-            (api?.jsonBody && Object.keys(api?.jsonBody).length) ? (
+            (api?.jsonBody && Object.keys(api?.jsonBody).length) ||
+            api?.formData?.find((item: ParamsType) => item.isActive) ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
           </TabsTrigger>
@@ -306,6 +310,19 @@ export const InputTabs = ({
           >
             <TabsList className="px-.5 h-9">
               <TabsTrigger
+                value="form-data"
+                className="h-7"
+                onClick={() => {
+                  setActiveBodyPayloadType('form-data')
+                  form.setValue('activeBody', 'form-data')
+                }}
+              >
+                Form Data{' '}
+                {api?.formData?.find((item: ParamsType) => item.isActive) ? (
+                  <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+                ) : null}
+              </TabsTrigger>
+              <TabsTrigger
                 value="x-form-urlencoded"
                 className="h-7"
                 onClick={() => {
@@ -365,6 +382,20 @@ export const InputTabs = ({
               ) : (
                 <Loading />
               )}
+            </TabsContent>
+            <TabsContent
+              value="form-data"
+              className="animate__animated animate__fadeIn relative overflow-auto"
+              style={{
+                maxHeight: height as number,
+              }}
+            >
+              <Suspense fallback={<Loading />}>
+                <MultipleInput
+                  propertyName="formData"
+                  form={form}
+                />
+              </Suspense>
             </TabsContent>
             <TabsContent
               value="x-form-urlencoded"

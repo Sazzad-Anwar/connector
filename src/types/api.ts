@@ -23,10 +23,11 @@ export const ApiSchema = z.object({
   pathVariables: z.array(ParamsSchema).optional(),
   headers: z.array(ParamsSchema).optional(),
   body: z.array(ParamsSchema).optional(),
+  formData: z.array(ParamsSchema).optional(),
   dynamicVariables: z.array(ParamsSchema).optional(),
   jsonBody: z.any().optional(),
   interactiveQuery: z.any().optional(),
-  activeBody: z.enum(['x-form-urlencoded', 'json']).optional(),
+  activeBody: z.enum(['x-form-urlencoded', 'json', 'form-data']).optional(),
   activeQuery: z
     .enum(['interactive-query', 'query-params', 'url-params'])
     .optional(),

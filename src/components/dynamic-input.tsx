@@ -27,6 +27,7 @@ type PropsTypes = {
     | 'body'
     | 'pathVariables'
     | 'dynamicVariables'
+    | 'formData'
   field: FieldArrayWithId<
     ApiType,
     'params' | 'pathVariables' | 'headers' | 'body' | 'dynamicVariables',
@@ -163,7 +164,7 @@ export default function DynamicInput({
               )
           }}
         />
-        {propertyName === 'body' && (
+        {form.watch('activeBody') === 'form-data' && (
           <Select
             onValueChange={(value) =>
               form.setValue(

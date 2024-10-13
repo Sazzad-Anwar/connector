@@ -223,6 +223,12 @@ export default function useApiComponent() {
           ? api?.body
           : [{ id: uuid(), key: '', value: '', description: '' }],
       )
+      form.setValue(
+        'formData',
+        api?.formData?.length
+          ? api?.formData
+          : [{ id: uuid(), key: '', value: '', description: '' }],
+      )
       form.setValue('jsonBody', api?.jsonBody)
       form.setValue(
         'dynamicVariables',
@@ -317,7 +323,9 @@ export default function useApiComponent() {
 
       // This will check if the {{dynamic_variable}} exists on body payload. If exists then replace with the value
       const requestBody = checkAndReplaceWithDynamicVariable(
-        arrayToObjectConversion(submitData.body!),
+        submitData.activeBody === 'x-form-urlencoded'
+          ? arrayToObjectConversion(submitData.body!)
+          : arrayToObjectConversion(submitData.formData!),
         env,
       )
 
@@ -360,7 +368,17 @@ export default function useApiComponent() {
         isUpload: files?.length ? true : false,
         headers,
         requestBody:
-          activeBody === 'json' ? form.getValues('jsonBody') : requestBody,
+          activeBody === 'json'
+            ? form.getValues('jsonBody')
+            : activeBody === 'form-data'
+            ? form.getValues('formData')
+            : requestBody,
+        contentType:
+          activeBody === 'json'
+            ? 'application/json'
+            : activeBody === 'form-data'
+            ? 'multipart/form-data'
+            : 'application/x-www-form-urlencoded',
       })
       const endTime = Date.now()
 
@@ -454,6 +472,7 @@ export default function useApiComponent() {
         form.getValues('dynamicVariables')!,
       )
       data.body = filterEmptyParams(form.getValues('body')!)
+      data.formData = filterEmptyParams(form.getValues('formData')!)
       data.pathVariables =
         filterEmptyParams(form.watch('pathVariables')!).length! > 0 &&
         form.watch('url').includes('/:')
@@ -507,7 +526,6 @@ export default function useApiComponent() {
   const saveRequestFromCurl = (cmd: string, id: string) => {
     if (isCurlCall(cmd)) {
       const data = parseCurlToJson(cmd, id)
-
       if (data) {
         updateApi(data, id)
         navigate(`/api/${folderId}/${id}`)

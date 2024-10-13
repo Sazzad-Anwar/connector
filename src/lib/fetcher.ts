@@ -10,12 +10,17 @@ const fetcher = async ({
   headers,
   isUpload,
   submitDataBody,
+  contentType,
 }: {
   url: string
   method: 'POST' | 'GET' | 'PUT' | 'DELETE' | 'PATCH'
   requestBody: any
   headers?: any
   isUpload?: boolean
+  contentType?:
+    | 'multipart/form-data'
+    | 'application/json'
+    | 'application/x-www-form-urlencoded'
   submitDataBody?: ParamsType[]
 }) => {
   const formData = new FormData()
@@ -41,13 +46,17 @@ const fetcher = async ({
       : JSON.stringify(requestBody),
     headers,
   }
-  if (isUpload) {
+  if (contentType === 'multipart/form-data') {
     requestConfigs['headers'] = {
       'Content-Type': 'multipart/form-data',
     }
-  } else {
+  } else if (contentType === 'application/json') {
     requestConfigs['headers'] = {
       'Content-Type': 'application/json',
+    }
+  } else {
+    requestConfigs['headers'] = {
+      'Content-Type': 'application/x-www-form-urlencoded',
     }
   }
   try {

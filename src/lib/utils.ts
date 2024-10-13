@@ -696,16 +696,17 @@ export function parseCurlToJson(curl: string, id: string): ApiType {
     headers: [],
     body: [],
     dynamicVariables: [],
+    formData: [],
     jsonBody: {},
     interactiveQuery: {},
     activeBody: undefined,
     activeQuery: undefined,
   }
 
-  const headerRegex = /--header\s+['"]([^:]+):\s*([^'"]+)['"]/g
-  const bodyRegex = /(--data|-d|--data-urlencode)\s*['"]([^'"]*)['"]/g
-  const methodRegex = /-X\s*(\w+)/
-  const urlRegex = /(https?:\/\/[^\s'"]+)/
+  const headerRegex = /-H\s+['"]([^:]+):\s*([^'"]+)['"]/g // Update for -H flag
+  const bodyRegex = /(--data-urlencode|--data|-d|--form|-F)\s+(['"])(.*?)\2/g
+  const methodRegex = /-X\s*(\w+)/ // Extract method
+  const urlRegex = /(https?:\/\/[^\s'"]+)/ // Extract URL
 
   // Extract headers
   let headerMatch
@@ -718,22 +719,56 @@ export function parseCurlToJson(curl: string, id: string): ApiType {
     })
   }
 
-  // Extract body including --data-urlencode
+  // Extract body including --data, -d, --data-urlencode, and form data (-F)
   let bodyMatch
   while ((bodyMatch = bodyRegex.exec(curl)) !== null) {
-    result.body?.push({
-      id: uuid(),
-      isActive: true,
-      key: bodyMatch[2].split('=')[0].trim(),
-      value: decodeURIComponent(bodyMatch[2].split('=')[1].trim()),
-    })
-    result.activeBody = 'x-form-urlencoded'
+    const option = bodyMatch[1]
+    const value = bodyMatch[3]
+
+    if (option === '--data-urlencode') {
+      // Handle URL-encoded data
+      const [key, encodedValue] = value.split('=')
+      const decodedValue = decodeURIComponent(encodedValue || '')
+      result?.body?.push({
+        id: uuid(),
+        isActive: true,
+        key: key.trim(),
+        value: decodedValue.trim(),
+      })
+      result.activeBody = 'x-form-urlencoded'
+    } else if (option === '-F' || option === '--form') {
+      // Handle multipart form data
+      const [key, formValue] = value.split('=')
+      result?.formData?.push({
+        id: uuid(),
+        isActive: true,
+        key: key.trim(),
+        value: formValue.trim(),
+      })
+      result.activeBody = 'x-form-urlencoded'
+    } else {
+      // Handle JSON data from -d or --data
+      try {
+        const parsedJson = JSON.parse(value)
+        result.jsonBody = { ...result.jsonBody, ...parsedJson }
+        result.activeBody = 'json'
+      } catch (error) {
+        // If it's not JSON, push it to the body array
+        result?.body?.push({
+          id: uuid(),
+          isActive: true,
+          key: 'body',
+          value: value,
+        })
+        result.activeBody = 'x-form-urlencoded'
+      }
+    }
   }
 
   // Extract method
   const methodMatch = methodRegex.exec(curl)
   if (methodMatch) {
-    result.method = methodMatch[1] as ApiType['method']
+    result.method = methodMatch[1].toUpperCase() as ApiType['method']
   }
 
   // Extract URL
@@ -758,16 +793,22 @@ export function generateCurlFromJson(apiData: ApiType): string {
     })
   }
 
-  // Add body (for urlencoded data)
+  // Add body or form data based on activeBody type
   if (apiData.body && apiData.body.length > 0) {
+    // Add urlencoded data
     apiData.body.forEach((param) => {
       curlCommand += ` \\\n--data-urlencode '${param.key}=${encodeURIComponent(
         param.value,
       )}'`
     })
   } else if (apiData.jsonBody && Object.keys(apiData.jsonBody).length > 0) {
-    // If jsonBody is provided, serialize it
+    // Add JSON body
     curlCommand += ` \\\n--data '${JSON.stringify(apiData.jsonBody)}'`
+  } else if (apiData.formData && apiData.formData.length > 0) {
+    // Add form data
+    apiData.formData.forEach((formParam) => {
+      curlCommand += ` \\\n-F '${formParam.key}=${formParam.value}'`
+    })
   }
 
   return curlCommand

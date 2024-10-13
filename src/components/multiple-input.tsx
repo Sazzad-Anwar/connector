@@ -22,6 +22,7 @@ export type PropsType = {
     | 'body'
     | 'pathVariables'
     | 'dynamicVariables'
+    | 'formData'
   form: UseFormReturn<ApiType, any, undefined>
   params?: ParamsType[]
 }
