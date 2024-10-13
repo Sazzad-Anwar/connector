@@ -577,7 +577,7 @@ export default function Api() {
           <Textarea
             rows={7}
             value={curl}
-            className="resize-none"
+            className="resize-none w-auto border focus:ring-0 focus-visible:ring-0 focus-within:ring-0 "
             onChange={(e) => setCurl(e.target.value)}
           />
           <AlertDialogFooter>
