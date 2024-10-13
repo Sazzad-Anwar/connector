@@ -134,7 +134,6 @@ export default function useApiComponent() {
               time: '',
             },
       )
-      setCurl(generateCurlFromJson(api))
     } else {
       setResult(null)
       setResponseStatus({
@@ -263,7 +262,7 @@ export default function useApiComponent() {
           : 'query-params',
       )
     }
-
+    setCurl(replaceVariables(generateCurlFromJson(api), env))
     const saveAll = () => {
       saveUpdate()
       getApi(api?.id)

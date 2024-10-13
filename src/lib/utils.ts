@@ -792,11 +792,14 @@ export function generateCurlFromJson(apiData: ApiType): string {
       }
     })
   }
-
   // Add body or form data based on activeBody type
-  if (apiData.body && apiData.body.length > 0) {
+  if (
+    apiData.body &&
+    filterEmptyParams(apiData.body).length > 0 &&
+    apiData.body.find((param) => param.isActive)
+  ) {
     // Add urlencoded data
-    apiData.body.forEach((param) => {
+    filterEmptyParams(apiData.body).forEach((param) => {
       curlCommand += ` \\\n--data-urlencode '${param.key}=${encodeURIComponent(
         param.value,
       )}'`
@@ -804,9 +807,13 @@ export function generateCurlFromJson(apiData: ApiType): string {
   } else if (apiData.jsonBody && Object.keys(apiData.jsonBody).length > 0) {
     // Add JSON body
     curlCommand += ` \\\n--data '${JSON.stringify(apiData.jsonBody)}'`
-  } else if (apiData.formData && apiData.formData.length > 0) {
+  } else if (
+    apiData.formData &&
+    filterEmptyParams(apiData.formData).length > 0 &&
+    apiData.formData.find((formParam) => formParam.isActive)
+  ) {
     // Add form data
-    apiData.formData.forEach((formParam) => {
+    filterEmptyParams(apiData.formData).forEach((formParam) => {
       curlCommand += ` \\\n-F '${formParam.key}=${formParam.value}'`
     })
   }

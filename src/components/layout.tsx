@@ -5,22 +5,22 @@ import useSidePanelToggleStore from '@/store/sidePanelToggle'
 import React, { useEffect, useState } from 'react'
 import { Pane } from 'split-pane-react'
 import SplitPane from 'split-pane-react/esm/SplitPane'
-import useUpdate from '../hooks/useUpdate'
+// import useUpdate from '../hooks/useUpdate'
 import SideNav from './nav/nav'
 import { Toaster } from './ui/toaster'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { isOpen } = useSidePanelToggleStore()
-  const { checkUpdate, RestartApp } = useUpdate()
+  // const { checkUpdate, RestartApp } = useUpdate()
   const sideNavWidth = 300
   const [sizes, setSizes] = useState([
     window.innerWidth >= 1024 ? 250 : sideNavWidth,
     window.innerWidth - sideNavWidth,
   ])
 
-  useEffect(() => {
-    checkUpdate()
-  }, [])
+  // useEffect(() => {
+  //   checkUpdate()
+  // }, [])
 
   useEffect(() => {
     if (!isOpen) {
@@ -98,7 +98,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <Toaster />
         </div>
       </main>
-      <RestartApp />
+      {/* <RestartApp /> */}
     </>
   )
 }
