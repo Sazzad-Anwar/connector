@@ -4,7 +4,7 @@ import { UseFormReturn } from 'react-hook-form'
 
 import { ApiType, ParamsType } from '@/types/api'
 
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import useResultRenderViewStore from '../../store/resultRenderView'
 import Loading from '../loading'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
@@ -34,7 +34,6 @@ export const InputTabs = ({
   const [activeBodyPayloadType, setActiveBodyPayloadType] = useState<
     'x-form-urlencoded' | 'json' | 'form-data'
   >()
-  const navigate = useNavigate()
   const [defaultOpen, setDefaultOpen] = useState<string>('params')
   const { resultRenderView } = useResultRenderViewStore()
 
@@ -78,7 +77,7 @@ export const InputTabs = ({
       clearTimeout(timer)
       setTimedOut(false)
     }
-  }, [api, navigate])
+  }, [api])
 
   useEffect(() => {
     setDefaultOpen(

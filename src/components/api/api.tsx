@@ -133,9 +133,7 @@ export default function Api() {
   return (
     <>
       <Suspense fallback={<Loading className="h-screen" />}>
-        <ApiTabs
-          isEdited={!!Object.entries(form.formState.dirtyFields).length}
-        />
+        <ApiTabs isEdited={form.formState.isDirty} />
       </Suspense>
       <div
         ref={formDivRef}

@@ -11,7 +11,7 @@ import {
   MoreVertical,
 } from 'lucide-react'
 
-import React, { Fragment, useRef, useState } from 'react'
+import React, { Fragment, useRef } from 'react'
 import { v4 as uuid } from 'uuid'
 
 import { cn, findRootCollection } from '@/lib/utils'
@@ -51,10 +51,11 @@ export default function RenderNavigation({
   collection,
 }: RenderNavigationProps): JSX.Element {
   const { collections } = useApiStore()
-  const [isFolderOpen, setIsFolderOpen] = useState(true)
   const navWidthRef = useRef<HTMLDivElement>(null)
   const params = useParams()
   const {
+    isFolderOpen,
+    setIsFolderOpen,
     isEnvDialogOpen,
     setIsEnvDialogOpen,
     renameCollectionName,
@@ -113,7 +114,7 @@ export default function RenderNavigation({
                 onClick={() => {
                   setIsFolderOpen(!isFolderOpen)
                 }}
-                className="flex flex-1 h-7 text-[13px] items-center"
+                className="flex flex-1 h-7 text-[13px] items-center focus-within:outline-none focus-visible:outline-none"
               >
                 <div className="size-[18px] mr-3">
                   <ChevronRight

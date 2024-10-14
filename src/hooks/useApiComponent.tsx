@@ -263,23 +263,18 @@ export default function useApiComponent() {
       )
     }
     setCurl(replaceVariables(generateCurlFromJson(api), env))
-    const saveAll = () => {
-      saveUpdate()
-      getApi(api?.id)
-      form.reset(api)
-    }
 
     const handleKeyPress = (event: KeyboardEvent) => {
       if (
         (event.ctrlKey && event.key === 's') ||
         (event.metaKey && event.key === 's')
       ) {
-        saveAll()
+        saveUpdate()
       }
       if (event.key === 'Enter' && form.formState.isDirty) {
         setIsApiNameEditing(false)
         setIsUrlEditing(false)
-        saveAll()
+        saveUpdate()
       }
       if (event.key === 'Enter' && !form.formState.isDirty) {
         setIsApiNameEditing(false)
@@ -287,9 +282,7 @@ export default function useApiComponent() {
       }
 
       if (event.key === 'Escape') {
-        // Handle the "Escape" key press here
-        getApi(api?.id)
-        // form.reset(api)
+        form.reset(api)
         setIsUrlEditing(false)
         setIsApiNameEditing(false)
       }
@@ -492,15 +485,13 @@ export default function useApiComponent() {
       })
       setIsUrlEditing(false)
       setIsApiNameEditing(false)
-      form.reset()
       updateTab({
         id: params.apiId,
         name: data.name,
         folderId: folderId,
         isActive: true,
       })
-      navigate(`/api/${folderId}/${params.apiId}`)
-      getApi(api?.id)
+      form.reset(data)
     }
   }, [form, api])
 

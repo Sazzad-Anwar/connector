@@ -15,7 +15,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { tabs } = useTabRenderStore()
   const navigate = useNavigate()
   const { checkUpdate, RestartApp } = useUpdate()
-  const sideNavWidth = 300
+  const sideNavWidth = 320
   const [sizes, setSizes] = useState([
     window.innerWidth >= 1024 ? 250 : sideNavWidth,
     window.innerWidth - sideNavWidth,
