@@ -12,9 +12,8 @@ import {
   TooltipTrigger,
 } from '@radix-ui/react-tooltip'
 import copy from 'copy-to-clipboard'
-import { useEffect, useRef } from 'react'
+import { Dispatch, SetStateAction, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import SideNavToggler from '../nav/sidenav-toggler'
 import { Button } from '../ui/button'
 import { Form } from '../ui/form'
 import {
@@ -27,7 +26,11 @@ import {
 } from '../ui/table'
 import { toast } from '../ui/use-toast'
 
-export default function EnvVariables() {
+export default function EnvVariables({
+  setIsEnvDialogOpen,
+}: {
+  setIsEnvDialogOpen: Dispatch<SetStateAction<boolean>>
+}) {
   const params = useParams()
   const submitButtonRef = useRef<HTMLButtonElement>(null)
   const { collections, updateFolder } = useApiStore()
@@ -45,28 +48,33 @@ export default function EnvVariables() {
 
   useEffect(() => {
     const handleEscapeKeyPress = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === 's' && form.formState.isDirty) {
-        event.preventDefault()
-        submitButtonRef.current?.click()
-        form.reset()
-      }
-      if (event.key === 'Escape') {
-        // Handle the "Escape" key press here
-        if (form.formState.isDirty) {
-          if (collection.env?.length) {
-            const env = collection.env
-            form.setValue('env', env)
-          } else {
-            form.setValue('env', [
-              {
-                id: uuid(),
-                key: '',
-                value: '',
-                description: '',
-              },
-            ])
-          }
+      if (
+        form.formState.isDirty ||
+        !!Object.entries(form.formState.dirtyFields).length
+      ) {
+        if (event.ctrlKey && event.key === 's') {
+          event.preventDefault()
+          submitButtonRef.current?.click()
           form.reset()
+        }
+        if (event.key === 'Escape') {
+          // Handle the "Escape" key press here
+          if (form.formState.isDirty) {
+            if (collection.env?.length) {
+              const env = collection.env
+              form.setValue('env', env)
+            } else {
+              form.setValue('env', [
+                {
+                  id: uuid(),
+                  key: '',
+                  value: '',
+                  description: '',
+                },
+              ])
+            }
+            form.reset()
+          }
         }
       }
     }
@@ -81,7 +89,7 @@ export default function EnvVariables() {
   }, [form, collection])
 
   useEffect(() => {
-    if (collection.env?.length) {
+    if (collection?.env?.length) {
       const env = collection.env
       form.setValue('env', env)
     } else {
@@ -129,17 +137,14 @@ export default function EnvVariables() {
   }
 
   return (
-    <section className="p-5">
+    <section className="mt-5">
       <div className="flex items-center">
-        <SideNavToggler />
-        <h1 className="ml-5 text-base lg:text-lg xl:text-xl">
-          {collection?.name}
-        </h1>
+        <h1 className="text-sm">{collection?.name}</h1>
         <ChevronsRight
           size={13}
           className="mx-2"
         />
-        <h1 className="text-base lg:text-lg xl:text-xl">Variables</h1>
+        <h1 className="text-sm">Variables</h1>
       </div>
       <Form {...form}>
         <form
@@ -254,26 +259,24 @@ export default function EnvVariables() {
           </Table>
           <div className="flex items-center justify-end w-full">
             <div className="flex items-center">
-              {form.formState.isDirty && (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="mt-5 mr-5"
-                    onClick={() => reloadPage()}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    ref={submitButtonRef}
-                    type="submit"
-                    size="sm"
-                    className="mt-5"
-                  >
-                    Save
-                  </Button>
-                </>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-5"
+                onClick={() => setIsEnvDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              {!!Object.entries(form.formState.dirtyFields).length && (
+                <Button
+                  ref={submitButtonRef}
+                  type="submit"
+                  size="sm"
+                  className="mt-5 ml-5"
+                >
+                  Save
+                </Button>
               )}
             </div>
           </div>

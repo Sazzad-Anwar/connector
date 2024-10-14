@@ -1,16 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
 import { ApiType, ParamsType } from '@/types/api'
 
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import useResultRenderViewStore from '../../store/resultRenderView'
 import Loading from '../loading'
-import MultipleInput from '../multiple-input'
-import ResultRender from '../result-renderer'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
-import { JSONErrorType } from './api'
+const MultipleInput = lazy(() => import('../multiple-input'))
+const ResultRender = lazy(() => import('../result-renderer'))
 
 type PropsType = {
   form: UseFormReturn<ApiType, any, undefined>
@@ -28,16 +27,13 @@ export const InputTabs = ({
   className,
 }: PropsType) => {
   const location = useLocation()
-  const [searchParams] = useSearchParams()
   const jsonBodyDivRef = useRef<HTMLDivElement>(null)
   const [jsonBodyData, setJsonBodyData] = useState<any>({})
   const [interactiveQueryData, setInteractiveQueryData] = useState<any>({})
   const [isTimedOut, setTimedOut] = useState<boolean>(false)
   const [activeBodyPayloadType, setActiveBodyPayloadType] = useState<
-    'x-form-urlencoded' | 'json'
+    'x-form-urlencoded' | 'json' | 'form-data'
   >()
-  const navigate = useNavigate()
-  const [jsonError, setJsonError] = useState<JSONErrorType | undefined>()
   const [defaultOpen, setDefaultOpen] = useState<string>('params')
   const { resultRenderView } = useResultRenderViewStore()
 
@@ -49,11 +45,6 @@ export const InputTabs = ({
       if (activeBodyPayloadType === 'json') {
         form.setValue('jsonBody', jsonData, { shouldDirty: true })
       }
-
-      setJsonError({
-        isError: false,
-        error: '',
-      })
     } catch (error: any) {
       console.log(error)
     }
@@ -64,11 +55,6 @@ export const InputTabs = ({
       const jsonData = JSON.parse(data)
       setInteractiveQueryData(jsonData)
       form.setValue('interactiveQuery', jsonData, { shouldDirty: true })
-
-      setJsonError({
-        isError: false,
-        error: '',
-      })
     } catch (error: any) {
       // console.log(error)
     }
@@ -91,11 +77,12 @@ export const InputTabs = ({
       clearTimeout(timer)
       setTimedOut(false)
     }
-  }, [api, navigate])
+  }, [api])
 
   useEffect(() => {
     setDefaultOpen(
       (api && api?.body?.find((item: ParamsType) => item.isActive)) ||
+        (api && api?.formData?.find((item: ParamsType) => item.isActive)) ||
         (typeof api?.jsonBody === 'object' && Object.keys(api?.jsonBody).length)
         ? 'body'
         : api?.params?.find((item: ParamsType) => item.isActive) ||
@@ -109,11 +96,13 @@ export const InputTabs = ({
         : 'params',
     )
     setActiveBodyPayloadType(
-      api?.body?.find((item: ParamsType) => item.isActive)
+      api?.formData?.find((item: ParamsType) => item.isActive)
+        ? 'form-data'
+        : api?.body?.find((item: ParamsType) => item.isActive)
         ? 'x-form-urlencoded'
         : 'json',
     )
-  }, [api])
+  }, [])
 
   return (
     <div className={className}>
@@ -149,7 +138,8 @@ export const InputTabs = ({
           >
             Body{' '}
             {api?.body?.find((item: ParamsType) => item.isActive) ||
-            (api?.jsonBody && Object.keys(api?.jsonBody).length) ? (
+            (api?.jsonBody && Object.keys(api?.jsonBody).length) ||
+            api?.formData?.find((item: ParamsType) => item.isActive) ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
           </TabsTrigger>
@@ -166,17 +156,10 @@ export const InputTabs = ({
         <TabsContent
           value="params"
           className="animate__animated animate__fadeIn"
-          style={{
-            maxHeight: (height as number) + 95,
-          }}
         >
           <Tabs
             defaultValue={
-              searchParams.get('activeQuery') !== null
-                ? (searchParams.get('activeQuery') as
-                    | 'query-params'
-                    | 'interactive-query')
-                : api?.params?.find((item: ParamsType) => item.isActive)
+              api?.params?.find((item: ParamsType) => item.isActive)
                 ? 'query-params'
                 : typeof api?.interactiveQuery === 'object' &&
                   Object.keys(api?.interactiveQuery).length
@@ -185,7 +168,7 @@ export const InputTabs = ({
                     (item: ParamsType) => item.key === '',
                   )
                 ? 'url-params'
-                : 'query-params'
+                : 'interactive-query'
             }
             className="w-full"
           >
@@ -193,13 +176,6 @@ export const InputTabs = ({
               <TabsTrigger
                 onClick={() => {
                   form.setValue('activeQuery', 'query-params')
-                  navigate({
-                    search: searchParams.get('view')
-                      ? `activeQuery=query-params&view=${searchParams.get(
-                          'view',
-                        )}`
-                      : `activeQuery=query-params`,
-                  })
                 }}
                 value="query-params"
                 className="h-7"
@@ -212,13 +188,6 @@ export const InputTabs = ({
               <TabsTrigger
                 onClick={() => {
                   form.setValue('activeQuery', 'interactive-query')
-                  navigate({
-                    search: searchParams.get('view')
-                      ? `activeQuery=interactive-query&view=${searchParams.get(
-                          'view',
-                        )}`
-                      : `activeQuery=interactive-query`,
-                  })
                 }}
                 value="interactive-query"
                 className="h-7"
@@ -231,13 +200,7 @@ export const InputTabs = ({
               </TabsTrigger>
               <TabsTrigger
                 onClick={() => {
-                  navigate({
-                    search: searchParams.get('view')
-                      ? `activeQuery=url-params&view=${searchParams.get(
-                          'view',
-                        )}`
-                      : `activeQuery=url-params`,
-                  })
+                  form.setValue('activeQuery', 'url-params')
                 }}
                 value="url-params"
                 className="h-7"
@@ -252,25 +215,30 @@ export const InputTabs = ({
               value="query-params"
               className="animate__animated animate__fadeIn"
               style={{
-                height: height as number,
+                maxHeight: (height as number) - 95,
               }}
             >
-              <MultipleInput
-                propertyName="params"
-                form={form}
-              />
+              <Suspense fallback={<Loading />}>
+                <MultipleInput
+                  propertyName="params"
+                  form={form}
+                />
+              </Suspense>
             </TabsContent>
             <TabsContent
               value="url-params"
               className="animate__animated animate__fadeIn relative overflow-auto"
               style={{
-                maxHeight: (height as number) + 95,
+                maxHeight: height as number,
               }}
             >
-              <MultipleInput
-                propertyName="pathVariables"
-                form={form}
-              />
+              <Suspense fallback={<Loading />}>
+                <MultipleInput
+                  propertyName="pathVariables"
+                  form={form}
+                  params={api?.pathVariables}
+                />
+              </Suspense>
             </TabsContent>
             <TabsContent
               value="interactive-query"
@@ -279,33 +247,38 @@ export const InputTabs = ({
                 height: (height as number) - (type === 'create' ? 96 : 0),
               }}
             >
-              <div className="flex items-center justify-between">
-                {jsonError?.isError ? (
-                  <div className="h-4 text-xs font-bold text-red-500">
-                    {jsonError.error}
-                  </div>
-                ) : (
-                  <div className="h-4"></div>
-                )}
-              </div>
               {isTimedOut ? (
-                <ResultRender
-                  ref={jsonBodyDivRef}
-                  result={interactiveQueryData}
-                  height={
-                    (height as number) -
-                    (location.pathname.includes('/add') ||
-                    location.pathname.includes('/update')
-                      ? 105
-                      : resultRenderView === 'horizontal'
-                      ? 115
-                      : 55)
+                <Suspense
+                  fallback={
+                    <Loading
+                      height={
+                        (height as number) -
+                        (location.pathname.includes('/add') ||
+                        location.pathname.includes('/update')
+                          ? 105
+                          : resultRenderView === 'horizontal'
+                          ? 115
+                          : 55)
+                      }
+                    />
                   }
-                  readOnly={false}
-                  setData={setInteractiveQuery}
-                  setError={setJsonError}
-                  className="border-t pt-3"
-                />
+                >
+                  <ResultRender
+                    ref={jsonBodyDivRef}
+                    result={interactiveQueryData}
+                    height={
+                      (height as number) -
+                      (location.pathname.includes('/add') ||
+                      location.pathname.includes('/update')
+                        ? 105
+                        : resultRenderView === 'horizontal'
+                        ? 115
+                        : 55)
+                    }
+                    readOnly={false}
+                    setData={setInteractiveQuery}
+                  />
+                </Suspense>
               ) : (
                 <Loading />
               )}
@@ -319,10 +292,12 @@ export const InputTabs = ({
             maxHeight: (height as number) + 95,
           }}
         >
-          <MultipleInput
-            propertyName="headers"
-            form={form}
-          />
+          <Suspense fallback={<Loading />}>
+            <MultipleInput
+              propertyName="headers"
+              form={form}
+            />
+          </Suspense>
         </TabsContent>
         <TabsContent
           value="body"
@@ -333,6 +308,19 @@ export const InputTabs = ({
             className="w-full"
           >
             <TabsList className="px-.5 h-9">
+              <TabsTrigger
+                value="form-data"
+                className="h-7"
+                onClick={() => {
+                  setActiveBodyPayloadType('form-data')
+                  form.setValue('activeBody', 'form-data')
+                }}
+              >
+                Form Data{' '}
+                {api?.formData?.find((item: ParamsType) => item.isActive) ? (
+                  <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+                ) : null}
+              </TabsTrigger>
               <TabsTrigger
                 value="x-form-urlencoded"
                 className="h-7"
@@ -368,31 +356,45 @@ export const InputTabs = ({
                 height: (height as number) - (type === 'create' ? 95 : 0),
               }}
             >
-              <div className="flex items-center justify-between">
-                {jsonError?.isError ? (
-                  <div className="h-4 text-xs font-bold text-red-500">
-                    {jsonError.error}
-                  </div>
-                ) : (
-                  <div className="h-4"></div>
-                )}
-              </div>
               {isTimedOut ? (
-                <ResultRender
-                  ref={jsonBodyDivRef}
-                  result={jsonBodyData}
-                  height={
-                    (height as number) -
-                    (resultRenderView === 'vertical' ? 105 : 50)
+                <Suspense
+                  fallback={
+                    <Loading
+                      height={
+                        (height as number) -
+                        (resultRenderView === 'vertical' ? 55 : 115)
+                      }
+                    />
                   }
-                  readOnly={false}
-                  setData={setJsonBody}
-                  className="border-t pt-3"
-                  setError={setJsonError}
-                />
+                >
+                  <ResultRender
+                    ref={jsonBodyDivRef}
+                    result={jsonBodyData}
+                    height={
+                      (height as number) -
+                      (resultRenderView === 'vertical' ? 55 : 115)
+                    }
+                    readOnly={false}
+                    setData={setJsonBody}
+                  />
+                </Suspense>
               ) : (
                 <Loading />
               )}
+            </TabsContent>
+            <TabsContent
+              value="form-data"
+              className="animate__animated animate__fadeIn relative overflow-auto"
+              style={{
+                maxHeight: height as number,
+              }}
+            >
+              <Suspense fallback={<Loading />}>
+                <MultipleInput
+                  propertyName="formData"
+                  form={form}
+                />
+              </Suspense>
             </TabsContent>
             <TabsContent
               value="x-form-urlencoded"
@@ -401,10 +403,12 @@ export const InputTabs = ({
                 maxHeight: height as number,
               }}
             >
-              <MultipleInput
-                propertyName="body"
-                form={form}
-              />
+              <Suspense fallback={<Loading />}>
+                <MultipleInput
+                  propertyName="body"
+                  form={form}
+                />
+              </Suspense>
             </TabsContent>
           </Tabs>
         </TabsContent>
@@ -415,10 +419,12 @@ export const InputTabs = ({
             maxHeight: height as number,
           }}
         >
-          <MultipleInput
-            propertyName="dynamicVariables"
-            form={form}
-          />
+          <Suspense fallback={<Loading />}>
+            <MultipleInput
+              propertyName="dynamicVariables"
+              form={form}
+            />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>

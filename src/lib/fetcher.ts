@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ResponseType, getClient } from '@tauri-apps/api/http'
-import axios from 'axios'
+import { fetch as TFetch } from '@tauri-apps/plugin-http'
+import { platform } from '@tauri-apps/plugin-os'
 import { ParamsType } from '../types/api'
 
 const fetcher = async ({
@@ -10,85 +10,60 @@ const fetcher = async ({
   headers,
   isUpload,
   submitDataBody,
+  contentType,
 }: {
   url: string
   method: 'POST' | 'GET' | 'PUT' | 'DELETE' | 'PATCH'
   requestBody: any
   headers?: any
   isUpload?: boolean
+  contentType?:
+    | 'multipart/form-data'
+    | 'application/json'
+    | 'application/x-www-form-urlencoded'
   submitDataBody?: ParamsType[]
 }) => {
   const formData = new FormData()
   const files = submitDataBody?.filter((item) => item?.type === 'file')
   if (files?.length) {
     files.map((file) => {
-      Array.from(file.value).map((item: any) => {
+      Array.from(file.value)?.map((item: any) => {
         formData.append(file.key, item)
       })
     })
   }
-  Object.keys(requestBody).map((item) => {
+  Object.keys(requestBody)?.map((item) => {
     if (!files?.find((file) => file.key === item)) {
       formData.append(item, requestBody[item])
     }
   })
-  try {
-    const client = await getClient()
-    if (isUpload) {
-      return await axios({
-        url,
-        method,
-        data: formData,
-        headers,
-      })
-    } else {
-      switch (method) {
-        case 'POST':
-          return await client.post(
-            url,
-            { payload: requestBody, type: 'Json' },
-            {
-              headers,
-              responseType: ResponseType.Binary,
-            },
-          )
-        case 'PUT':
-          return await client.put(
-            url,
-            { payload: requestBody, type: 'Json' },
-            {
-              headers,
-              responseType: ResponseType.Binary,
-            },
-          )
-        case 'DELETE':
-          return await client.delete(url, {
-            headers,
-            responseType: ResponseType.Binary,
-          })
-        case 'PATCH':
-          return await client.patch(url, {
-            body: {
-              payload: requestBody,
-              type: 'Json',
-            },
-            headers,
-            responseType: ResponseType.Binary,
-          })
-        default:
-          return await client.get(url, {
-            headers,
-            responseType: ResponseType.Binary,
-          })
-      }
+  const requestConfigs = {
+    method,
+    body: isUpload
+      ? formData
+      : method === 'GET'
+      ? null
+      : JSON.stringify(requestBody),
+    headers,
+  }
+  if (contentType === 'multipart/form-data') {
+    requestConfigs['headers'] = {
+      'Content-Type': 'multipart/form-data',
     }
+  } else if (contentType === 'application/json') {
+    requestConfigs['headers'] = {
+      'Content-Type': 'application/json',
+    }
+  } else {
+    requestConfigs['headers'] = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    }
+  }
+  try {
+    platform()
+    return await TFetch(url, requestConfigs)
   } catch (error) {
-    return await axios({
-      url,
-      method,
-      data: isUpload ? formData : requestBody,
-      headers,
-    })
+    return await fetch(url, requestConfigs)
   }
 }
 

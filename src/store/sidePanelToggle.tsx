@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-
 import { isLocalStorageAvailable } from './store'
 
 type ToggleSidePanelType = {

@@ -1,12 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import MonacoEditor, { Monaco } from '@monaco-editor/react'
 import copy from 'copy-to-clipboard'
-import { Check, Columns2, Copy, Info, Rows2, X } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { Check, Columns2, Copy, Download, Rows2, X } from 'lucide-react'
+import { memo, useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid'
-import { cn, parseCookie } from '../../lib/utils'
+import { editorOptions, setEditorTheme } from '../../config/editorOptions'
+import { cn, downloadFile } from '../../lib/utils'
 import useResultRenderViewStore from '../../store/resultRenderView'
+import { CookieType } from '../../types/api'
 import Loading from '../loading'
-import ResultRender from '../result-renderer'
+import { useTheme } from '../theme-provider'
 import { Button } from '../ui/button'
 import {
   DropdownMenu,
@@ -15,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
+import { Separator } from '../ui/separator'
 import {
   Table,
   TableBody,
@@ -30,6 +34,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '../ui/tooltip'
+import { toast } from '../ui/use-toast'
 import { ResponseStatus } from './api'
 
 type PropsType = {
@@ -40,36 +45,44 @@ type PropsType = {
   headers?: {
     [key: string]: any
   }
+  cookies: CookieType[]
 }
 
-export default function ApiResult({
+const ApiResult = ({
   isLoading,
   result,
   height,
   responseStatus,
   headers,
-}: PropsType) {
+  cookies,
+}: PropsType) => {
+  const { theme } = useTheme()
+  const [isCopiedResponse, setIsCopiedResponse] = useState<boolean>(false)
   const resultDivRef = useRef<HTMLDivElement>(null)
-  // const [searchParams] = useSearchParams()
-  // const navigate = useNavigate()
   const { resultRenderView, toggleResultRenderView } =
     useResultRenderViewStore()
+  const editorRef = useRef<Monaco>(null)
   const resultContainerRef = useRef<HTMLDivElement>(null)
 
   const payloadSize = (data: any): string => {
-    // Convert JSON data to string
-    // Convert JSON data to string
     const json_string = JSON.stringify(data)
-
-    // Calculate length of string in bytes
     const string_length = new TextEncoder().encode(json_string).length
-
-    // Convert payload size to KB
     const payload_size_kb = +(string_length / 1024).toFixed(2)
     return payload_size_kb > 1 ? `${payload_size_kb} KB` : `${string_length} B`
   }
 
-  useEffect(() => {}, [resultRenderView])
+  const copyResponse = () => {
+    setIsCopiedResponse(true)
+    copy(JSON.stringify(result))
+    toast({
+      variant: 'success',
+      title: 'Success',
+      description: 'Data is copied to clipboard',
+    })
+    setTimeout(() => {
+      setIsCopiedResponse(false)
+    }, 2000)
+  }
 
   return (
     <section
@@ -83,9 +96,12 @@ export default function ApiResult({
       }}
     >
       {isLoading ? (
-        <Loading height={height! - 300} />
+        <Loading
+          name="Connecting"
+          height={height! - 300}
+        />
       ) : (
-        <div className="relative flex justify-between pt-1 pb-3 pl-5 pr-0 text-sm">
+        <div className="relative flex justify-between pt-1 pb-3 pl-5 pr-0 text-sm animate__animated animated__fadeIn ">
           <Tabs
             defaultValue="response"
             className="w-full"
@@ -96,19 +112,18 @@ export default function ApiResult({
                 Headers{' '}
                 {typeof headers === 'object' &&
                   Object.keys(headers).length > 0 && (
-                    <span className="text-green-500 ml-2">
-                      ({Object.keys(headers).length - 1})
+                    <span className="text-green-500 ml-2 text-xs">
+                      {Object.keys(headers).length - 1}
                     </span>
                   )}
               </TabsTrigger>
               <TabsTrigger value="cookies">
                 Cookies
-                {typeof headers === 'object' &&
-                  headers['set-cookie']?.length > 0 && (
-                    <span className="text-green-500 ml-2">
-                      ({headers['set-cookie']?.length})
-                    </span>
-                  )}
+                {!!cookies?.length && (
+                  <span className="text-green-500 ml-2 text-xs">
+                    {cookies?.length}
+                  </span>
+                )}
               </TabsTrigger>
             </TabsList>
 
@@ -116,23 +131,93 @@ export default function ApiResult({
               value="response"
               className="w-full"
             >
-              <ResultRender
+              <div
                 ref={resultContainerRef}
-                readOnly={true}
-                height={height! - 215}
-                type="response"
-                result={result ?? {}}
-              />
+                style={{ height: height! - 220 }}
+                className="relative"
+              >
+                <Button
+                  disabled={
+                    (result && Object.entries(result)?.length === 0) || !result
+                  }
+                  type="button"
+                  variant="secondary"
+                  className="flex absolute right-9 top-0 h-8 w-8 justify-self-end p-0 z-10"
+                  size="sm"
+                  onClick={() =>
+                    downloadFile({
+                      data: result,
+                      fileName: `Response-${uuid()}.json`,
+                      fileType: 'text/json',
+                    })
+                  }
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Download size={18} />
+                    </TooltipTrigger>
+                    <TooltipContent align="start">
+                      Download response
+                    </TooltipContent>
+                  </Tooltip>
+                </Button>
+                <Button
+                  disabled={
+                    (result && Object.entries(result)?.length === 0) || !result
+                  }
+                  type="button"
+                  variant="secondary"
+                  className="flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
+                  size="sm"
+                  onClick={() => copyResponse()}
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {isCopiedResponse ? (
+                        <Check
+                          className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                          size={18}
+                        />
+                      ) : (
+                        <Copy
+                          className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                          size={18}
+                        />
+                      )}
+                    </TooltipTrigger>
+                    <TooltipContent align="start">Copy response</TooltipContent>
+                  </Tooltip>
+                </Button>
+                <MonacoEditor
+                  beforeMount={setEditorTheme}
+                  height={height! - 220}
+                  saveViewState={true}
+                  defaultLanguage="json"
+                  value={JSON.stringify(result ? result : {}, null, '\t')}
+                  theme={theme === 'dark' ? 'onedark' : 'light'}
+                  options={editorOptions({ readOnly: true })}
+                  loading={
+                    <Loading
+                      name="Connecting"
+                      height={height! - 220}
+                    />
+                  }
+                  onMount={(editor: Monaco) => (editorRef.current = editor)}
+                />
+              </div>
             </TabsContent>
             <TabsContent
               value="headers"
-              className="max-h-fit overflow-auto"
+              className=" overflow-auto"
+              style={{ height: height! - 220 }}
             >
               <Table>
                 <TableHeader className="border">
                   <TableRow className="w-full">
-                    <TableHead className="border w-1/2">Key</TableHead>
-                    <TableHead className="border w-1/2">Value</TableHead>
+                    <TableHead className="border w-1/2 min-w-52">Key</TableHead>
+                    <TableHead className="border w-1/2 min-w-80">
+                      Value
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -151,9 +236,46 @@ export default function ApiResult({
                               </TableCell>
                               <TableCell
                                 key={uuid()}
-                                className="border"
+                                className={cn(
+                                  'border',
+                                  headers[item].startsWith('{') &&
+                                    headers[item].endsWith('}') &&
+                                    'p-0',
+                                )}
                               >
-                                {headers[item]}
+                                {headers[item].startsWith('{') &&
+                                headers[item].endsWith('}') ? (
+                                  <MonacoEditor
+                                    beforeMount={setEditorTheme}
+                                    height={
+                                      JSON.stringify(
+                                        JSON.parse(headers[item]),
+                                        null,
+                                        2,
+                                      ).split('\n').length * 20
+                                    }
+                                    width="100%"
+                                    saveViewState={true}
+                                    defaultLanguage="json"
+                                    value={JSON.stringify(
+                                      JSON.parse(headers[item]),
+                                      null,
+                                      2,
+                                    )}
+                                    theme={
+                                      theme === 'dark' ? 'onedark' : 'light'
+                                    }
+                                    options={editorOptions({
+                                      readOnly: true,
+                                    })}
+                                    loading={<Loading />}
+                                    onMount={(editor: Monaco) =>
+                                      (editorRef.current = editor)
+                                    }
+                                  />
+                                ) : (
+                                  headers[item]
+                                )}
                               </TableCell>
                             </TableRow>
                           )
@@ -175,80 +297,43 @@ export default function ApiResult({
                 </TableBody>
               </Table>
             </TabsContent>
-            <TabsContent value="cookies">
+            <TabsContent
+              value="cookies"
+              className="overflow-auto"
+              style={{ height: height! - 230 }}
+            >
               <Table>
                 <TableHeader className="border">
                   <TableRow className="w-full">
-                    <TableHead className="border">Key</TableHead>
-                    <TableHead className="border">Value</TableHead>
-                    <TableHead className="border">Path</TableHead>
-                    <TableHead className="border">Expires</TableHead>
-                    <TableHead className="border text-center">
+                    <TableHead className="border text-center min-w-52">
+                      Key
+                    </TableHead>
+                    <TableHead className="border text-center min-w-52">
+                      Value
+                    </TableHead>
+                    <TableHead className="border text-center min-w-52">
+                      Path
+                    </TableHead>
+                    <TableHead className="border text-center min-w-52">
+                      Expires
+                    </TableHead>
+                    <TableHead className="border text-center min-w-52">
                       HttpOnly
                     </TableHead>
-                    <TableHead className="border text-center">Secure</TableHead>
-                    <TableHead className="border text-center">
+                    <TableHead className="border text-center min-w-52">
+                      Secure
+                    </TableHead>
+                    <TableHead className="border text-center min-w-52">
                       SameSite
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {typeof headers === 'object' &&
-                  headers['set-cookie']?.length ? (
+                  {cookies?.length ? (
                     <>
-                      {headers['set-cookie']?.map((item: string) => {
-                        const {
-                          customKey,
-                          customValue,
-                          expires,
-                          path,
-                          secure,
-                          httpOnly,
-                          sameSite,
-                        } = parseCookie(item)
-
-                        return (
-                          <TableRow key={uuid()}>
-                            <TableCell className="border">
-                              {customKey}
-                            </TableCell>
-                            <TableCell className="border">
-                              <Tooltip>
-                                <TooltipTrigger>{customValue}</TooltipTrigger>
-                                <TooltipContent className="max-w-[600px] w-full break-words relative p-2 pr-5 rounded-md bg-secondary">
-                                  <span className="text-xs w-full">
-                                    {customValue}
-                                    <Copy
-                                      onClick={() => copy(customValue)}
-                                      className="animate__animated animate__fadeIn cursor-pointer absolute right-1 top-1"
-                                      size={16}
-                                    />
-                                  </span>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TableCell>
-                            <TableCell className="border">{path}</TableCell>
-                            <TableCell className="border">{expires}</TableCell>
-                            <TableCell className="border">
-                              <span className="flex justify-center items-center">
-                                {httpOnly ? (
-                                  <Check size={14} />
-                                ) : (
-                                  <X size={14} />
-                                )}
-                              </span>
-                            </TableCell>
-                            <TableCell className="border">
-                              <span className="flex justify-center items-center">
-                                {secure ? <Check size={14} /> : <X size={14} />}
-                              </span>
-                            </TableCell>
-                            <TableCell className="border text-center">
-                              {sameSite}
-                            </TableCell>
-                          </TableRow>
-                        )
-                      })}
+                      {cookies?.map((item) => (
+                        <CookiesTable {...item} />
+                      ))}
                     </>
                   ) : (
                     <TableRow>
@@ -298,73 +383,72 @@ export default function ApiResult({
               </Tooltip>
             </Button>
             {responseStatus?.status ? (
-              <DropdownMenu>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className={cn(
-                            'mr-2 flex h-8 w-8 justify-self-end p-0',
-                            responseStatus.status?.toString().startsWith('2', 0)
-                              ? 'text-green-600 dark:font-normal dark:text-green-400'
-                              : 'font-medium text-red-500',
-                          )}
-                          size="sm"
-                        >
-                          <Info size={20} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      See{' '}
-                      {responseStatus.status?.toString().startsWith('2', 0)
-                        ? 'success'
-                        : 'failed'}{' '}
-                      response status
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              <>
+                <Separator
+                  orientation="vertical"
+                  className="h-5 text-muted-foreground mr-1"
+                />
+                <DropdownMenu>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-8"
+                          >
+                            <p className="text-xs">
+                              Status
+                              <span
+                                className={cn(
+                                  responseStatus.status
+                                    ?.toString()
+                                    .startsWith('2', 0)
+                                    ? 'ml-1 font-medium text-green-600 dark:font-normal dark:text-green-400'
+                                    : 'ml-1 font-medium text-red-500 dark:font-normal',
+                                  'mr-2',
+                                )}
+                              >
+                                {responseStatus.status}
+                              </span>
+                            </p>
+                          </Button>
+                        </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        See{' '}
+                        {responseStatus.status?.toString().startsWith('2', 0)
+                          ? 'success'
+                          : 'failed'}{' '}
+                        response status
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
-                <DropdownMenuContent>
-                  <DropdownMenuItem>
-                    <p className="text-xs">
-                      Status
-                      <span
-                        className={cn(
-                          responseStatus.status?.toString().startsWith('2', 0)
-                            ? 'ml-1 font-medium text-green-600 dark:font-normal dark:text-green-400'
-                            : 'ml-1 font-medium text-red-500 dark:font-normal',
-                          'mr-2',
-                        )}
-                      >
-                        {responseStatus.status}
-                      </span>
-                    </p>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <p className="mr-4 text-xs">
-                      Time:
-                      <span className={'pl-1 text-green-500'}>
-                        {responseStatus.time}
-                      </span>
-                    </p>
-                  </DropdownMenuItem>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem>
+                      <p className="mr-4 text-xs">
+                        Time:
+                        <span className={'pl-1 text-green-500'}>
+                          {responseStatus.time}
+                        </span>
+                      </p>
+                    </DropdownMenuItem>
 
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <p className="mr-2 text-xs">
-                      Size:
-                      <span className={'ml-1 text-green-500'}>
-                        {payloadSize(result)}
-                      </span>
-                    </p>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <p className="mr-2 text-xs">
+                        Size:
+                        <span className={'ml-1 text-green-500'}>
+                          {payloadSize(result)}
+                        </span>
+                      </p>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
             ) : null}
           </div>
         </div>
@@ -372,3 +456,78 @@ export default function ApiResult({
     </section>
   )
 }
+
+const CookiesTable = ({
+  customKey,
+  customValue,
+  path,
+  expires,
+  httpOnly,
+  secure,
+  sameSite,
+}: CookieType) => {
+  const [isCopied, setIsCopied] = useState(false)
+  const copyData = (data: string) => {
+    setIsCopied(true)
+    copy(data)
+    toast({
+      variant: 'success',
+      title: 'Success',
+      description: 'Value is copied to clipboard',
+    })
+    setTimeout(() => {
+      setIsCopied(false)
+    }, 2000)
+  }
+  return (
+    <TableRow key={uuid()}>
+      <TableCell className="border text-center">{customKey}</TableCell>
+      <TableCell className="border text-center relative max-w-72 truncate">
+        <span className="truncate text-wrap">{customValue}</span>
+        {customValue && (
+          <Button
+            type="button"
+            variant="secondary"
+            className="flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
+            size="sm"
+            onClick={() => copyData(customValue)}
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {isCopied ? (
+                  <Check
+                    className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                    size={18}
+                  />
+                ) : (
+                  <Copy
+                    className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
+                    size={18}
+                  />
+                )}
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Copy data</p>
+              </TooltipContent>
+            </Tooltip>
+          </Button>
+        )}
+      </TableCell>
+      <TableCell className="border text-center">{path}</TableCell>
+      <TableCell className="border text-center">{expires}</TableCell>
+      <TableCell className="border text-center">
+        <span className="flex justify-center items-center">
+          {httpOnly ? <Check size={14} /> : <X size={14} />}
+        </span>
+      </TableCell>
+      <TableCell className="border text-center">
+        <span className="flex justify-center items-center">
+          {secure ? <Check size={14} /> : <X size={14} />}
+        </span>
+      </TableCell>
+      <TableCell className="border text-center">{sameSite}</TableCell>
+    </TableRow>
+  )
+}
+
+export default memo(ApiResult)

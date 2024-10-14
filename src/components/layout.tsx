@@ -1,26 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { cn } from '@/lib/utils'
 import useSidePanelToggleStore from '@/store/sidePanelToggle'
-import { platform } from '@tauri-apps/api/os'
-import {
-  checkUpdate,
-  installUpdate,
-  onUpdaterEvent,
-} from '@tauri-apps/api/updater'
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Pane } from 'split-pane-react'
 import SplitPane from 'split-pane-react/esm/SplitPane'
+import useUpdate from '../hooks/useUpdate'
+import useTabRenderStore from '../store/tabView'
 import SideNav from './nav/nav'
 import { Toaster } from './ui/toaster'
-import { toast } from './ui/use-toast'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { isOpen } = useSidePanelToggleStore()
-  const sideNavWidth = 300
+  const { tabs } = useTabRenderStore()
+  const navigate = useNavigate()
+  const { checkUpdate, RestartApp } = useUpdate()
+  const sideNavWidth = 320
   const [sizes, setSizes] = useState([
     window.innerWidth >= 1024 ? 250 : sideNavWidth,
     window.innerWidth - sideNavWidth,
   ])
+
+  useEffect(() => {
+    checkUpdate()
+  }, [])
 
   useEffect(() => {
     if (!isOpen) {
@@ -31,42 +34,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [isOpen])
 
   useEffect(() => {
-    const checkUpdateHandler = async () => {
-      try {
-        const platformName = await platform()
-        if (platformName) {
-          const update = await checkUpdate()
-          if (update.shouldUpdate) {
-            await installUpdate()
-          }
-        }
-      } catch (error: any) {
-        return null
-      }
+    const activeTab = tabs.find((tab) => tab.isActive)
+    if (activeTab?.id) {
+      navigate(`/api/${activeTab?.folderId}/${activeTab?.id}`)
+    } else {
+      navigate('/')
     }
-    const unlisten = async () => {
-      try {
-        await onUpdaterEvent(({ error }) => {
-          if (error) {
-            toast({
-              variant: 'error',
-              title: 'Error',
-              description: error,
-            })
-          } else {
-            toast({
-              variant: 'success',
-              title: 'Success',
-              description: 'Update available',
-            })
-          }
-        })
-      } catch (error: any) {
-        return null
-      }
-    }
-    checkUpdateHandler()
-    unlisten()
   }, [])
 
   useEffect(() => {
@@ -88,35 +61,58 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     resizeWindow()
   }, [isOpen])
 
-  // useEffect(() => {
-  //   localStorage.clear()
-  // }, [])
+  useEffect(() => {
+    if (import.meta.env.PROD) {
+      document.addEventListener('contextmenu', (e) => e.preventDefault())
+
+      function ctrlShiftKey(e: KeyboardEvent, keyCode: string) {
+        return e.ctrlKey && e.shiftKey && e.keyCode === keyCode.charCodeAt(0)
+      }
+
+      document.onkeydown = (e) => {
+        if (
+          (e as KeyboardEvent).keyCode === 123 ||
+          ctrlShiftKey(e as KeyboardEvent, 'I') ||
+          ctrlShiftKey(e as KeyboardEvent, 'J') ||
+          ctrlShiftKey(e as KeyboardEvent, 'C') ||
+          ((e as KeyboardEvent).ctrlKey &&
+            (e as KeyboardEvent).keyCode === 'U'.charCodeAt(0))
+        )
+          return false
+      }
+    }
+  }, [])
 
   return (
-    <main className={cn('min-h-screen bg-background font-sans antialiased')}>
-      <div className="relative flex min-h-screen flex-col transition-all duration-200 ease-linear">
-        <SplitPane
-          sashRender={() => <></>}
-          split="vertical"
-          sizes={sizes}
-          onChange={(sizes) => setSizes(sizes)}
-        >
-          <Pane
-            minSize={isOpen ? sideNavWidth : 0}
-            maxSize={sideNavWidth * 2}
+    <>
+      <main className={cn('min-h-screen bg-background font-sans antialiased')}>
+        <div className="relative flex min-h-screen flex-col transition-all duration-200 ease-linear">
+          <SplitPane
+            sashRender={() => <></>}
+            split="vertical"
+            sizes={sizes}
+            onChange={(sizes) => setSizes(sizes)}
+            className="hidden lg:block"
           >
-            <SideNav />
-          </Pane>
+            <Pane
+              minSize={isOpen ? sideNavWidth : 0}
+              maxSize={sideNavWidth * 2}
+            >
+              <SideNav />
+            </Pane>
 
-          <Pane
-            minSize={window.innerWidth / 2}
-            maxSize="100%"
-          >
-            {children}
-          </Pane>
-        </SplitPane>
-        <Toaster />
-      </div>
-    </main>
+            <Pane
+              minSize={window.innerWidth / 2}
+              maxSize="100%"
+            >
+              {children}
+            </Pane>
+          </SplitPane>
+          <div className="block lg:hidden">{children}</div>
+          <Toaster />
+        </div>
+      </main>
+      <RestartApp />
+    </>
   )
 }

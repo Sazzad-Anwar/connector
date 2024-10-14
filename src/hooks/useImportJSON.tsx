@@ -46,50 +46,59 @@ export default function useImportJSON() {
 
   const onFileChange = async (e: any, id?: string) => {
     if (e.target?.files) {
-      try {
-        const data = await readJsonFile(e.target.files[0])
-        let parsedData = data as FolderType
-        id
-          ? await CollectionParsingSchema.parse(data)
-          : await FolderParsingSchema.parse(data)
-        parsedData.id = uuid()
-        parsedData.type = parsedData?.type ?? 'folder'
-
-        if (!!id && parsedData.type === 'folder') {
-          createFolder(parsedData, id)
-          toast({
-            variant: 'success',
-            title: 'Success',
-            description: 'Imported successfully',
-          })
-        } else if (parsedData.type === 'collection') {
-          createFolder(parsedData)
-          toast({
-            variant: 'success',
-            title: 'Success',
-            description: 'Imported successfully',
-          })
-        } else {
-          toast({
-            variant: 'error',
-            title: 'Error',
-            description:
-              'Folder schema can not be imported in root. Import in collection only.',
-          })
-        }
-      } catch (error) {
+      if (e.target.files[0].type !== 'application/json') {
         toast({
           variant: 'error',
           title: 'Error',
-          description: Array.isArray(JSON.parse((error as Error).message))
-            ? JSON.parse((error as Error).message)
-                .map(
-                  (err: any) =>
-                    `${err.path[0].toUpperCase()} ${err.message} \n`,
-                )
-                .join(', ') + '\n\n'.concat('. Please import a valid JSON')
-            : (error as Error).message,
+          description: 'Please import a valid JSON',
         })
+        return
+      } else {
+        try {
+          const data = await readJsonFile(e.target.files[0])
+          let parsedData = data as FolderType
+          id
+            ? await CollectionParsingSchema.parse(data)
+            : await FolderParsingSchema.parse(data)
+          parsedData.id = uuid()
+          parsedData.type = parsedData?.type ?? 'folder'
+
+          if (!!id && parsedData.type === 'folder') {
+            createFolder(parsedData, id)
+            toast({
+              variant: 'success',
+              title: 'Success',
+              description: 'Imported successfully',
+            })
+          } else if (parsedData.type === 'collection') {
+            createFolder(parsedData)
+            toast({
+              variant: 'success',
+              title: 'Success',
+              description: 'Imported successfully',
+            })
+          } else {
+            toast({
+              variant: 'error',
+              title: 'Error',
+              description:
+                'Folder schema can not be imported in root. Import in collection only.',
+            })
+          }
+        } catch (error) {
+          toast({
+            variant: 'error',
+            title: 'Error',
+            description: Array.isArray(JSON.parse((error as Error).message))
+              ? JSON.parse((error as Error).message)
+                  .map(
+                    (err: any) =>
+                      `${err.path[0].toUpperCase()} ${err.message} \n`,
+                  )
+                  .join(', ') + '\n\n'.concat('. Please import a valid JSON')
+              : (error as Error).message,
+          })
+        }
       }
     }
 
@@ -121,7 +130,7 @@ export default function useImportJSON() {
           id={id}
           className="hidden"
           type="file"
-          accept="application/JSON"
+          accept="application/JSON, .json"
           onChange={(e) => {
             if (importOn === 'collection') {
               onFileChange(e, collectionId)

@@ -1,7 +1,8 @@
-import { Dispatch, SetStateAction } from 'react'
+import { Dispatch, lazy, SetStateAction, Suspense } from 'react'
 import { findRootCollection } from '../../lib/utils'
 import useApiStore from '../../store/store'
 import { ApiType } from '../../types/api'
+import Loading from '../loading'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -9,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../ui/alert-dialog'
-import MoveToFolder from './move-to-folder'
+const MoveToFolder = lazy(() => import('./move-to-folder'))
 
 type Props = {
   apis: ApiType[]
@@ -33,8 +34,8 @@ export default function MoveToFolderDialog({
       open={isDialogOpen}
       onOpenChange={setIsDialogOpen}
     >
-      <AlertDialogContent>
-        <AlertDialogHeader>
+      <AlertDialogContent className="min-w-[800px] w-auto h-auto">
+        <AlertDialogHeader className="block">
           <AlertDialogTitle>Move APIs To Folder</AlertDialogTitle>
           <AlertDialogDescription>
             You've selected{' '}
@@ -45,16 +46,18 @@ export default function MoveToFolderDialog({
                 .join(', ')}
               {apis?.length > 3 && ` +${apis.length - 3} more`}
             </b>{' '}
-            apis to move.
+            api{apis?.length > 1 && 's'} to move.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <MoveToFolder
-          apis={apis}
-          folders={collection?.children ?? []}
-          folderId={folderId}
-          setIsDialogOpen={setIsDialogOpen}
-          setSelectedApis={setSelectedApis}
-        />
+        <Suspense fallback={<Loading />}>
+          <MoveToFolder
+            apis={apis}
+            folders={collection?.children ?? []}
+            folderId={folderId}
+            setIsDialogOpen={setIsDialogOpen}
+            setSelectedApis={setSelectedApis}
+          />
+        </Suspense>
       </AlertDialogContent>
     </AlertDialog>
   )

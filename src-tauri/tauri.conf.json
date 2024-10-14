@@ -16,7 +16,8 @@
         "width": 1280,
         "height": 820,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "decorations": true
       }
     ],
     "security": {
@@ -24,6 +25,7 @@
     }
   },
   "bundle": {
+    "createUpdaterArtifacts": true,
     "active": true,
     "targets": "all",
     "icon": [
@@ -31,18 +33,19 @@
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
-      "icons/icon.ico",
-      "icons/icon.png",
-      "icons/Square30x30Logo.png",
-      "icons/Square44x44Logo.png",
-      "icons/Square71x71Logo.png",
-      "icons/Square89x89Logo.png",
-      "icons/Square107x107Logo.png",
-      "icons/Square142x142Logo.png",
-      "icons/Square150x150Logo.png",
-      "icons/Square284x284Logo.png",
-      "icons/Square310x310Logo.png",
-      "icons/StoreLogo.png"
+      "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "version": "2.0.0",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDEwQjYwMUIyQkQzOEQyRTEKUldUaDBqaTlzZ0cyRU1wVG13TzJGSmFlS0J3YWxMSWhIM1lMNlJmTStNZGgvN0p1c28yV0FELzEK",
+      "endpoints": [
+        "https://github.com/Sazzad-Anwar/connector/releases/tag/v2.0.0/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

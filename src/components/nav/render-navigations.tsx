@@ -11,17 +11,18 @@ import {
   MoreVertical,
 } from 'lucide-react'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { Fragment, useRef } from 'react'
 import { v4 as uuid } from 'uuid'
 
 import { cn, findRootCollection } from '@/lib/utils'
 import { FolderType } from '@/types/api'
 
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import useRenderNav from '../../hooks/useRenderNav'
 import useApiStore from '../../store/store'
 import { default as CreateFolder } from '../collections/create-folder'
 import MoveToFolderDialog from '../collections/move-to-folder-dialog'
+import EnvVariables from '../env/env-variables'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,12 +50,14 @@ interface RenderNavigationProps {
 export default function RenderNavigation({
   collection,
 }: RenderNavigationProps): JSX.Element {
-  const navigate = useNavigate()
   const { collections } = useApiStore()
-  const [isFolderOpen, setIsFolderOpen] = useState(true)
   const navWidthRef = useRef<HTMLDivElement>(null)
   const params = useParams()
   const {
+    isFolderOpen,
+    setIsFolderOpen,
+    isEnvDialogOpen,
+    setIsEnvDialogOpen,
     renameCollectionName,
     deleteCollection,
     addFolder,
@@ -66,39 +69,17 @@ export default function RenderNavigation({
     deleteApiHandler,
     selectedApis,
     collectionId,
-    setCollectionId,
     isCreatingFolder,
-    setIsCreatingFolder,
     isFolderNameUpdating,
-    setIsFolderNameUpdating,
     isMoveToFolderDialogOpen,
     setIsMoveToFolderDialogOpen,
     handleClickApi,
     setSelectedApis,
+    downloadFile,
   } = useRenderNav({ collection })
 
-  useEffect(() => {
-    const handleEscapeKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        // Handle the "Escape" key press here
-        setIsFolderNameUpdating(false)
-        setCollectionId('')
-        setIsCreatingFolder(false)
-        setSelectedApis([])
-      }
-    }
-
-    // Add the event listener when the component mounts
-    document.addEventListener('keydown', handleEscapeKeyPress)
-    // Remove the event listener when the component unmounts
-    return () => {
-      document.removeEventListener('keydown', handleEscapeKeyPress)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   return (
-    <>
+    <div className="scroll-smooth">
       <ContextMenu>
         <ContextMenuTrigger>
           <div
@@ -110,18 +91,21 @@ export default function RenderNavigation({
           >
             {isFolderNameUpdating && collection.id === collectionId ? (
               <>
-                <ChevronRight
-                  size={20}
-                  className={
-                    (isFolderOpen ? 'rotate-90' : '') +
-                    ' transition-all duration-100 ease-linear mr-3'
-                  }
-                />
+                <div className="size-[18px] mr-3">
+                  <ChevronRight
+                    size={18}
+                    className={
+                      (isFolderOpen ? 'rotate-90' : '') +
+                      ' transition-all duration-100 ease-linear'
+                    }
+                  />
+                </div>
+
                 <CreateFolder
                   name={collection.name}
                   onSubmit={renameCollectionName}
                   type="folder"
-                  className="w-full flex items-center"
+                  className="w-full flex text-[13px] items-center"
                   actionType={'update'}
                 />
               </>
@@ -130,20 +114,24 @@ export default function RenderNavigation({
                 onClick={() => {
                   setIsFolderOpen(!isFolderOpen)
                 }}
-                className="flex flex-1 h-7 items-center"
+                className="flex flex-1 h-7 text-[13px] items-center focus-within:outline-none focus-visible:outline-none"
               >
-                <ChevronRight
-                  size={15}
-                  className={
-                    (isFolderOpen ? 'rotate-90' : '') +
-                    ' transition-all duration-100 ease-linear mr-3'
-                  }
-                />
-                <FolderClosed
-                  size={14}
-                  className="mr-2"
-                />
-                {collection.name}
+                <div className="size-[18px] mr-3">
+                  <ChevronRight
+                    size={18}
+                    className={
+                      (isFolderOpen ? 'rotate-90' : '') +
+                      ' transition-all duration-100 ease-linear'
+                    }
+                  />
+                </div>
+                <div className="mr-2 size-[18px]">
+                  <FolderClosed size={18} />
+                </div>
+
+                <span className="w-full text-left mt-2 block px-1 text-[13px] h-7">
+                  {collection.name}
+                </span>
               </button>
             )}
             <div className="flex items-center">
@@ -213,11 +201,10 @@ export default function RenderNavigation({
           })}
         </ContextMenuContent>
       </ContextMenu>
-
       {isFolderOpen && (
         <div className="animate__animated animate__fadeIn child ml-6 border-l">
           {collection?.children
-            ?.sort((a, b) => a.name.localeCompare(b.name))
+            ?.sort((a, b) => a.name?.localeCompare(b.name))
             .map((folder) => (
               <RenderNavigation
                 collection={folder}
@@ -232,129 +219,134 @@ export default function RenderNavigation({
               actionType={'create'}
             />
           )}
-
           {collection.apis
-            ?.sort((a, b) => a.name.localeCompare(b.name))
+            ?.sort((a, b) => a.name?.localeCompare(b.name))
             .map((api) => (
-              <ContextMenu key={`api-${api.id}`}>
-                <ContextMenuTrigger asChild>
-                  <div
-                    onClick={(event) =>
-                      handleClickApi(
-                        event as unknown as React.MouseEvent<
-                          HTMLButtonElement,
-                          MouseEvent
-                        >,
-                        api,
-                      )
-                    }
-                    className={cn(
-                      buttonVariants({ variant: 'ghost', size: 'xs' }),
-                      'group relative w-full cursor-pointer items-center justify-between rounded-none truncate',
-                      (params.apiId && params.apiId === api.id) ||
-                        selectedApis
-                          .map((apiType) => apiType.id)
-                          .includes(api.id)
-                        ? 'border-l-2 border-primary bg-secondary'
-                        : 'border-l-2 border-transparent',
-                    )}
-                  >
-                    <div className="w-full truncate">
-                      <span
-                        className={cn(
-                          api.method === 'GET'
-                            ? ' bg-green-700 border border-green-500'
-                            : api.method === 'POST'
-                            ? 'bg-yellow-700 border-yellow-500'
-                            : api.method === 'PUT'
-                            ? 'bg-cyan-700 border-cyan-500'
-                            : api.method === 'PATCH'
-                            ? 'bg-purple-700 border-purple-500'
-                            : 'bg-red-700 border-red-500',
-                          'font-medium text-white mr-2 text-xs px-1 py-0.5 rounded-md',
-                        )}
-                      >
-                        {api.method}
-                      </span>
-                      <span className="truncate text-sm">{api.name}</span>
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <MoreVertical
-                          className="opacity-0 group-hover:opacity-100"
-                          size={18}
-                        />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {!selectedApis
-                          .map((apiType) => apiType.id)
-                          .includes(api.id) && (
+              <Fragment key={`folder-${collection.id}-api-${api.id}`}>
+                <ContextMenu key={`folder-${collection.id}-api-${api.id}`}>
+                  <ContextMenuTrigger asChild>
+                    <div
+                      id={api.id}
+                      onClick={(event) =>
+                        handleClickApi(
+                          event as unknown as React.MouseEvent<
+                            HTMLButtonElement,
+                            MouseEvent
+                          >,
+                          api,
+                        )
+                      }
+                      className={cn(
+                        buttonVariants({ variant: 'ghost', size: 'xs' }),
+                        'group relative w-full cursor-pointer items-center justify-between rounded-none truncate scroll-mt-20',
+                        (params.apiId && params.apiId === api.id) ||
+                          selectedApis
+                            .map((apiType) => apiType.id)
+                            .includes(api.id)
+                          ? 'border-l-2 border-primary bg-secondary'
+                          : 'border-l-2 border-transparent',
+                      )}
+                    >
+                      <div className="w-full truncate">
+                        <span
+                          className={cn(
+                            api.method === 'GET'
+                              ? ' bg-green-700 border border-green-500'
+                              : api.method === 'POST'
+                              ? 'bg-yellow-700 border-yellow-500'
+                              : api.method === 'PUT'
+                              ? 'bg-cyan-700 border-cyan-500'
+                              : api.method === 'PATCH'
+                              ? 'bg-purple-700 border-purple-500'
+                              : 'bg-red-700 border-red-500',
+                            'font-medium text-white mr-2 text-[10px] px-1 py-0.5 rounded-md',
+                          )}
+                        >
+                          {api.method}
+                        </span>
+                        <span className="truncate text-[13px]">{api.name}</span>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <MoreVertical
+                            className="opacity-0 group-hover:opacity-100"
+                            size={18}
+                          />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedApis([...selectedApis, api])
+                              setIsMoveToFolderDialogOpen(true)
+                            }}
+                          >
+                            Move
+                          </DropdownMenuItem>
+                          {!selectedApis.map((a) => a.id).includes(api.id) && (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                downloadFile({
+                                  data: api,
+                                  fileName: api.name + '.json',
+                                  fileType: 'text/json',
+                                })
+                              }}
+                            >
+                              Export
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem
                             onClick={(e) => {
                               setApiDetails(api)
                               e.stopPropagation()
-                              navigate(`/api/${collection.id}/${api.id}/update`)
+                              deleteButtonRef.current?.click()
                             }}
+                            className="text-red-500"
                           >
-                            Update
+                            Delete
                           </DropdownMenuItem>
-                        )}
-
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            setApiDetails(api)
-                            e.stopPropagation()
-                            deleteButtonRef.current?.click()
-                          }}
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setSelectedApis([...selectedApis, api])
-                            setIsMoveToFolderDialogOpen(true)
-                          }}
-                        >
-                          Move
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </ContextMenuTrigger>
-                <ContextMenuContent>
-                  {selectedApis.length > 1 &&
-                    selectedApis.map((item) => item.id).includes(api.id) && (
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </ContextMenuTrigger>
+                  <ContextMenuContent>
+                    <ContextMenuItem
+                      onClick={() => {
+                        setIsMoveToFolderDialogOpen(true)
+                        if (!selectedApis.map((a) => a.id).includes(api.id)) {
+                          setSelectedApis([...selectedApis, api])
+                        }
+                      }}
+                    >
+                      Move
+                    </ContextMenuItem>
+                    {!selectedApis.map((a) => a.id).includes(api.id) && (
                       <ContextMenuItem
-                        onClick={(e) => {
-                          setApiDetails(api)
-                          e.stopPropagation()
-                          navigate(`/api/${collection.id}/${api.id}/update`)
+                        onClick={() => {
+                          downloadFile({
+                            data: api,
+                            fileName: api.name + '.json',
+                            fileType: 'text/json',
+                          })
                         }}
                       >
-                        Update
+                        Export
                       </ContextMenuItem>
                     )}
-                  <ContextMenuItem
-                    onClick={(e) => {
-                      setApiDetails(api)
-                      e.stopPropagation()
-                      deleteButtonRef.current?.click()
-                    }}
-                  >
-                    Delete
-                  </ContextMenuItem>
-                  <ContextMenuItem
-                    onClick={() => {
-                      setIsMoveToFolderDialogOpen(true)
-                      if (!selectedApis.map((a) => a.id).includes(api.id)) {
-                        setSelectedApis([...selectedApis, api])
-                      }
-                    }}
-                  >
-                    Move
-                  </ContextMenuItem>
-                </ContextMenuContent>
-              </ContextMenu>
+
+                    <ContextMenuItem
+                      onClick={(e) => {
+                        setApiDetails(api)
+                        e.stopPropagation()
+                        deleteButtonRef.current?.click()
+                      }}
+                      className="text-red-500"
+                    >
+                      Delete
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
+              </Fragment>
             ))}
         </div>
       )}
@@ -385,7 +377,7 @@ export default function RenderNavigation({
               className={buttonVariants({
                 size: 'xs',
                 variant: 'outline',
-                className: '',
+                className: 'h-8',
               })}
             >
               Cancel
@@ -399,11 +391,29 @@ export default function RenderNavigation({
               className={buttonVariants({
                 variant: 'destructive',
                 size: 'xs',
+                className: 'h-8',
               })}
             >
               Yes
             </AlertDialogAction>
           </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Env Dialog */}
+      <AlertDialog
+        open={isEnvDialogOpen}
+        onOpenChange={setIsEnvDialogOpen}
+      >
+        <AlertDialogContent className="min-w-[80%] w-auto h-auto block">
+          <AlertDialogHeader className="h-auto">
+            <AlertDialogTitle>Env Variables</AlertDialogTitle>
+            <AlertDialogDescription>
+              You can add, edit or delete env variables here.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <EnvVariables setIsEnvDialogOpen={setIsEnvDialogOpen} />
+          <AlertDialogFooter />
         </AlertDialogContent>
       </AlertDialog>
       <MoveToFolderDialog
@@ -417,6 +427,6 @@ export default function RenderNavigation({
         }
         setSelectedApis={setSelectedApis}
       />
-    </>
+    </div>
   )
 }

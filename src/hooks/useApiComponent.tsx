@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { platform } from '@tauri-apps/plugin-os'
 import copy from 'copy-to-clipboard'
 import {
   useCallback,
@@ -9,7 +8,12 @@ import {
   useState,
 } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom'
 import { v4 as uuid } from 'uuid'
 import { ResponseStatus } from '../components/api/api'
 import { toast } from '../components/ui/use-toast'
@@ -19,9 +23,12 @@ import {
   checkAndReplaceWithDynamicVariable,
   containsDynamicVariable,
   filterEmptyParams,
-  generateURLFromParams,
+  generateCurlFromJson,
   getQueryString,
-  isEmpty,
+  isCurlCall,
+  parseCookie,
+  parseCurlToJson,
+  parseURLParameters,
   replaceVariables,
   updateEnvWithDynamicVariableValue,
   updateUrlWithPathVariables,
@@ -29,22 +36,30 @@ import {
 import useResultRenderViewStore from '../store/resultRenderView'
 import useSidePanelToggleStore from '../store/sidePanelToggle'
 import useApiStore, { isLocalStorageAvailable } from '../store/store'
-import { ApiSchema, ApiType, ParamsType } from '../types/api'
+import useTabRenderStore from '../store/tabView'
+import { ApiSchema, ApiType, CookieType, ParamsType } from '../types/api'
 
 export default function useApiComponent() {
   const { api, getApi, updateApi, collections, env, getEnv, updateEnv } =
     useApiStore()
   const params = useParams()
+  const [cookies, setCookies] = useState<CookieType[]>([])
+  const { state } = useLocation()
+  const { updateTab } = useTabRenderStore()
   const { resultRenderView } = useResultRenderViewStore()
   const { isOpen } = useSidePanelToggleStore()
+  const [curl, setCurl] = useState<string>('')
   const [urlWidth, setUrlWidth] = useState<number>()
-  const formDivRef = useRef<HTMLFormElement>(null)
+  const formDivRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const [result, setResult] = useState<any>()
+  const [isUrlEditing, setIsUrlEditing] = useState(state?.isUrlEditing ?? false)
+  const [isApiNameEditing, setIsApiNameEditing] = useState(
+    state?.isApiNameEditing ?? false,
+  )
   const [isUrlCopied, setIsUrlCopied] = useState<boolean>(false)
   const breadCrumbDivRef = useRef<HTMLDivElement>(null)
   const urlDivRef = useRef<HTMLDivElement>(null)
-  const updateButtonRef = useRef<HTMLButtonElement>(null)
   const [sizes, setSizes] = useState<number[]>([
     (window.innerHeight - 320) / 2,
     (window.innerHeight - 320) / 2,
@@ -55,7 +70,6 @@ export default function useApiComponent() {
     statusText: '',
     time: '',
   })
-  const buttonRef = useRef<HTMLButtonElement>(null)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const form = useForm<ApiType>({
     mode: 'onChange',
@@ -69,26 +83,27 @@ export default function useApiComponent() {
   const hasActiveCustomParams = !!customParams?.filter(
     (item: ParamsType) => item.isActive && item.key !== '',
   ).length
-  url = generateURLFromParams(url, pathVariables!)
   url =
     !!filterEmptyParams(customParams!)?.length &&
     hasActiveCustomParams &&
     form.watch('activeQuery') === 'query-params'
-      ? url +
-        (hasActiveCustomParams ? '?' : '') +
-        getQueryString(arrayToObjectConversion(customParams!), env)
+      ? url + '?' + getQueryString(arrayToObjectConversion(customParams!), env)
       : typeof interactiveQuery === 'object' &&
-        Object.keys(interactiveQuery)?.length &&
-        form.watch('activeQuery') === 'interactive-query'
+        Object.keys(interactiveQuery)?.length
       ? url + '?' + getQueryString(interactiveQuery)
       : url
   const apiId = params.apiId as string
   const folderId = params.folderId as string
 
   useEffect(() => {
+    state?.isUrlEditing ? setIsUrlEditing(true) : null
+    state?.isApiNameEditing ? setIsApiNameEditing(true) : null
+  }, [state])
+
+  useEffect(() => {
     if (apiId && folderId) {
-      getApi(apiId!)
-      getEnv(folderId!)
+      getApi(apiId)
+      getEnv(folderId)
     } else {
       navigate('/')
     }
@@ -102,12 +117,6 @@ export default function useApiComponent() {
       localStorage.setItem('resultRenderView', resultRenderView)
     }
   }, [])
-
-  useEffect(() => {
-    if (apiId && folderId && !api) {
-      navigate('/')
-    }
-  }, [api, apiId, folderId, navigate])
 
   useEffect(() => {
     if (api.id === apiId) {
@@ -213,6 +222,12 @@ export default function useApiComponent() {
           ? api?.body
           : [{ id: uuid(), key: '', value: '', description: '' }],
       )
+      form.setValue(
+        'formData',
+        api?.formData?.length
+          ? api?.formData
+          : [{ id: uuid(), key: '', value: '', description: '' }],
+      )
       form.setValue('jsonBody', api?.jsonBody)
       form.setValue(
         'dynamicVariables',
@@ -247,31 +262,42 @@ export default function useApiComponent() {
           : 'query-params',
       )
     }
+    setCurl(replaceVariables(generateCurlFromJson(api), env))
 
-    const handleEscapeKeyPress = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
-        event.preventDefault()
-        if (!!Object.entries(form.formState.dirtyFields).length) {
-          updateButtonRef.current?.click()
-          form.reset()
-          getApi(api?.id)
-        }
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (
+        (event.ctrlKey && event.key === 's') ||
+        (event.metaKey && event.key === 's')
+      ) {
+        saveUpdate()
       }
+      if (event.key === 'Enter' && form.formState.isDirty) {
+        setIsApiNameEditing(false)
+        setIsUrlEditing(false)
+        saveUpdate()
+      }
+      if (event.key === 'Enter' && !form.formState.isDirty) {
+        setIsApiNameEditing(false)
+        setIsUrlEditing(false)
+      }
+
       if (event.key === 'Escape') {
-        // Handle the "Escape" key press here
-        form.reset()
-        setAllParams()
+        form.reset(api)
+        setIsUrlEditing(false)
+        setIsApiNameEditing(false)
       }
     }
 
     // Add the event listener when the component mounts
-    document.addEventListener('keydown', handleEscapeKeyPress)
+    document.addEventListener('keydown', handleKeyPress)
+    // document.addEventListener('keyup', handleKeyPress)
     setAllParams()
     // Remove the event listener when the component unmounts
     return () => {
-      document.removeEventListener('keydown', handleEscapeKeyPress)
+      document.removeEventListener('keydown', handleKeyPress)
+      // document.addEventListener('keyup', handleKeyPress)
     }
-  }, [form, api, getApi, searchParams])
+  }, [form, api, searchParams])
 
   // this is making the API call
   const onSubmit: SubmitHandler<ApiType> = async (submitData) => {
@@ -281,39 +307,17 @@ export default function useApiComponent() {
       statusText: '',
       time: '',
     }
+    setCookies([])
     // track the time to get the duration of api call
     const startTime = Date.now()
     try {
       setIsLoading(true)
 
-      // get the params in querystring from an array
-      const params =
-        form.watch('activeQuery') === 'query-params'
-          ? getQueryString(
-              arrayToObjectConversion(form.getValues('params')!),
-              env,
-            )
-          : typeof form.getValues('interactiveQuery') === 'object'
-          ? getQueryString(form.getValues('interactiveQuery'))
-          : ''
-
-      // This will update the url with given path variable  and will generate if user input something
-      let url = submitData.pathVariables?.find(
-        (item: ParamsType) => item.key !== '',
-      )
-        ? updateUrlWithPathVariables(
-            generateURLFromParams(submitData.url, submitData.pathVariables!),
-            submitData.pathVariables!,
-          )
-        : submitData.url
-      url = url + (params ? '?' + params : '')
-
-      // This will replace the {{dynamic_variable}} withe the variable's value
-      url = containsDynamicVariable(url) ? replaceVariables(url, env) : url
-
       // This will check if the {{dynamic_variable}} exists on body payload. If exists then replace with the value
       const requestBody = checkAndReplaceWithDynamicVariable(
-        arrayToObjectConversion(submitData.body!),
+        submitData.activeBody === 'x-form-urlencoded'
+          ? arrayToObjectConversion(submitData.body!)
+          : arrayToObjectConversion(submitData.formData!),
         env,
       )
 
@@ -343,55 +347,46 @@ export default function useApiComponent() {
 
       const activeBody = form.getValues('activeBody')
       // this is axios call
+      url = containsDynamicVariable(url)
+        ? replaceVariables(updateUrlWithPathVariables(url, pathVariables!), env)
+        : url.split('://')[1]?.includes('/:')
+        ? updateUrlWithPathVariables(url, pathVariables!)
+        : url
+      url = !url.includes('http') ? `http://${url}` : url
       const response = await fetcher({
         method: api.method,
-        url:
-          !url.includes('http') &&
-          (url.includes('localhost') || url.includes('127.0.0.1'))
-            ? 'http://' + url
-            : url,
+        url,
         submitDataBody: submitData.body,
         isUpload: files?.length ? true : false,
         headers,
         requestBody:
-          activeBody === 'json' ? form.getValues('jsonBody') : requestBody,
+          activeBody === 'json'
+            ? form.getValues('jsonBody')
+            : activeBody === 'form-data'
+            ? form.getValues('formData')
+            : requestBody,
+        contentType:
+          activeBody === 'json'
+            ? 'application/json'
+            : activeBody === 'form-data'
+            ? 'multipart/form-data'
+            : 'application/x-www-form-urlencoded',
       })
       const endTime = Date.now()
 
       // This will get the response time duration
       const responseTime = endTime - startTime
-      let resultText: string = ''
 
-      // setting up headers
-      try {
-        await platform()
-        setHeaders({
-          ...response?.headers,
-          'set-cookie':
-            response && (response as any).rawHeaders['set-cookie']
-              ? (response as any).rawHeaders['set-cookie']
-              : '',
-        })
-        const arrayBuffer = new Uint8Array(response && response.data).buffer
-        resultText = new TextDecoder('utf-8').decode(arrayBuffer)
-        try {
-          responseData = JSON.parse(resultText)
-          setResult(responseData)
-        } catch (error) {
-          responseData = resultText
-          setResult(responseData)
+      response.headers.forEach((value, key) => {
+        setHeaders((prev) => ({ ...prev, [key]: value }))
+        if (key === 'set-cookie') {
+          setCookies((prev) => [...prev, { ...parseCookie(value) }])
         }
-      } catch (error) {
-        setHeaders({
-          ...response?.headers,
-          'set-cookie':
-            response && response.headers['set-cookie']
-              ? response.headers['set-cookie']
-              : '',
-        })
-        responseData = response && response.data
-        setResult(responseData)
-      }
+      })
+
+      responseData = await response.json()
+      setResult(responseData)
+
       responseStatusData = {
         status: response && response?.status,
         statusText: 'ok',
@@ -401,7 +396,6 @@ export default function useApiComponent() {
 
       // If there is any requirement to set the value of a {{dynamic_variable}} with the response, this logic will do that and update that {{dynamic_variable}}
       if (api.dynamicVariables?.length) {
-        console.log(resultText)
         const updatedEnv = updateEnvWithDynamicVariableValue(
           submitData.dynamicVariables!,
           env,
@@ -424,6 +418,7 @@ export default function useApiComponent() {
         responseData = error?.response ? error?.response?.data : error?.message
         setResult(responseData)
       } else {
+        console.log(error)
         toast({
           variant: 'error',
           title: 'Error',
@@ -431,7 +426,9 @@ export default function useApiComponent() {
             typeof error !== 'string'
               ? error?.response?.data
                 ? error?.response?.data
-                : error?.message
+                : error?.message === 'Network Error'
+                ? `Unable to reach ${url}.`
+                : error.message
               : error,
         })
         setResult(null)
@@ -449,70 +446,63 @@ export default function useApiComponent() {
     updateApi(dataWithResponse, dataWithResponse.id)
   }
 
-  const callApi = async () => {
-    buttonRef.current?.click()
-  }
-
   const saveUpdate = useCallback(() => {
     const data: ApiType = {} as ApiType
-
-    if (params?.apiId) {
+    if (
+      params?.apiId &&
+      form.getValues('name') &&
+      form.getValues('url') &&
+      form.getValues('method')
+    ) {
       data.id = params?.apiId!
+      data.name = form.getValues('name')!
+      data.url = form.getValues('url')!
+      data.method = form.getValues('method')!
       data.params = filterEmptyParams(form.getValues('params')!)
       data.headers = filterEmptyParams(form.getValues('headers')!)
       data.dynamicVariables = filterEmptyParams(
         form.getValues('dynamicVariables')!,
       )
       data.body = filterEmptyParams(form.getValues('body')!)
-      data.pathVariables = filterEmptyParams(form.getValues('pathVariables')!)
+      data.formData = filterEmptyParams(form.getValues('formData')!)
+      data.pathVariables =
+        filterEmptyParams(form.watch('pathVariables')!).length! > 0 &&
+        form.watch('url').includes('/:')
+          ? filterEmptyParams(form.watch('pathVariables')!)
+          : form.watch('url').includes('/:')
+          ? filterEmptyParams(parseURLParameters(form.watch('url'))!)
+          : !form.watch('url').includes('/:') &&
+            filterEmptyParams(form.watch('pathVariables')!).length
+          ? []
+          : filterEmptyParams(form.watch('pathVariables')!)
       data.jsonBody = form.getValues('jsonBody')
       data.interactiveQuery = form.getValues('interactiveQuery')
-      data.response = result
-      data.responseStatus = JSON.stringify(responseStatus)
       updateApi(data, params.apiId)
       toast({
         variant: 'success',
         title: 'Success',
         description: 'Api is updated successfully',
       })
-      form.reset()
-      getApi(api?.id)
+      setIsUrlEditing(false)
+      setIsApiNameEditing(false)
+      updateTab({
+        id: params.apiId,
+        name: data.name,
+        folderId: folderId,
+        isActive: true,
+      })
+      form.reset(data)
     }
-  }, [form])
+  }, [form, api])
 
   const copyUrl = () => {
     setIsUrlCopied(true)
-    const params =
-      isEmpty(form.getValues('params')!) &&
-      form.getValues('activeQuery') === 'query-params'
-        ? getQueryString(
-            arrayToObjectConversion(form.getValues('params')!),
-            env,
-          )
-        : typeof interactiveQuery === 'object' &&
-          Object.keys(interactiveQuery)?.length
-        ? getQueryString(form.getValues('interactiveQuery'))
-        : ''
-    let url = form
-      .getValues('pathVariables')
-      ?.find((item: ParamsType) => item.key !== '')
-      ? updateUrlWithPathVariables(
-          generateURLFromParams(
-            form.getValues('url'),
-            form.getValues('pathVariables')!,
-          ),
-          form.getValues('pathVariables')!,
-        )
-      : form.getValues('url')
-    url = url + (params ? '?' + params : '')
-
-    // This will replace the {{dynamic_variable}} withe the variable's value
-    url = containsDynamicVariable(url) ? replaceVariables(url, env) : url
-    url =
-      !url.includes('http') &&
-      (url.includes('localhost') || url.includes('127.0.0.1'))
-        ? 'http://' + url
-        : url
+    url = containsDynamicVariable(url)
+      ? replaceVariables(updateUrlWithPathVariables(url, pathVariables!), env)
+      : url.split('://')[1]?.includes('/:')
+      ? updateUrlWithPathVariables(url, pathVariables!)
+      : url
+    url = url.includes('http') ? url : `http://${url}`
     copy(url)
     toast({
       variant: 'success',
@@ -522,6 +512,39 @@ export default function useApiComponent() {
     setTimeout(() => {
       setIsUrlCopied(false)
     }, 2000)
+  }
+
+  const saveRequestFromCurl = (cmd: string, id: string) => {
+    if (isCurlCall(cmd)) {
+      const data = parseCurlToJson(cmd, id)
+      if (data) {
+        updateApi(data, id)
+        navigate(`/api/${folderId}/${id}`)
+        getApi(api?.id)
+        toast({
+          variant: 'success',
+          title: 'Success',
+          description: 'Api is updated successfully',
+        })
+      }
+    } else {
+      toast({
+        variant: 'error',
+        title: 'Error',
+        description: 'Invalid curl command',
+      })
+    }
+  }
+
+  const copyCurl = () => {
+    let request = api
+    request.url = url
+    copy(generateCurlFromJson(request))
+    toast({
+      variant: 'success',
+      title: 'Success',
+      description: 'Curl is copied to clipboard',
+    })
   }
 
   return {
@@ -535,14 +558,12 @@ export default function useApiComponent() {
     setIsUrlCopied,
     breadCrumbDivRef,
     urlDivRef,
-    updateButtonRef,
     sizes,
     setSizes,
     headers,
     setHeaders,
     responseStatus,
     setResponseStatus,
-    buttonRef,
     isLoading,
     setIsLoading,
     form,
@@ -556,7 +577,6 @@ export default function useApiComponent() {
     getEnv,
     copyUrl,
     onSubmit,
-    callApi,
     saveUpdate,
     apiId,
     folderId,
@@ -564,5 +584,14 @@ export default function useApiComponent() {
     api,
     collections,
     env,
+    isUrlEditing,
+    setIsUrlEditing,
+    isApiNameEditing,
+    setIsApiNameEditing,
+    cookies,
+    saveRequestFromCurl,
+    curl,
+    setCurl,
+    copyCurl,
   }
 }

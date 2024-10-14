@@ -1,13 +1,13 @@
-import { BaseDirectory, writeTextFile } from '@tauri-apps/plugin-fs'
-import { platform } from '@tauri-apps/plugin-os'
 import React, { useEffect, useRef, useState } from 'react'
 import { SubmitHandler } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router-dom'
 import { v4 as uuid } from 'uuid'
 import { z } from 'zod'
 import { toast } from '../components/ui/use-toast'
+import { downloadFile, updateRecentlyOpenedApis } from '../lib/utils'
+import useCreatingFolderStore from '../store/createFolder'
 import useApiStore from '../store/store'
-import useTabRenderView from '../store/tabView'
+import useTabRenderStore from '../store/tabView'
 import { ApiType, CollectionSchema, FolderType } from '../types/api'
 import useImportJSON from './useImportJSON'
 
@@ -21,14 +21,17 @@ export default function useRenderNav({
   const { InputFile } = useImportJSON()
   const [apiDetails, setApiDetails] = useState<ApiType>()
   const deleteButtonRef = useRef<HTMLButtonElement>(null)
-  const { updateFolder, deleteFolder, createFolder, deleteApi } = useApiStore()
+  const { updateFolder, deleteFolder, createFolder, deleteApi, createApi } =
+    useApiStore()
   const [selectedApis, setSelectedApis] = useState<ApiType[]>([])
   const [collectionId, setCollectionId] = useState<string>('')
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false)
+  const { isCreatingFolder, setIsCreatingFolder } = useCreatingFolderStore()
+  const [isEnvDialogOpen, setIsEnvDialogOpen] = useState(false)
+  const [isFolderOpen, setIsFolderOpen] = useState(true)
   const [isFolderNameUpdating, setIsFolderNameUpdating] = useState(false)
   const [isMoveToFolderDialogOpen, setIsMoveToFolderDialogOpen] =
     useState(false)
-  const { addInTab } = useTabRenderView()
+  const { addTab, tabs, updateTab } = useTabRenderStore()
 
   // Rename collection
   const renameCollectionName: SubmitHandler<
@@ -47,11 +50,12 @@ export default function useRenderNav({
 
   // Delete Collection
   const deleteCollection = (id: string) => {
+    updateTab(updateRecentlyOpenedApis(tabs, collection))
     deleteFolder(id)
     toast({
       variant: 'success',
       title: `Success`,
-      description: `${collection.type} is deleted successfully`,
+      description: `${collection.name} is deleted successfully`,
     })
     navigate('/')
   }
@@ -74,68 +78,51 @@ export default function useRenderNav({
 
   // Delete Collection
   const deleteApiHandler = (id: string) => {
+    updateTab(updateRecentlyOpenedApis(tabs, collection))
     deleteApi(id)
+    const tab = tabs.find((t) => t.id === params.apiId)
+    if (!tab) {
+      navigate('/')
+    } else {
+      const nextTab =
+        tabs.indexOf(tab) === 0
+          ? tabs[tabs.indexOf(tab) + 1]
+          : tabs[tabs.indexOf(tab) - 1]
+
+      navigate(`/api/${nextTab.folderId}/${nextTab.id}`)
+    }
     toast({
       variant: 'success',
       title: `Success`,
-      description: `Api is deleted successfully`,
+      description: `${apiDetails?.name} Api is deleted successfully`,
     })
-    if (params.apiId === id) {
-      navigate('/')
-    }
   }
-  // Export as JSON
-  const downloadFile = async ({
-    data,
-    fileName,
-    fileType,
-  }: {
-    data: FolderType
-    fileName: string
-    fileType: string
-  }) => {
-    const downloadFromBrowser = () => {
-      // Create a blob with the data we want to download as a file
-      const blob = new Blob([JSON.stringify(data)], { type: fileType })
-      // Create an anchor element and dispatch a click event on it
-      // to trigger a download
-      const a = document.createElement('a')
-      a.download = fileName
-      a.href = window.URL.createObjectURL(blob)
-      const clickEvt = new MouseEvent('click', {
-        view: window,
-        bubbles: true,
-        cancelable: true,
-      })
-      a.dispatchEvent(clickEvt)
-      a.remove()
-    }
 
-    try {
-      const platformName = await platform()
-      if (
-        platformName === 'macos' ||
-        platformName === 'windows' ||
-        platformName === 'linux'
-      ) {
-        await writeTextFile(`${fileName}`, JSON.stringify(data), {
-          baseDir: BaseDirectory.Download,
-        })
-        toast({
-          variant: 'success',
-          title: `Success`,
-          description: `${fileName} is saved to Downloads`,
-        })
-      }
-    } catch (error: any) {
-      console.log('🚀 ~ error:', error)
-      downloadFromBrowser()
-      toast({
-        variant: 'success',
-        title: `Success`,
-        description: `${fileName} is saved to Downloads`,
-      })
+  const addApi = () => {
+    let data: ApiType = {
+      id: uuid(),
+      url: 'https://example.com',
+      name: 'New Api',
+      method: 'GET',
+      params: [],
+      headers: [],
+      dynamicVariables: [],
+      body: [],
+      pathVariables: [],
     }
+    createApi(data, collection.id)
+    navigate(`/api/${collection.id}/${data.id}`, {
+      state: {
+        isUrlEditing: true,
+        isApiNameEditing: true,
+      },
+    })
+    addTab({
+      id: data.id,
+      name: data.name,
+      folderId: collection.id,
+      isActive: true,
+    })
   }
 
   const folderDropDownMenu: {
@@ -147,7 +134,7 @@ export default function useRenderNav({
       name: 'Env Variables',
       onClick: (e) => {
         e.stopPropagation()
-        navigate(`/api/variables/${collection.id}`)
+        setIsEnvDialogOpen(true)
       },
       isHidden: collection.type === 'folder',
     },
@@ -155,7 +142,7 @@ export default function useRenderNav({
       name: 'Add Request',
       onClick: (e) => {
         e?.stopPropagation()
-        navigate(`/api/${collection.id}/add`)
+        addApi()
       },
     },
     {
@@ -164,7 +151,7 @@ export default function useRenderNav({
         e?.stopPropagation()
         setCollectionId(collection.id)
         setIsCreatingFolder(true)
-        // addFolderButtonRef.current?.click()
+        setIsFolderOpen(true)
       },
     },
     {
@@ -202,6 +189,9 @@ export default function useRenderNav({
         setIsFolderNameUpdating(false)
         setCollectionId('')
         setIsCreatingFolder(false)
+        setIsCreatingFolder(false)
+        setIsEnvDialogOpen(false)
+        setSelectedApis([])
       }
     }
 
@@ -225,12 +215,13 @@ export default function useRenderNav({
         setSelectedApis([...selectedApis, api])
       }
     } else {
-      addInTab({
+      addTab({
         id: api.id,
         name: api.name,
         folderId: collection.id,
+        isActive: true,
       })
-      navigate(`/api/${collection.id}/${api.id}`)
+      navigate(`/api/${collection.id}/${api.id}#${api.id}`)
     }
   }
 
@@ -255,5 +246,10 @@ export default function useRenderNav({
     isMoveToFolderDialogOpen,
     setIsMoveToFolderDialogOpen,
     handleClickApi,
+    downloadFile,
+    isEnvDialogOpen,
+    setIsEnvDialogOpen,
+    isFolderOpen,
+    setIsFolderOpen,
   }
 }

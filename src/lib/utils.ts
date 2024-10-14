@@ -3,10 +3,19 @@
 import QueryString from 'qs'
 import { twMerge } from 'tailwind-merge'
 
-import { ApiType, FolderType, ParamsType } from '@/types/api'
+import {
+  ApiType,
+  CookieType,
+  FolderType,
+  ParamsType,
+  TabType,
+} from '@/types/api'
+import { BaseDirectory, writeTextFile } from '@tauri-apps/plugin-fs'
+import { platform } from '@tauri-apps/plugin-os'
 import clsx, { ClassValue } from 'clsx'
 import dayjs from 'dayjs'
 import { v4 as uuid } from 'uuid'
+import { toast } from '../components/ui/use-toast'
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -195,7 +204,7 @@ export function resolveQuery(queryString: string, data: any) {
       }
     }
   } else if (result && typeof result === 'object') {
-    properties = properties.filter((item) => item !== 'response')
+    properties = properties.filter((item) => item.toLowerCase() !== 'response')
     for (const property of properties) {
       result = property !== 'response' ? result[property] ?? '' : ''
     }
@@ -226,49 +235,34 @@ export function checkAndReplaceWithDynamicVariable(
 }
 
 export function updateUrlWithPathVariables(url: string, params: ParamsType[]) {
-  const values: string[] = []
   let baseURL = url
-  let queryString = ''
 
-  // Find and replace path variables in the URL
-  if (params?.length) {
-    params.forEach((item) => {
-      baseURL = baseURL.replace(`:${item.key}`, item.value)
-    })
-  }
+  // Replace path variables in the URL
+  params?.forEach((item) => {
+    baseURL = baseURL.replace(`:${item.key}`, item.value)
+  })
 
-  // Separate query string if exists
-  const urlParts = baseURL.split('?')
-  if (urlParts.length > 1) {
-    baseURL = urlParts[0]
-    queryString = urlParts[1]
-  }
+  // Split URL to handle query string
+  const [path, queryString] = baseURL.split('?')
 
-  // Construct URL based on the index order
-  if (queryString) {
-    const updatedURL = baseURL + '/' + values.join('/') + '?' + queryString
-    return updatedURL.endsWith('/') ? updatedURL.slice(0, -1) : updatedURL
-  } else {
-    const updatedURL = baseURL + '/' + values.join('/')
-
-    return updatedURL.endsWith('/') ? updatedURL.slice(0, -1) : updatedURL
-  }
+  // Clean up trailing slash and return
+  return queryString
+    ? `${path}?${queryString}`.replace(/\/$/, '')
+    : path.replace(/\/$/, '')
 }
 
 const pathVariableMatcher = /\/:(?![0-9])[^/?]+/g
 
 export function parseURLParameters(url: string) {
-  const regex = pathVariableMatcher
-  const parameters = []
+  const parameters: ParamsType[] = []
   let match
 
-  while ((match = regex.exec(url)) !== null) {
-    if (match.index > url.indexOf('?') && url.includes('?')) {
-      break // Stop parsing if the URL contains a query string and the match is after '?'
-    }
+  // Extract path variables from the URL
+  while ((match = pathVariableMatcher.exec(url)) !== null) {
+    if (url.includes('?') && match.index > url.indexOf('?')) break // Stop at query string
 
     parameters.push({
-      id: 'uuid', // This will be filled later based on your data
+      id: uuid(), // This will be filled later based on your data
       key: match[0].substring(2), // Extracting the parameter key without '/:'
       value: '',
       description: '',
@@ -280,21 +274,16 @@ export function parseURLParameters(url: string) {
 
 export function parseURLQueryParameters(url: string) {
   const parameters: ParamsType[] = []
-
   const queryString = url?.split('?')[1]
 
   if (queryString) {
-    const params = queryString.split('&')
-
-    params.forEach((param) => {
-      const keyValue = param.split('=')
-      if (keyValue.length === 2) {
-        parameters.push({
-          id: uuid(),
-          key: keyValue[0],
-          value: keyValue[1],
-        })
-      }
+    const searchParams = new URLSearchParams(queryString)
+    searchParams.forEach((value, key) => {
+      parameters.push({
+        id: uuid(), // Generate unique ID
+        key,
+        value,
+      })
     })
   }
 
@@ -304,68 +293,49 @@ export function parseURLQueryParameters(url: string) {
 export function generateURLFromParams(url: string, params: ParamsType[]) {
   let newURL = url
 
-  if (params && params.length && !params.find((item) => item.key === '')) {
-    params.forEach((param, index) => {
-      if (index + 1 !== params.length && !url?.includes(`/:${param?.key}`)) {
-        newURL = newURL.replace(
-          `/:${param?.key}`,
-          `/:${param?.key}/:${params[index + 1]?.key}`,
-        )
-      } else {
-        newURL =
-          newURL + (!url?.includes(`/:${param?.key}`) ? `/:${param?.key}` : '')
+  if (params?.length) {
+    params.forEach((param) => {
+      if (!url.includes(`/:${param.key}`)) {
+        newURL += `/:${param.key}`
       }
     })
 
-    const keysInURL = new Set(newURL?.match(pathVariableMatcher))
-
+    const keysInURL = new Set(newURL.match(pathVariableMatcher))
     params.forEach((param) => {
       if (!keysInURL.has(`/:${param.key}`)) {
-        newURL = newURL?.replace(pathVariableMatcher, `/:${param.key}`)
+        newURL = newURL.replace(pathVariableMatcher, `/:${param.key}`)
       }
     })
-    return newURL
-  } else {
-    const queryPortion = newURL?.split('?')?.length
-      ? newURL?.split('?')[1] ?? ''
-      : ''
-
-    newURL =
-      queryPortion !== ''
-        ? newURL?.split('/:')[0] + '?' + queryPortion
-        : newURL?.split('/:')[0]
-    return newURL
   }
+
+  const queryPortion = url?.includes('?') ? newURL.split('?')[1] || '' : ''
+  newURL = queryPortion
+    ? `${newURL.split('/:')[0]}?${queryPortion}`
+    : newURL?.split('/:')[0]
+
+  return newURL
 }
 
 // this function will filter the url and remove ':pathVar' which are not includes in Params array
 export function filterURLWithParams(url: string, params: ParamsType[]) {
-  const keysInArray = params?.map((param) => `/:${param.key}`)
-  const regex = pathVariableMatcher
-  const matchedKeys = url?.match(regex)
+  const keysInArray = params.map((param) => `/:${param.key}`)
+  const matchedKeys = url.match(pathVariableMatcher)
 
   if (matchedKeys) {
-    const keysInURL = new Set(matchedKeys)
-    const unusedKeys = [...keysInURL].filter(
-      (key) => !keysInArray.includes(key),
-    )
-
-    unusedKeys.forEach((unusedKey) => {
-      url = url.replace(unusedKey, '') // Remove unused keys from the URL
+    matchedKeys.forEach((key) => {
+      if (!keysInArray.includes(key)) {
+        url = url.replace(key, '') // Remove unused keys from the URL
+      }
     })
 
-    // Clean up any leftover slashes from removed parameters
+    // Clean up slashes and query string
     url = url
       .replace(/\/{2,}/g, '/')
       .replace(/\?&/, '?')
       .replace(/\?$/, '')
 
-    // Remove trailing slash if present at the end
-    if (url.endsWith('/')) {
-      url = url.slice(0, -1)
-    }
-
-    return url
+    // Remove trailing slash if present
+    return url.endsWith('/') ? url.slice(0, -1) : url
   }
 
   return url
@@ -406,7 +376,7 @@ export function search(
   return results
 }
 
-export function parseCookie(cookie: string) {
+export function parseCookie(cookie: string): CookieType {
   const getCookieData = (cookieKey: string) => {
     if (
       cookie.split(';').find((item) => item.includes(cookieKey)) &&
@@ -437,14 +407,14 @@ export function parseCookie(cookie: string) {
 
   const customKey = cookie.split(';')[0]?.split('=')[0]
   const customValue = cookie.split(';')[0]?.split('=')[1]
-  const maxAge = getCookieData('Max-Age')
+  const maxAge = getCookieData('Max-Age') ?? ''
   const expires = dayjs(getCookieData('Expires') as string).format(
     'DD ddd MMM YYYY HH:mm:ss',
   )
-  const path = getCookieData('Path')
-  const secure = getCookieData('Secure')
-  const httpOnly = getCookieData('HttpOnly')
-  const sameSite = getCookieData('SameSite')
+  const path = getCookieData('Path') ?? ''
+  const secure = getCookieData('Secure') ?? ''
+  const httpOnly = getCookieData('HttpOnly') ?? ''
+  const sameSite = getCookieData('SameSite') ?? ''
 
   return {
     customKey,
@@ -602,4 +572,251 @@ export const findRootCollection = (
   return currentFolder && currentFolder.type === 'collection'
     ? currentFolder
     : null
+}
+
+// Function to update recently opened APIs based on deleted collection
+export function updateRecentlyOpenedApis(
+  recentlyOpenedApis: TabType[],
+  deletedCollection: FolderType,
+): TabType[] {
+  // Create an array to collect all API IDs that should be removed (from the deleted collection)
+  const apiIdsToRemove: string[] = []
+
+  if (deletedCollection?.children && deletedCollection.children.length > 0) {
+    deletedCollection?.children?.forEach((folder: FolderType) => {
+      if (folder?.children && folder.children.length > 0) {
+        folder.children.forEach((child: FolderType) => {
+          updateRecentlyOpenedApis(recentlyOpenedApis, child)
+        })
+      } else {
+        folder?.apis?.forEach((api) => {
+          apiIdsToRemove.push(api.id)
+        })
+      }
+    })
+  } else {
+    deletedCollection.apis?.forEach((api) => {
+      apiIdsToRemove.push(api.id)
+    })
+  }
+
+  // Iterate through the folders in the deleted collection and collect their API IDs
+
+  // Filter the recently opened APIs and remove the ones whose id is in apiIdsToRemove
+  return recentlyOpenedApis.filter((api) => !apiIdsToRemove.includes(api.id))
+}
+
+// Export as JSON
+export const downloadFile = async ({
+  data,
+  fileName,
+  fileType,
+}: {
+  data: FolderType | ApiType
+  fileName: string
+  fileType: 'text/json'
+}) => {
+  const downloadFromBrowser = () => {
+    // Create a blob with the data we want to download as a file
+    const blob = new Blob([JSON.stringify(data)], { type: fileType })
+    // Create an anchor element and dispatch a click event on it
+    // to trigger a download
+    const a = document.createElement('a')
+    a.download = fileName
+    a.href = window.URL.createObjectURL(blob)
+    const clickEvt = new MouseEvent('click', {
+      view: window,
+      bubbles: true,
+      cancelable: true,
+    })
+    a.dispatchEvent(clickEvt)
+    a.remove()
+  }
+
+  try {
+    const platformName = platform()
+    if (
+      platformName === 'macos' ||
+      platformName === 'windows' ||
+      platformName === 'linux'
+    ) {
+      await writeTextFile(`${fileName}`, JSON.stringify(data), {
+        baseDir: BaseDirectory.Download,
+      })
+      toast({
+        variant: 'success',
+        title: `Success`,
+        description: `${fileName} is saved to Downloads`,
+      })
+    }
+  } catch (error: any) {
+    console.log('🚀 ~ error:', error)
+    downloadFromBrowser()
+    toast({
+      variant: 'success',
+      title: `Success`,
+      description: `${fileName} is saved to Downloads`,
+    })
+  }
+}
+
+export function isCurlCall(input: string): boolean {
+  // Basic pattern to detect curl command
+  const curlRegex = /^curl\s+/
+
+  // Check for common elements in a curl call
+  const methodRegex = /-X\s*(GET|POST|PUT|PATCH|DELETE)/i
+  const headerRegex = /-H\s*"([^:]+):\s*([^"]*)"/
+  const dataRegex = /-d\s*'([^']*)'/
+  const urlRegex = /(https?:\/\/[^\s]+)/
+
+  // Check if the input starts with 'curl'
+  if (!curlRegex.test(input)) {
+    return false
+  }
+
+  // Check if the input has at least a URL or a method, headers, or data
+  const hasMethod = methodRegex.test(input)
+  const hasHeader = headerRegex.test(input)
+  const hasData = dataRegex.test(input)
+  const hasUrl = urlRegex.test(input)
+
+  // If it contains any combination of these, it's likely a curl call
+  return hasMethod || hasHeader || hasData || hasUrl
+}
+
+export function parseCurlToJson(curl: string, id: string): ApiType {
+  const result: ApiType = {
+    id,
+    name: '',
+    url: '',
+    method: 'GET',
+    params: [],
+    pathVariables: [],
+    headers: [],
+    body: [],
+    dynamicVariables: [],
+    formData: [],
+    jsonBody: {},
+    interactiveQuery: {},
+    activeBody: undefined,
+    activeQuery: undefined,
+  }
+
+  const headerRegex = /-H\s+['"]([^:]+):\s*([^'"]+)['"]/g // Update for -H flag
+  const bodyRegex = /(--data-urlencode|--data|-d|--form|-F)\s+(['"])(.*?)\2/g
+  const methodRegex = /-X\s*(\w+)/ // Extract method
+  const urlRegex = /(https?:\/\/[^\s'"]+)/ // Extract URL
+
+  // Extract headers
+  let headerMatch
+  while ((headerMatch = headerRegex.exec(curl)) !== null) {
+    result.headers?.push({
+      id: uuid(),
+      isActive: true,
+      key: headerMatch[1].trim(),
+      value: headerMatch[2].trim(),
+    })
+  }
+
+  // Extract body including --data, -d, --data-urlencode, and form data (-F)
+  let bodyMatch
+  while ((bodyMatch = bodyRegex.exec(curl)) !== null) {
+    const option = bodyMatch[1]
+    const value = bodyMatch[3]
+
+    if (option === '--data-urlencode') {
+      // Handle URL-encoded data
+      const [key, encodedValue] = value.split('=')
+      const decodedValue = decodeURIComponent(encodedValue || '')
+      result?.body?.push({
+        id: uuid(),
+        isActive: true,
+        key: key.trim(),
+        value: decodedValue.trim(),
+      })
+      result.activeBody = 'x-form-urlencoded'
+    } else if (option === '-F' || option === '--form') {
+      // Handle multipart form data
+      const [key, formValue] = value.split('=')
+      result?.formData?.push({
+        id: uuid(),
+        isActive: true,
+        key: key.trim(),
+        value: formValue.trim(),
+      })
+      result.activeBody = 'x-form-urlencoded'
+    } else {
+      // Handle JSON data from -d or --data
+      try {
+        const parsedJson = JSON.parse(value)
+        result.jsonBody = { ...result.jsonBody, ...parsedJson }
+        result.activeBody = 'json'
+      } catch (error) {
+        // If it's not JSON, push it to the body array
+        result?.body?.push({
+          id: uuid(),
+          isActive: true,
+          key: 'body',
+          value: value,
+        })
+        result.activeBody = 'x-form-urlencoded'
+      }
+    }
+  }
+
+  // Extract method
+  const methodMatch = methodRegex.exec(curl)
+  if (methodMatch) {
+    result.method = methodMatch[1].toUpperCase() as ApiType['method']
+  }
+
+  // Extract URL
+  const urlMatch = urlRegex.exec(curl)
+  if (urlMatch) {
+    result.url = urlMatch[0]
+    result.name = 'Curl Request'
+  }
+
+  return result
+}
+
+export function generateCurlFromJson(apiData: ApiType): string {
+  let curlCommand = `curl --location --request ${apiData.method} '${apiData.url}'`
+
+  // Add headers
+  if (apiData.headers && apiData.headers.length > 0) {
+    apiData.headers.forEach((header) => {
+      if (header.key && header.value) {
+        curlCommand += ` \\\n--header '${header.key}: ${header.value}'`
+      }
+    })
+  }
+  // Add body or form data based on activeBody type
+  if (
+    apiData.body &&
+    filterEmptyParams(apiData.body).length > 0 &&
+    apiData.body.find((param) => param.isActive)
+  ) {
+    // Add urlencoded data
+    filterEmptyParams(apiData.body).forEach((param) => {
+      curlCommand += ` \\\n--data-urlencode '${param.key}=${encodeURIComponent(
+        param.value,
+      )}'`
+    })
+  } else if (apiData.jsonBody && Object.keys(apiData.jsonBody).length > 0) {
+    // Add JSON body
+    curlCommand += ` \\\n--data '${JSON.stringify(apiData.jsonBody)}'`
+  } else if (
+    apiData.formData &&
+    filterEmptyParams(apiData.formData).length > 0 &&
+    apiData.formData.find((formParam) => formParam.isActive)
+  ) {
+    // Add form data
+    filterEmptyParams(apiData.formData).forEach((formParam) => {
+      curlCommand += ` \\\n-F '${formParam.key}=${formParam.value}'`
+    })
+  }
+
+  return curlCommand
 }
