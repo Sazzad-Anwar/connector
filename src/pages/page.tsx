@@ -2,11 +2,11 @@ import { v4 as uuid } from 'uuid'
 import SideNavToggler from '../components/nav/sidenav-toggler'
 import { Button, buttonVariants } from '../components/ui/button'
 import useImportJSON from '../hooks/useImportJSON'
-import useSidePanelToggleStore from '../store/sidePanelToggle'
+import useCreatingFolderStore from '../store/createFolder'
 
 export default function page() {
   const { InputFile } = useImportJSON()
-  const { isCreatingFolder, setIsCreatingFolder } = useSidePanelToggleStore()
+  const { isCreatingFolder, setIsCreatingFolder } = useCreatingFolderStore()
 
   return (
     <section className="flex h-screen flex-col items-center justify-center text-center relative">
@@ -34,7 +34,7 @@ export default function page() {
           variant="secondary"
           className="bg-secondary/50 text-muted-foreground hover:text-foreground"
           onClick={() => {
-            setIsCreatingFolder(true, 'collection')
+            setIsCreatingFolder(true)
           }}
         >
           Create Collection
