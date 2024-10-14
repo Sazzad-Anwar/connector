@@ -55,10 +55,10 @@ export default function CreateFolder({
             <FormItem>
               <FormControl className="mb-0">
                 <div className={className}>
-                  <FolderClosed
-                    size={16}
-                    className="mr-1"
-                  />
+                  <div className="size-[18px] mr-2">
+                    <FolderClosed size={18} />
+                  </div>
+
                   <Input
                     placeholder={
                       type === 'collection' ? 'Collection name' : 'Folder name'

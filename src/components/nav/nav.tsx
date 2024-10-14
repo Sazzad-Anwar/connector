@@ -10,6 +10,7 @@ import { SubmitHandler, useForm } from 'react-hook-form'
 import { v4 as uuid } from 'uuid'
 import * as z from 'zod'
 import { useDebounce } from '../../hooks/useDebounce'
+import useCreatingFolderStore from '../../store/createFolder'
 import { CollectionSchema, FolderType } from '../../types/api'
 import CreateFolder from '../collections/create-folder'
 import { Button } from '../ui/button'
@@ -27,7 +28,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
   const { InputFile } = useImportJSON()
   const { isOpen } = useSidePanelToggleStore()
   const [search, setSearch] = useState<string>('')
-  const { isCreatingFolder, setIsCreatingFolder } = useSidePanelToggleStore()
+  const { setIsCreatingFolder, isCreatingCollection } = useCreatingFolderStore()
   const { collections, createFolder, searchApi, getCollections } = useApiStore()
   const debouncedValue = useDebounce(search, 700)
   const form = useForm<z.infer<typeof CollectionSchema>>({
@@ -127,7 +128,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
           </InputFile>
         </div>
         <div className="max-h-[calc(100vh-106px)] overflow-auto pb-5 relative">
-          {!collections?.length && !isCreatingFolder && (
+          {!collections?.length && !isCreatingCollection && (
             <div className="flex flex-col h-[calc(100vh-126px)] w-full items-center justify-center">
               <Folder
                 size={60}
@@ -142,7 +143,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
               collection={collection}
             />
           ))}
-          {isCreatingFolder && (
+          {isCreatingCollection && (
             <CreateFolder
               name={''}
               onSubmit={onSubmit}

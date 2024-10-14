@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils'
 import useTabRenderStore from '@/store/tabView'
 import { X } from 'lucide-react'
+import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../ui/button'
 import {
@@ -16,9 +17,13 @@ type Props = {
 }
 
 export default function ApiTabs({ isEdited }: Props) {
-  const { tabs, removeTab } = useTabRenderStore()
+  const { tabs, removeTab, updateTab } = useTabRenderStore()
   const { apiId } = useParams()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    updateTab(tabs.map((item) => ({ ...item, isActive: apiId === item.id })))
+  }, [apiId])
 
   return (
     <div>
@@ -34,7 +39,18 @@ export default function ApiTabs({ isEdited }: Props) {
                 'basis-44 mr-0.5  text-left rounded-t-lg border flex items-center pl-2.5 pr-1.5 py-1 selection:bg-transparent',
                 tab.id === apiId ? 'bg-secondary' : 'bg-background',
               )}
-              onClick={() => navigate(`/api/${tab.folderId}/${tab.id}`)}
+              onClick={() => {
+                const element = document.getElementById(tab.id)
+                element?.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'center',
+                })
+                updateTab({
+                  ...tab,
+                  isActive: true,
+                })
+                navigate(`/api/${tab.folderId}/${tab.id}#${tab.id}`)
+              }}
             >
               <span className="cursor-pointer w-full text-xs py-1 truncate">
                 {tab.name}

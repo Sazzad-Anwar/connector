@@ -1,26 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { cn } from '@/lib/utils'
 import useSidePanelToggleStore from '@/store/sidePanelToggle'
-
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Pane } from 'split-pane-react'
 import SplitPane from 'split-pane-react/esm/SplitPane'
-// import useUpdate from '../hooks/useUpdate'
+import useUpdate from '../hooks/useUpdate'
+import useTabRenderStore from '../store/tabView'
 import SideNav from './nav/nav'
 import { Toaster } from './ui/toaster'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { isOpen } = useSidePanelToggleStore()
-  // const { checkUpdate, RestartApp } = useUpdate()
+  const { tabs } = useTabRenderStore()
+  const navigate = useNavigate()
+  const { checkUpdate, RestartApp } = useUpdate()
   const sideNavWidth = 300
   const [sizes, setSizes] = useState([
     window.innerWidth >= 1024 ? 250 : sideNavWidth,
     window.innerWidth - sideNavWidth,
   ])
 
-  // useEffect(() => {
-  //   checkUpdate()
-  // }, [])
+  useEffect(() => {
+    checkUpdate()
+  }, [])
 
   useEffect(() => {
     if (!isOpen) {
@@ -29,6 +32,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       setSizes([sideNavWidth, window.innerWidth - sideNavWidth])
     }
   }, [isOpen])
+
+  useEffect(() => {
+    const activeTab = tabs.find((tab) => tab.isActive)
+    if (activeTab?.id) {
+      navigate(`/api/${activeTab?.folderId}/${activeTab?.id}`)
+    } else {
+      navigate('/')
+    }
+  }, [])
 
   useEffect(() => {
     const resizeWindow = () => {
@@ -80,6 +92,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             split="vertical"
             sizes={sizes}
             onChange={(sizes) => setSizes(sizes)}
+            className="hidden lg:block"
           >
             <Pane
               minSize={isOpen ? sideNavWidth : 0}
@@ -95,10 +108,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               {children}
             </Pane>
           </SplitPane>
+          <div className="block lg:hidden">{children}</div>
           <Toaster />
         </div>
       </main>
-      {/* <RestartApp /> */}
+      <RestartApp />
     </>
   )
 }

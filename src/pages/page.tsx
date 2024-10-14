@@ -1,4 +1,5 @@
 import { v4 as uuid } from 'uuid'
+import SideNavToggler from '../components/nav/sidenav-toggler'
 import { Button, buttonVariants } from '../components/ui/button'
 import useImportJSON from '../hooks/useImportJSON'
 import useSidePanelToggleStore from '../store/sidePanelToggle'
@@ -9,6 +10,7 @@ export default function page() {
 
   return (
     <section className="flex h-screen flex-col items-center justify-center text-center relative">
+      <SideNavToggler className="absolute top-3 left-3" />
       <div className="flex justify-center items-center h-14 w-14 rounded-full border bg-secondary p-2">
         <i className="bi bi-plugin text-4xl " />
       </div>
@@ -31,7 +33,9 @@ export default function page() {
           disabled={isCreatingFolder}
           variant="secondary"
           className="bg-secondary/50 text-muted-foreground hover:text-foreground"
-          onClick={() => setIsCreatingFolder(true)}
+          onClick={() => {
+            setIsCreatingFolder(true, 'collection')
+          }}
         >
           Create Collection
         </Button>

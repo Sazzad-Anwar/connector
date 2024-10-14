@@ -5,7 +5,7 @@ import { v4 as uuid } from 'uuid'
 import { z } from 'zod'
 import { toast } from '../components/ui/use-toast'
 import { downloadFile, updateRecentlyOpenedApis } from '../lib/utils'
-import useSidePanelToggleStore from '../store/sidePanelToggle'
+import useCreatingFolderStore from '../store/createFolder'
 import useApiStore from '../store/store'
 import useTabRenderStore from '../store/tabView'
 import { ApiType, CollectionSchema, FolderType } from '../types/api'
@@ -25,7 +25,7 @@ export default function useRenderNav({
     useApiStore()
   const [selectedApis, setSelectedApis] = useState<ApiType[]>([])
   const [collectionId, setCollectionId] = useState<string>('')
-  const { isCreatingFolder, setIsCreatingFolder } = useSidePanelToggleStore()
+  const { isCreatingFolder, setIsCreatingFolder } = useCreatingFolderStore()
   const [isEnvDialogOpen, setIsEnvDialogOpen] = useState(false)
   const [isFolderNameUpdating, setIsFolderNameUpdating] = useState(false)
   const [isMoveToFolderDialogOpen, setIsMoveToFolderDialogOpen] =
@@ -120,6 +120,7 @@ export default function useRenderNav({
       id: data.id,
       name: data.name,
       folderId: collection.id,
+      isActive: true,
     })
   }
 
@@ -186,6 +187,7 @@ export default function useRenderNav({
         setIsFolderNameUpdating(false)
         setCollectionId('')
         setIsCreatingFolder(false)
+        setIsCreatingFolder(false)
         setIsEnvDialogOpen(false)
         setSelectedApis([])
       }
@@ -215,8 +217,9 @@ export default function useRenderNav({
         id: api.id,
         name: api.name,
         folderId: collection.id,
+        isActive: true,
       })
-      navigate(`/api/${collection.id}/${api.id}`)
+      navigate(`/api/${collection.id}/${api.id}#${api.id}`)
     }
   }
 

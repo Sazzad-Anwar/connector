@@ -80,6 +80,7 @@ export type TabType = {
   folderId: string
   id: string
   name: string
+  isActive: boolean
 }
 
 export type CookieType = {

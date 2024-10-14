@@ -288,8 +288,8 @@ export default function useApiComponent() {
 
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
-        // getApi(api?.id)
-        form.reset(api)
+        getApi(api?.id)
+        // form.reset(api)
         setIsUrlEditing(false)
         setIsApiNameEditing(false)
       }
@@ -497,6 +497,7 @@ export default function useApiComponent() {
         id: params.apiId,
         name: data.name,
         folderId: folderId,
+        isActive: true,
       })
       navigate(`/api/${folderId}/${params.apiId}`)
       getApi(api?.id)

@@ -112,7 +112,7 @@ export default function Api() {
     } else {
       setIsUrlError(false)
     }
-  }, [rootParent, url])
+  }, [url])
 
   const setBorderColor = (isError: boolean) =>
     isError ? 'border-destructive' : ''
