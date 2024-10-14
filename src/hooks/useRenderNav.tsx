@@ -27,6 +27,7 @@ export default function useRenderNav({
   const [collectionId, setCollectionId] = useState<string>('')
   const { isCreatingFolder, setIsCreatingFolder } = useCreatingFolderStore()
   const [isEnvDialogOpen, setIsEnvDialogOpen] = useState(false)
+  const [isFolderOpen, setIsFolderOpen] = useState(true)
   const [isFolderNameUpdating, setIsFolderNameUpdating] = useState(false)
   const [isMoveToFolderDialogOpen, setIsMoveToFolderDialogOpen] =
     useState(false)
@@ -150,6 +151,7 @@ export default function useRenderNav({
         e?.stopPropagation()
         setCollectionId(collection.id)
         setIsCreatingFolder(true)
+        setIsFolderOpen(true)
       },
     },
     {
@@ -247,5 +249,7 @@ export default function useRenderNav({
     downloadFile,
     isEnvDialogOpen,
     setIsEnvDialogOpen,
+    isFolderOpen,
+    setIsFolderOpen,
   }
 }
