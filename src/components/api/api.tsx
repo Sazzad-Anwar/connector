@@ -25,7 +25,6 @@ import useResultRenderViewStore from '@/store/resultRenderView'
 import { FolderType } from '@/types/api'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import SplitPane, { Pane } from 'split-pane-react'
-import { downloadFromUrl } from '../../config/downloading-urls'
 import Breadcrumbs from '../breadcrumb'
 import Loading from '../loading'
 import SideNavToggler from '../nav/sidenav-toggler'
@@ -654,7 +653,11 @@ export default function Api() {
 
           <AlertDialogFooter className="flex-col space-y-2 sm:space-y-0 sm:flex-row sm:space-x-2 items-end">
             <AlertDialogAction
-              onClick={() => downloadFromUrl('mac')}
+              onClick={() =>
+                window.open(
+                  'https://github.com/Sazzad-Anwar/connector/releases/tag/v2.0.0',
+                )
+              }
               className={buttonVariants({
                 variant: navigator.userAgent.includes('Mac OS X')
                   ? 'secondary'
@@ -675,7 +678,11 @@ export default function Api() {
               MacOS
             </AlertDialogAction>
             <AlertDialogAction
-              onClick={() => downloadFromUrl('windows')}
+              onClick={() =>
+                window.open(
+                  'https://github.com/Sazzad-Anwar/connector/releases/tag/v2.0.0',
+                )
+              }
               className={buttonVariants({
                 variant: navigator.userAgent.includes('Win64; x64')
                   ? 'secondary'
@@ -696,7 +703,11 @@ export default function Api() {
               Windows
             </AlertDialogAction>
             <AlertDialogAction
-              onClick={() => downloadFromUrl('linux')}
+              onClick={() =>
+                window.open(
+                  'https://github.com/Sazzad-Anwar/connector/releases/tag/v2.0.0',
+                )
+              }
               className={buttonVariants({
                 variant: navigator.userAgent.includes('Linux x86_64')
                   ? 'secondary'
