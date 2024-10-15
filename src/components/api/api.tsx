@@ -7,6 +7,7 @@ import {
   InfoIcon,
   Pencil,
   Save,
+  Waypoints,
 } from 'lucide-react'
 import { FaApple, FaLinux, FaWindows } from 'react-icons/fa'
 
@@ -41,7 +42,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../ui/alert-dialog'
-import { Badge } from '../ui/badge'
 import { Button, buttonVariants } from '../ui/button'
 import { Input } from '../ui/input'
 import {
@@ -100,6 +100,8 @@ export default function Api() {
     curl,
     setCurl,
     copyCurl,
+    isProxyAdded,
+    setIsProxyAdded,
   } = useApiComponent()
   const [isDesktopDownloaderShow, setIsDesktopDownloaderShow] = useState(false)
   const { resultRenderView } = useResultRenderViewStore()
@@ -373,7 +375,31 @@ export default function Api() {
                       <Button
                         type="button"
                         variant="ghost"
-                        className="flex justify-self-end px-3 text-xs rounded-none"
+                        className="flex border-x justify-self-end px-3 text-xs rounded-none"
+                        size="sm"
+                        onClick={() => setIsProxyAdded(!isProxyAdded)}
+                      >
+                        <Waypoints
+                          className={cn(
+                            isProxyAdded
+                              ? 'text-green-500'
+                              : 'text-muted-foreground',
+                          )}
+                        />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {isProxyAdded
+                        ? 'A proxy server is forwarding your request'
+                        : 'Turn on proxy server'}
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="flex border-r justify-self-end px-3 text-xs rounded-none"
                         size="sm"
                         onClick={() => setIsOpenCurlDialog(true)}
                       >
@@ -387,7 +413,7 @@ export default function Api() {
                       <Button
                         type="button"
                         variant="ghost"
-                        className="flex justify-self-end px-3 rounded-none"
+                        className="flex border-r justify-self-end px-3 rounded-none"
                         size="sm"
                         onClick={() => copyUrl()}
                       >
@@ -635,19 +661,13 @@ export default function Api() {
               <span>Download Desktop Agent</span>
             </AlertDialogTitle>
             <AlertDialogDescription>
-              <Badge
-                variant="secondary"
-                className="mr-1"
-              >
+              <span className="mr-1 px-1.5 py-1 rounded-md bg-secondary text-xs font-medium text-foreground">
                 localhost
-              </Badge>
+              </span>
               or
-              <Badge
-                variant="secondary"
-                className="ml-1"
-              >
+              <span className="ml-1 px-1.5 py-1 rounded-md bg-secondary text-xs font-medium text-foreground">
                 127.0.0.1
-              </Badge>{' '}
+              </span>{' '}
               is not allowed. Please download the desktop agent to test the
               locally hosted API server
             </AlertDialogDescription>

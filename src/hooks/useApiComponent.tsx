@@ -17,6 +17,7 @@ import {
 import { v4 as uuid } from 'uuid'
 import { ResponseStatus } from '../components/api/api'
 import { toast } from '../components/ui/use-toast'
+import { config } from '../config/config'
 import fetcher from '../lib/fetcher'
 import {
   arrayToObjectConversion,
@@ -44,6 +45,7 @@ export default function useApiComponent() {
     useApiStore()
   const params = useParams()
   const [cookies, setCookies] = useState<CookieType[]>([])
+  const [isProxyAdded, setIsProxyAdded] = useState<boolean>(false)
   const { state } = useLocation()
   const { updateTab } = useTabRenderStore()
   const { resultRenderView } = useResultRenderViewStore()
@@ -269,19 +271,23 @@ export default function useApiComponent() {
         (event.ctrlKey && event.key === 's') ||
         (event.metaKey && event.key === 's')
       ) {
+        event.preventDefault()
         saveUpdate()
       }
       if (event.key === 'Enter' && form.formState.isDirty) {
+        event.preventDefault()
         setIsApiNameEditing(false)
         setIsUrlEditing(false)
         saveUpdate()
       }
       if (event.key === 'Enter' && !form.formState.isDirty) {
+        event.preventDefault()
         setIsApiNameEditing(false)
         setIsUrlEditing(false)
       }
 
       if (event.key === 'Escape') {
+        event.preventDefault()
         form.reset(api)
         setIsUrlEditing(false)
         setIsApiNameEditing(false)
@@ -355,7 +361,7 @@ export default function useApiComponent() {
       url = !url.includes('http') ? `http://${url}` : url
       const response = await fetcher({
         method: api.method,
-        url,
+        url: isProxyAdded ? `${config.CORS_BYPASS_URL}?${url}` : url,
         submitDataBody: submitData.body,
         isUpload: files?.length ? true : false,
         headers,
@@ -418,7 +424,9 @@ export default function useApiComponent() {
         responseData = error?.response ? error?.response?.data : error?.message
         setResult(responseData)
       } else {
-        console.log(error)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(error.stack)
+        }
         toast({
           variant: 'error',
           title: 'Error',
@@ -431,7 +439,6 @@ export default function useApiComponent() {
                 : error.message
               : error,
         })
-        setResult(null)
         responseData = null
       }
       setIsLoading(false)
@@ -469,12 +476,12 @@ export default function useApiComponent() {
         filterEmptyParams(form.watch('pathVariables')!).length! > 0 &&
         form.watch('url').includes('/:')
           ? filterEmptyParams(form.watch('pathVariables')!)
-          : form.watch('url').includes('/:')
+          : form.watch('url').includes('/:') &&
+            !filterEmptyParams(form.watch('pathVariables')!).length
           ? filterEmptyParams(parseURLParameters(form.watch('url'))!)
-          : !form.watch('url').includes('/:') &&
-            filterEmptyParams(form.watch('pathVariables')!).length
-          ? []
-          : filterEmptyParams(form.watch('pathVariables')!)
+          : !form.watch('url').includes('/:')
+          ? filterEmptyParams(form.watch('pathVariables')!)
+          : []
       data.jsonBody = form.getValues('jsonBody')
       data.interactiveQuery = form.getValues('interactiveQuery')
       updateApi(data, params.apiId)
@@ -491,7 +498,7 @@ export default function useApiComponent() {
         folderId: folderId,
         isActive: true,
       })
-      form.reset(data)
+      getApi(params.apiId)
     }
   }, [form, api])
 
@@ -593,5 +600,7 @@ export default function useApiComponent() {
     curl,
     setCurl,
     copyCurl,
+    isProxyAdded,
+    setIsProxyAdded,
   }
 }
