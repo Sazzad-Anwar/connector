@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  AlertCircle,
   Check,
   ChevronsRight,
   Copy,
@@ -7,6 +8,7 @@ import {
   Pencil,
   Save,
 } from 'lucide-react'
+import { FaApple, FaLinux, FaWindows } from 'react-icons/fa'
 
 import {
   cn,
@@ -21,8 +23,10 @@ import {
 import useApiComponent from '@/hooks/useApiComponent'
 import useResultRenderViewStore from '@/store/resultRenderView'
 import { FolderType } from '@/types/api'
+import { platform } from '@tauri-apps/plugin-os'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import SplitPane, { Pane } from 'split-pane-react'
+import { downloadFromUrl } from '../../config/downloading-urls'
 import Breadcrumbs from '../breadcrumb'
 import Loading from '../loading'
 import SideNavToggler from '../nav/sidenav-toggler'
@@ -37,6 +41,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../ui/alert-dialog'
+import { Badge } from '../ui/badge'
 import { Button, buttonVariants } from '../ui/button'
 import { Input } from '../ui/input'
 import {
@@ -96,6 +101,7 @@ export default function Api() {
     setCurl,
     copyCurl,
   } = useApiComponent()
+  const [isDesktopDownloaderShow, setIsDesktopDownloaderShow] = useState(false)
   const { resultRenderView } = useResultRenderViewStore()
   const [isOpenCurlDialog, setIsOpenCurlDialog] = useState<boolean>(false)
   const [isUrlError, setIsUrlError] = useState<boolean>(false)
@@ -469,7 +475,19 @@ export default function Api() {
                       className="p-1 rounded-l-none"
                       variant="secondary"
                       size="icon"
-                      onClick={() => form.handleSubmit(onSubmit)()}
+                      onClick={() => {
+                        try {
+                          platform()
+                          form.handleSubmit(onSubmit)()
+                        } catch (error) {
+                          if (
+                            window.location.href.includes('localhost') ||
+                            window.location.href.includes('127.0.0.1')
+                          ) {
+                            setIsDesktopDownloaderShow(true)
+                          }
+                        }
+                      }}
                     >
                       <i className="bi bi-plugin text-xl font-bold" />
                     </Button>
@@ -561,6 +579,7 @@ export default function Api() {
           </Pane>
         </SplitPane>
       </div>
+      {/* curl dialog */}
       <AlertDialog
         open={isOpenCurlDialog}
         onOpenChange={setIsOpenCurlDialog}
@@ -595,6 +614,112 @@ export default function Api() {
             >
               Save
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {/* Request for desktop agent use if server is localhost */}
+      <AlertDialog
+        open={isDesktopDownloaderShow}
+        onOpenChange={setIsDesktopDownloaderShow}
+      >
+        <AlertDialogContent className="min-h-52">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center space-x-2 text-2xl font-bold text-red-500">
+              <AlertCircle size={25} />
+              <span>Download Desktop Agent</span>
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              <Badge
+                variant="secondary"
+                className="mr-1"
+              >
+                localhost
+              </Badge>
+              or
+              <Badge
+                variant="secondary"
+                className="ml-1"
+              >
+                127.0.0.1
+              </Badge>{' '}
+              is not allowed. Please download the desktop agent to test the
+              locally hosted API server
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter className="flex-col space-y-2 sm:space-y-0 sm:flex-row sm:space-x-2 items-end">
+            <AlertDialogAction
+              onClick={() => downloadFromUrl('mac')}
+              className={buttonVariants({
+                variant: navigator.userAgent.includes('Mac OS X')
+                  ? 'secondary'
+                  : 'outline',
+                size: 'sm',
+                className: cn(
+                  'text-muted-foreground',
+                  navigator.userAgent.includes('Mac OS X')
+                    ? ''
+                    : 'bg-background',
+                ),
+              })}
+            >
+              <FaApple
+                className="mr-1"
+                size={18}
+              />{' '}
+              MacOS
+            </AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => downloadFromUrl('windows')}
+              className={buttonVariants({
+                variant: navigator.userAgent.includes('Win64; x64')
+                  ? 'secondary'
+                  : 'outline',
+                size: 'sm',
+                className: cn(
+                  'text-muted-foreground',
+                  navigator.userAgent.includes('Win64; x64')
+                    ? ''
+                    : 'bg-background',
+                ),
+              })}
+            >
+              <FaWindows
+                className="mr-1"
+                size={16}
+              />{' '}
+              Windows
+            </AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => downloadFromUrl('linux')}
+              className={buttonVariants({
+                variant: navigator.userAgent.includes('Linux x86_64')
+                  ? 'secondary'
+                  : 'outline',
+                size: 'sm',
+                className: cn(
+                  'text-muted-foreground',
+                  navigator.userAgent.includes('Linux x86_64')
+                    ? ''
+                    : 'bg-background',
+                ),
+              })}
+            >
+              <FaLinux
+                className="mr-1"
+                size={18}
+              />
+              Linux
+            </AlertDialogAction>
+            <AlertDialogCancel
+              className={buttonVariants({
+                variant: 'outline',
+                size: 'sm',
+                className: 'text-muted-foreground',
+              })}
+            >
+              OK
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
