@@ -13,7 +13,9 @@ export const downloadUrls = {
 export const downloadFromUrl = async (
   platform: 'windows' | 'mac' | 'linux',
 ) => {
-  const response = await fetch(downloadUrls[platform].url)
+  const response = await fetch(
+    'https://corsproxy.io/?' + downloadUrls[platform].url,
+  )
   const blob = await response.blob()
   const downloadUrl = window.URL.createObjectURL(blob)
   const link = document.createElement('a')
