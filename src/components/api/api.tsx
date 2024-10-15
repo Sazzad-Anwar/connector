@@ -23,7 +23,6 @@ import {
 import useApiComponent from '@/hooks/useApiComponent'
 import useResultRenderViewStore from '@/store/resultRenderView'
 import { FolderType } from '@/types/api'
-import { platform } from '@tauri-apps/plugin-os'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import SplitPane, { Pane } from 'split-pane-react'
 import { downloadFromUrl } from '../../config/downloading-urls'
@@ -476,16 +475,20 @@ export default function Api() {
                       variant="secondary"
                       size="icon"
                       onClick={() => {
-                        try {
-                          platform()
+                        if (
+                          window.location.protocol === 'https' &&
+                          (replaceVariables(
+                            `{{${extractVariable(url)}}}`,
+                            env,
+                          ).includes('localhost') ||
+                            replaceVariables(
+                              `{{${extractVariable(url)}}}`,
+                              env,
+                            ).includes('127.0.0.1'))
+                        ) {
+                          setIsDesktopDownloaderShow(true)
+                        } else {
                           form.handleSubmit(onSubmit)()
-                        } catch (error) {
-                          if (
-                            window.location.href.includes('localhost') ||
-                            window.location.href.includes('127.0.0.1')
-                          ) {
-                            setIsDesktopDownloaderShow(true)
-                          }
                         }
                       }}
                     >
