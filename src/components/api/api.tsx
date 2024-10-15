@@ -24,7 +24,9 @@ import useApiComponent from '@/hooks/useApiComponent'
 import useResultRenderViewStore from '@/store/resultRenderView'
 import { FolderType } from '@/types/api'
 import { lazy, Suspense, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import SplitPane, { Pane } from 'split-pane-react'
+import { downloadUrls } from '../../config/downloading-urls'
 import Breadcrumbs from '../breadcrumb'
 import Loading from '../loading'
 import SideNavToggler from '../nav/sidenav-toggler'
@@ -653,11 +655,6 @@ export default function Api() {
 
           <AlertDialogFooter className="flex-col space-y-2 sm:space-y-0 sm:flex-row sm:space-x-2 items-end">
             <AlertDialogAction
-              onClick={() =>
-                window.open(
-                  'https://github.com/Sazzad-Anwar/connector/releases/tag/v2.0.0',
-                )
-              }
               className={buttonVariants({
                 variant: navigator.userAgent.includes('Mac OS X')
                   ? 'secondary'
@@ -671,18 +668,20 @@ export default function Api() {
                 ),
               })}
             >
-              <FaApple
-                className="mr-1"
-                size={18}
-              />{' '}
-              MacOS
+              <Link
+                to={downloadUrls.mac.url}
+                download
+                target="_self"
+                className="flex items-center"
+              >
+                <FaApple
+                  className="mr-1"
+                  size={18}
+                />
+                MacOS
+              </Link>
             </AlertDialogAction>
             <AlertDialogAction
-              onClick={() =>
-                window.open(
-                  'https://github.com/Sazzad-Anwar/connector/releases/tag/v2.0.0',
-                )
-              }
               className={buttonVariants({
                 variant: navigator.userAgent.includes('Win64; x64')
                   ? 'secondary'
@@ -695,19 +694,21 @@ export default function Api() {
                     : 'bg-background',
                 ),
               })}
+              asChild
             >
-              <FaWindows
-                className="mr-1"
-                size={16}
-              />{' '}
-              Windows
+              <Link
+                to={downloadUrls.windows.url}
+                download
+                target="_self"
+              >
+                <FaWindows
+                  className="mr-1"
+                  size={16}
+                />{' '}
+                Windows
+              </Link>
             </AlertDialogAction>
             <AlertDialogAction
-              onClick={() =>
-                window.open(
-                  'https://github.com/Sazzad-Anwar/connector/releases/tag/v2.0.0',
-                )
-              }
               className={buttonVariants({
                 variant: navigator.userAgent.includes('Linux x86_64')
                   ? 'secondary'
@@ -720,12 +721,19 @@ export default function Api() {
                     : 'bg-background',
                 ),
               })}
+              asChild
             >
-              <FaLinux
-                className="mr-1"
-                size={18}
-              />
-              Linux
+              <Link
+                to={downloadUrls.linux.url}
+                download
+                target="_self"
+              >
+                <FaLinux
+                  className="mr-1"
+                  size={18}
+                />
+                Linux
+              </Link>
             </AlertDialogAction>
             <AlertDialogCancel
               className={buttonVariants({
