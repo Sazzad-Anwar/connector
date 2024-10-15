@@ -476,15 +476,17 @@ export default function Api() {
                       size="icon"
                       onClick={() => {
                         if (
-                          window.location.protocol === 'https' &&
-                          (replaceVariables(
-                            `{{${extractVariable(url)}}}`,
-                            env,
-                          ).includes('localhost') ||
-                            replaceVariables(
+                          (window.location.protocol === 'https' &&
+                            (replaceVariables(
                               `{{${extractVariable(url)}}}`,
                               env,
-                            ).includes('127.0.0.1'))
+                            ).includes('localhost') ||
+                              replaceVariables(
+                                `{{${extractVariable(url)}}}`,
+                                env,
+                              ).includes('127.0.0.1'))) ||
+                          url.includes('localhost') ||
+                          url.includes('127.0.0.1')
                         ) {
                           setIsDesktopDownloaderShow(true)
                         } else {
