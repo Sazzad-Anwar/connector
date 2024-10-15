@@ -6,7 +6,8 @@ import useCreatingFolderStore from '../store/createFolder'
 
 export default function page() {
   const { InputFile } = useImportJSON()
-  const { isCreatingFolder, setIsCreatingFolder } = useCreatingFolderStore()
+  const { isCreatingCollection, setIsCreatingCollection } =
+    useCreatingFolderStore()
 
   return (
     <section className="flex h-screen flex-col items-center justify-center text-center relative">
@@ -30,11 +31,11 @@ export default function page() {
           Import Collection
         </InputFile>
         <Button
-          disabled={isCreatingFolder}
-          variant="secondary"
+          disabled={isCreatingCollection}
+          variant="outline"
           className="bg-secondary/50 text-muted-foreground hover:text-foreground"
           onClick={() => {
-            setIsCreatingFolder(true)
+            setIsCreatingCollection(true)
           }}
         >
           Create Collection

@@ -614,7 +614,12 @@ export const downloadFile = async ({
 }: {
   data: FolderType | ApiType
   fileName: string
-  fileType: 'text/json'
+  fileType:
+    | 'text/json'
+    | 'application/x-apple-diskimage'
+    | 'application/x-msdownload'
+    | 'application/gzip'
+    | 'application/x-tar'
 }) => {
   const downloadFromBrowser = () => {
     // Create a blob with the data we want to download as a file

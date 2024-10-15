@@ -28,7 +28,8 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
   const { InputFile } = useImportJSON()
   const { isOpen } = useSidePanelToggleStore()
   const [search, setSearch] = useState<string>('')
-  const { setIsCreatingFolder, isCreatingCollection } = useCreatingFolderStore()
+  const { setIsCreatingFolder, isCreatingCollection, setIsCreatingCollection } =
+    useCreatingFolderStore()
   const { collections, createFolder, searchApi, getCollections } = useApiStore()
   const debouncedValue = useDebounce(search, 700)
   const form = useForm<z.infer<typeof CollectionSchema>>({
@@ -65,6 +66,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
         setIsCreatingFolder(false)
+        setIsCreatingCollection(false)
       }
     }
 
@@ -95,7 +97,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
             variant="outline"
             size="xs"
             className="p-1"
-            onClick={() => setIsCreatingFolder(true)}
+            onClick={() => setIsCreatingCollection(true)}
           >
             <Tooltip>
               <TooltipTrigger asChild>
