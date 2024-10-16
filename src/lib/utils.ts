@@ -612,20 +612,12 @@ export const downloadFile = async ({
   fileName,
   fileType,
 }: {
-  data: FolderType | ApiType
+  data: any
   fileName: string
-  fileType:
-    | 'text/json'
-    | 'application/x-apple-diskimage'
-    | 'application/x-msdownload'
-    | 'application/gzip'
-    | 'application/x-tar'
-}) => {
+  fileType: 'text/json' | 'text/html' | 'text'
+}): Promise<void> => {
   const downloadFromBrowser = () => {
-    // Create a blob with the data we want to download as a file
-    const blob = new Blob([JSON.stringify(data)], { type: fileType })
-    // Create an anchor element and dispatch a click event on it
-    // to trigger a download
+    const blob = new Blob([data], { type: fileType })
     const a = document.createElement('a')
     a.download = fileName
     a.href = window.URL.createObjectURL(blob)
@@ -641,25 +633,35 @@ export const downloadFile = async ({
   try {
     const platformName = platform()
     if (
-      platformName === 'macos' ||
       platformName === 'windows' ||
+      platformName === 'macos' ||
       platformName === 'linux'
     ) {
-      await writeTextFile(`${fileName}`, JSON.stringify(data), {
-        baseDir: BaseDirectory.Download,
-      })
+      if (fileType === 'text/json') {
+        await writeTextFile(`${fileName}.json`, JSON.stringify(data), {
+          baseDir: BaseDirectory.Download,
+        })
+      } else if (fileType === 'text/html') {
+        await writeTextFile(`${fileName}.html`, data, {
+          baseDir: BaseDirectory.Download,
+        })
+      } else {
+        await writeTextFile(`${fileName}.txt`, data, {
+          baseDir: BaseDirectory.Download,
+        })
+      }
       toast({
         variant: 'success',
-        title: `Success`,
+        title: 'Success',
         description: `${fileName} is saved to Downloads`,
       })
     }
   } catch (error: any) {
-    console.log('🚀 ~ error:', error)
+    console.log(' error:', error)
     downloadFromBrowser()
     toast({
       variant: 'success',
-      title: `Success`,
+      title: 'Success',
       description: `${fileName} is saved to Downloads`,
     })
   }

@@ -141,7 +141,7 @@ export default function Api() {
   return (
     <>
       <Suspense fallback={<Loading className="h-screen" />}>
-        <ApiTabs isEdited={form.formState.isDirty} />
+        <ApiTabs />
       </Suspense>
       <div
         ref={formDivRef}
@@ -503,17 +503,17 @@ export default function Api() {
                       size="icon"
                       onClick={() => {
                         if (
-                          (window.location.protocol === 'https' &&
-                            (replaceVariables(
+                          window.location.protocol === 'https' &&
+                          (replaceVariables(
+                            `{{${extractVariable(url)}}}`,
+                            env,
+                          ).includes('localhost') ||
+                            replaceVariables(
                               `{{${extractVariable(url)}}}`,
                               env,
-                            ).includes('localhost') ||
-                              replaceVariables(
-                                `{{${extractVariable(url)}}}`,
-                                env,
-                              ).includes('127.0.0.1'))) ||
-                          url.includes('localhost') ||
-                          url.includes('127.0.0.1')
+                            ).includes('127.0.0.1') ||
+                            url.includes('localhost') ||
+                            url.includes('127.0.0.1'))
                         ) {
                           setIsDesktopDownloaderShow(true)
                         } else {
@@ -605,6 +605,7 @@ export default function Api() {
                 result={result}
                 headers={headers}
                 cookies={cookies}
+                url={url}
                 responseStatus={responseStatus}
               />
             </Suspense>

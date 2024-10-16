@@ -124,6 +124,7 @@ export default function useApiComponent() {
     if (api.id === apiId) {
       try {
         setResult(api.response ? JSON.parse(api.response!) : null)
+        setHeaders(api.responseHeaders || {})
       } catch (error) {
         setResult(api.response ? api.response! : null)
       }
@@ -202,34 +203,15 @@ export default function useApiComponent() {
       form.setValue('id', api?.id ?? '')
       form.setValue('name', api?.name ?? '')
       form.setValue('method', api?.method ?? 'GET')
+      form.setValue('responseHeaders', api?.responseHeaders)
       form.setValue(
         'url',
         api?.url?.includes('?') ? api?.url?.split('?')[0] : api?.url ?? '',
       )
-      form.setValue(
-        'params',
-        api?.params?.length
-          ? api?.params
-          : [{ id: uuid(), key: '', value: '', description: '' }],
-      )
-      form.setValue(
-        'headers',
-        api?.headers?.length
-          ? api?.headers
-          : [{ id: uuid(), key: '', value: '', description: '' }],
-      )
-      form.setValue(
-        'body',
-        api?.body?.length
-          ? api?.body
-          : [{ id: uuid(), key: '', value: '', description: '' }],
-      )
-      form.setValue(
-        'formData',
-        api?.formData?.length
-          ? api?.formData
-          : [{ id: uuid(), key: '', value: '', description: '' }],
-      )
+      form.setValue('params', api?.params?.length ? api?.params : [])
+      form.setValue('headers', api?.headers?.length ? api?.headers : [])
+      form.setValue('body', api?.body?.length ? api?.body : [])
+      form.setValue('formData', api?.formData?.length ? api?.formData : [])
       form.setValue('jsonBody', api?.jsonBody)
       form.setValue(
         'dynamicVariables',
@@ -274,18 +256,6 @@ export default function useApiComponent() {
         event.preventDefault()
         saveUpdate()
       }
-      if (event.key === 'Enter' && form.formState.isDirty) {
-        event.preventDefault()
-        setIsApiNameEditing(false)
-        setIsUrlEditing(false)
-        saveUpdate()
-      }
-      if (event.key === 'Enter' && !form.formState.isDirty) {
-        event.preventDefault()
-        setIsApiNameEditing(false)
-        setIsUrlEditing(false)
-      }
-
       if (event.key === 'Escape') {
         event.preventDefault()
         form.reset(api)
@@ -385,12 +355,21 @@ export default function useApiComponent() {
 
       response.headers.forEach((value, key) => {
         setHeaders((prev) => ({ ...prev, [key]: value }))
-        if (key === 'set-cookie') {
-          setCookies((prev) => [...prev, { ...parseCookie(value) }])
+        form.setValue('responseHeaders', {
+          ...form.getValues('responseHeaders')!,
+          [key]: value,
+        })
+        if (key === 'set-cookie' && typeof value === 'string') {
+          setCookies((prev) => [...prev, parseCookie(value)])
         }
       })
-
-      responseData = await response.json()
+      const responseData = await (response.headers
+        .get('Content-Type')
+        ?.includes('application/json')
+        ? response.json()
+        : response.headers.get('Content-Type')?.includes('image')
+        ? response.blob()
+        : response.text())
       setResult(responseData)
 
       responseStatusData = {
@@ -411,6 +390,16 @@ export default function useApiComponent() {
       }
 
       setIsLoading(false)
+      // auto saving the response
+      updateApi(
+        {
+          ...form.getValues(),
+          responseHeaders: form.getValues('responseHeaders'),
+          response: JSON.stringify(responseData),
+          responseStatus: JSON.stringify(responseStatusData),
+        },
+        api.id,
+      )
     } catch (error: any) {
       const endTime = Date.now()
       const responseTime = endTime - startTime
@@ -425,32 +414,12 @@ export default function useApiComponent() {
         setResult(responseData)
       } else {
         if (process.env.NODE_ENV === 'development') {
-          console.log(error.stack)
+          console.log(error)
         }
-        toast({
-          variant: 'error',
-          title: 'Error',
-          description:
-            typeof error !== 'string'
-              ? error?.response?.data
-                ? error?.response?.data
-                : error?.message === 'Network Error'
-                ? `Unable to reach ${url}.`
-                : error.message
-              : error,
-        })
         responseData = null
       }
       setIsLoading(false)
     }
-
-    // auto saving the response
-    const dataWithResponse = {
-      ...api,
-      response: JSON.stringify(responseData),
-      responseStatus: JSON.stringify(responseStatusData),
-    }
-    updateApi(dataWithResponse, dataWithResponse.id)
   }
 
   const saveUpdate = useCallback(() => {
@@ -467,6 +436,7 @@ export default function useApiComponent() {
       data.method = form.getValues('method')!
       data.params = filterEmptyParams(form.getValues('params')!)
       data.headers = filterEmptyParams(form.getValues('headers')!)
+      data.responseHeaders = form.getValues('responseHeaders')
       data.dynamicVariables = filterEmptyParams(
         form.getValues('dynamicVariables')!,
       )

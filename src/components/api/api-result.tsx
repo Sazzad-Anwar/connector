@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import MonacoEditor, { Monaco } from '@monaco-editor/react'
 import copy from 'copy-to-clipboard'
-import { Check, Columns2, Copy, Download, Rows2, X } from 'lucide-react'
+import { Check, Columns2, Copy, Download, Eye, Rows2, X } from 'lucide-react'
 import { memo, useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import { editorOptions, setEditorTheme } from '../../config/editorOptions'
@@ -11,6 +11,7 @@ import { CookieType } from '../../types/api'
 import Loading from '../loading'
 import { useTheme } from '../theme-provider'
 import { Button } from '../ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +39,7 @@ import { toast } from '../ui/use-toast'
 import { ResponseStatus } from './api'
 
 type PropsType = {
+  url: string
   isLoading: boolean
   result: any
   height?: number
@@ -55,6 +57,7 @@ const ApiResult = ({
   responseStatus,
   headers,
   cookies,
+  url,
 }: PropsType) => {
   const { theme } = useTheme()
   const [isCopiedResponse, setIsCopiedResponse] = useState<boolean>(false)
@@ -63,6 +66,9 @@ const ApiResult = ({
     useResultRenderViewStore()
   const editorRef = useRef<Monaco>(null)
   const resultContainerRef = useRef<HTMLDivElement>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const isApplicationJson =
+    headers?.['content-type']?.includes('application/json')
 
   const payloadSize = (data: any): string => {
     const json_string = JSON.stringify(data)
@@ -188,12 +194,67 @@ const ApiResult = ({
                     <TooltipContent align="start">Copy response</TooltipContent>
                   </Tooltip>
                 </Button>
+
+                {!isApplicationJson && (
+                  <Dialog
+                    open={isModalOpen}
+                    onOpenChange={setIsModalOpen}
+                  >
+                    <DialogContent className="max-w-3xl max-h-[80vh] overflow-auto">
+                      <DialogHeader>
+                        <DialogTitle>Content Preview</DialogTitle>
+                      </DialogHeader>
+                      {headers?.['content-type']?.includes('image') ? (
+                        <img
+                          src={url}
+                          loading="lazy"
+                          alt="Content preview"
+                          className="w-auto mx-auto h-96 object-cover object-center"
+                        />
+                      ) : headers?.['content-type']?.includes('video') ? (
+                        <video
+                          src={url}
+                          controls
+                          className="w-full h-auto"
+                        >
+                          Your browser does not support the video tag.
+                        </video>
+                      ) : (
+                        <iframe
+                          src={url}
+                          className="w-full h-[60vh]"
+                          title="Content preview"
+                          security="same-origin"
+                        />
+                      )}
+                    </DialogContent>
+                  </Dialog>
+                )}
+
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="flex absolute right-[4.5rem] top-0 h-8 w-8 justify-self-end p-0 z-10"
+                  size="sm"
+                  onClick={() => setIsModalOpen(true)}
+                  disabled={isApplicationJson}
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Eye size={18} />
+                    </TooltipTrigger>
+                    <TooltipContent align="start">
+                      Preview content
+                    </TooltipContent>
+                  </Tooltip>
+                </Button>
+
                 <MonacoEditor
                   beforeMount={setEditorTheme}
                   height={height! - 220}
                   saveViewState={true}
                   defaultLanguage="json"
-                  value={JSON.stringify(result ? result : {}, null, '\t')}
+                  value={JSON.stringify(result || {}, null, '\t')}
                   theme={theme === 'dark' ? 'onedark' : 'light'}
                   options={editorOptions({ readOnly: true })}
                   loading={
@@ -235,7 +296,6 @@ const ApiResult = ({
                                 {item}
                               </TableCell>
                               <TableCell
-                                key={uuid()}
                                 className={cn(
                                   'border',
                                   headers[item].startsWith('{') &&

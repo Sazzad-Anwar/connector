@@ -41,6 +41,7 @@ export type ApiType = z.infer<typeof ApiSchema> & {
   id: string
   response?: string
   responseStatus?: string
+  responseHeaders?: { [key: string]: string }
 }
 export type ParamsType = z.infer<typeof ParamsSchema>
 export type FolderType = z.infer<typeof FolderSchema> & {

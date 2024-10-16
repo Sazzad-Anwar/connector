@@ -12,11 +12,7 @@ import {
   CarouselPrevious,
 } from '../ui/carousel'
 
-type Props = {
-  isEdited: boolean
-}
-
-export default function ApiTabs({ isEdited }: Props) {
+export default function ApiTabs() {
   const { tabs, removeTab, updateTab } = useTabRenderStore()
   const { apiId } = useParams()
   const navigate = useNavigate()
@@ -56,9 +52,6 @@ export default function ApiTabs({ isEdited }: Props) {
                 {tab.name}
               </span>
               <div className="flex items-center justify-end gap-1">
-                {apiId === tab.id && isEdited && (
-                  <span className="h-2 w-2 flex justify-center items-center p-0 rounded-full bg-green-500" />
-                )}
                 <Button
                   className="p-0 h-auto"
                   variant="secondary"
