@@ -195,7 +195,7 @@ const ApiResult = ({
                   </Tooltip>
                 </Button>
 
-                {!isApplicationJson && (
+                {!isApplicationJson && !Object.entries(result).length && (
                   <Dialog
                     open={isModalOpen}
                     onOpenChange={setIsModalOpen}
