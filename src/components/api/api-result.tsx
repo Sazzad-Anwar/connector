@@ -144,7 +144,8 @@ const ApiResult = ({
               >
                 <Button
                   disabled={
-                    (result && Object.entries(result)?.length === 0) || !result
+                    (result && Object.entries(result || {})?.length === 0) ||
+                    !result
                   }
                   type="button"
                   variant="secondary"
@@ -237,7 +238,11 @@ const ApiResult = ({
                   className="flex absolute right-[4.5rem] top-0 h-8 w-8 justify-self-end p-0 z-10"
                   size="sm"
                   onClick={() => setIsModalOpen(true)}
-                  disabled={isApplicationJson}
+                  disabled={
+                    isApplicationJson ||
+                    (result && Object.entries(result)?.length !== 0) ||
+                    !result
+                  }
                 >
                   <Tooltip>
                     <TooltipTrigger asChild>
