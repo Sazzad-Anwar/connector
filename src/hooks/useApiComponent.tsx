@@ -14,7 +14,6 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom'
-import { v4 as uuid } from 'uuid'
 import { ResponseStatus } from '../components/api/api'
 import { toast } from '../components/ui/use-toast'
 import { config } from '../config/config'
@@ -215,9 +214,7 @@ export default function useApiComponent() {
       form.setValue('jsonBody', api?.jsonBody)
       form.setValue(
         'dynamicVariables',
-        api?.dynamicVariables?.length
-          ? api?.dynamicVariables
-          : [{ id: uuid(), key: '', value: '', description: '' }],
+        api?.dynamicVariables?.length ? api?.dynamicVariables : [],
       )
       form.setValue(
         'activeBody',
@@ -227,9 +224,7 @@ export default function useApiComponent() {
       )
       form.setValue(
         'pathVariables',
-        api?.pathVariables?.length
-          ? api?.pathVariables
-          : [{ id: uuid(), key: '', value: '', description: '' }],
+        api?.pathVariables?.length ? api?.pathVariables : [],
       )
       form.setValue('interactiveQuery', api?.interactiveQuery ?? {})
       form.setValue(

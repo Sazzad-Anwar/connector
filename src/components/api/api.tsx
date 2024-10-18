@@ -602,10 +602,20 @@ export default function Api() {
                     : sizes[1]! + 20
                 }
                 isLoading={isLoading}
-                result={result}
+                result={
+                  typeof result !== 'string' &&
+                  ((JSON.stringify(result).startsWith('{') &&
+                    JSON.stringify(result).endsWith('}')) ||
+                    Array.isArray(result))
+                    ? result
+                    : typeof result === 'string' &&
+                      JSON.stringify(result).startsWith('<!DOCTYPE') &&
+                      JSON.stringify(result).endsWith('</html>')
+                    ? result
+                    : "This request didn't return any data. Check your url and try again."
+                }
                 headers={headers}
                 cookies={cookies}
-                url={url}
                 responseStatus={responseStatus}
               />
             </Suspense>
