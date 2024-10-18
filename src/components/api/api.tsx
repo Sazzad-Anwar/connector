@@ -609,10 +609,12 @@ export default function Api() {
                     Array.isArray(result))
                     ? result
                     : typeof result === 'string' &&
-                      JSON.stringify(result).startsWith('<!DOCTYPE') &&
-                      JSON.stringify(result).endsWith('</html>')
+                      !JSON.stringify(result).startsWith('<!DOCTYPE') &&
+                      !JSON.stringify(result).endsWith('</html>')
                     ? result
-                    : "This request didn't return any data. Check your url and try again."
+                    : Object.entries(result || {}).length > 0
+                    ? "This request didn't return any data. Check your url and try again."
+                    : {}
                 }
                 headers={headers}
                 cookies={cookies}
