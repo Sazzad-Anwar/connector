@@ -117,7 +117,9 @@ export const InputTabs = ({
           >
             Params{' '}
             {api?.params?.find((item: ParamsType) => item.isActive) ||
-            api?.pathVariables?.length ||
+            api?.pathVariables?.filter(
+              (item) => item.key !== '' && item.value !== '',
+            ).length ||
             (typeof api?.interactiveQuery === 'object' &&
               Object.keys(api?.interactiveQuery).length) ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
@@ -148,7 +150,9 @@ export const InputTabs = ({
             value="dynamicVariable"
           >
             Set variables
-            {api?.dynamicVariables?.length ? (
+            {api?.dynamicVariables?.filter(
+              (item) => item.key !== '' && item.value !== '',
+            ).length ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
           </TabsTrigger>

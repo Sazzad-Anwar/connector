@@ -55,7 +55,7 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
   }, [url])
 
   useEffect(() => {
-    if (fields.length < 1) {
+    if (form.getValues(propertyName)?.length === 0) {
       append({
         id: uuid(),
         key: '',
@@ -65,7 +65,7 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
         description: '',
       })
     }
-  }, [fields, append])
+  }, [])
 
   const isErrorIndex = (index: number, type: 'value' | 'key') => {
     const items = params?.filter(

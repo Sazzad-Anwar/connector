@@ -7,8 +7,6 @@ import { v4 as uuid } from 'uuid'
 import { FolderSchema, FolderType } from '@/types/api'
 
 import { Dispatch, SetStateAction, useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
-import { findRootCollection } from '../../lib/utils'
 import { Button } from '../ui/button'
 import { Form } from '../ui/form'
 import {
@@ -23,14 +21,18 @@ import { toast } from '../ui/use-toast'
 
 export default function EnvVariables({
   setIsEnvDialogOpen,
+  collectionId,
 }: {
   setIsEnvDialogOpen: Dispatch<SetStateAction<boolean>>
+  collectionId: string
 }) {
-  const params = useParams()
+  // const params = useParams()
   const divRef = useRef<HTMLDivElement>(null)
   const submitButtonRef = useRef<HTMLButtonElement>(null)
   const { collections, updateCollection } = useApiStore()
-  const collection = findRootCollection(collections, params.folderId!)
+  const collection = collections.find(
+    (collection) => collection.id === collectionId,
+  )
   const form = useForm<FolderType>({
     mode: 'onChange',
     resolver: zodResolver(FolderSchema),

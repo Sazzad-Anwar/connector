@@ -1,8 +1,9 @@
-import { cn } from '@/lib/utils'
+import { cn, getRootParentIdForNthChildren } from '@/lib/utils'
 import useTabRenderStore from '@/store/tabView'
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import useApiStore from '../../store/store'
 import { Button } from '../ui/button'
 import {
   Carousel,
@@ -16,9 +17,20 @@ export default function ApiTabs() {
   const { tabs, removeTab, updateTab } = useTabRenderStore()
   const { apiId } = useParams()
   const navigate = useNavigate()
+  const { collections } = useApiStore()
 
   useEffect(() => {
-    updateTab(tabs.map((item) => ({ ...item, isActive: apiId === item.id })))
+    updateTab(
+      tabs
+        .map((item) => ({ ...item, isActive: apiId === item.id }))
+        .filter((item) => {
+          const rootParentId = getRootParentIdForNthChildren(
+            collections,
+            item.folderId,
+          )
+          if (rootParentId) return true
+        }),
+    )
   }, [apiId])
 
   return (

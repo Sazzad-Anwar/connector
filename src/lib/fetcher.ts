@@ -8,57 +8,50 @@ const fetcher = async ({
   method,
   requestBody,
   headers,
-  isUpload,
-  submitDataBody,
   contentType,
 }: {
   url: string
   method: 'POST' | 'GET' | 'PUT' | 'DELETE' | 'PATCH'
   requestBody: any
   headers?: any
-  isUpload?: boolean
   contentType?:
     | 'multipart/form-data'
     | 'application/json'
     | 'application/x-www-form-urlencoded'
-  submitDataBody?: ParamsType[]
 }) => {
   const formData = new FormData()
-  const files = submitDataBody?.filter((item) => item?.type === 'file')
-  if (files?.length) {
-    files.map((file) => {
-      Array.from(file.value)?.map((item: any) => {
-        formData.append(file.key, item)
+  const files = requestBody?.filter((item: ParamsType) => item?.type === 'file')
+  if (contentType === 'multipart/form-data') {
+    if (files?.length) {
+      files.forEach((file: ParamsType) => {
+        Array.from(file.value)?.map((item: any) => {
+          formData.append(file.key, item)
+        })
       })
+    }
+    requestBody?.forEach((item: ParamsType) => {
+      formData.append(item.key, item.value)
     })
   }
-  Object.keys(requestBody)?.map((item) => {
-    if (!files?.find((file) => file.key === item)) {
-      formData.append(item, requestBody[item])
-    }
-  })
   const requestConfigs = {
     method,
-    body: isUpload
-      ? formData
-      : method === 'GET'
-      ? null
-      : JSON.stringify(requestBody),
-    headers,
+    body:
+      contentType === 'multipart/form-data'
+        ? formData
+        : contentType === 'application/x-www-form-urlencoded'
+        ? new URLSearchParams(requestBody)
+        : JSON.stringify(requestBody),
+    headers:
+      contentType === 'multipart/form-data'
+        ? {
+            ...headers,
+          }
+        : {
+            ...headers,
+            'Content-Type': contentType,
+          },
   }
-  if (contentType === 'multipart/form-data') {
-    requestConfigs['headers'] = {
-      'Content-Type': 'multipart/form-data',
-    }
-  } else if (contentType === 'application/json') {
-    requestConfigs['headers'] = {
-      'Content-Type': 'application/json',
-    }
-  } else {
-    requestConfigs['headers'] = {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    }
-  }
+
   try {
     platform()
     return await TFetch(url, requestConfigs)

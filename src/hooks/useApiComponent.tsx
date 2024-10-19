@@ -207,10 +207,22 @@ export default function useApiComponent() {
         'url',
         api?.url?.includes('?') ? api?.url?.split('?')[0] : api?.url ?? '',
       )
-      form.setValue('params', api?.params?.length ? api?.params : [])
-      form.setValue('headers', api?.headers?.length ? api?.headers : [])
-      form.setValue('body', api?.body?.length ? api?.body : [])
-      form.setValue('formData', api?.formData?.length ? api?.formData : [])
+      form.setValue(
+        'params',
+        api?.params?.length ? filterEmptyParams(api?.params) : [],
+      )
+      form.setValue(
+        'headers',
+        api?.headers?.length ? filterEmptyParams(api?.headers) : [],
+      )
+      form.setValue(
+        'body',
+        api?.body?.length ? filterEmptyParams(api?.body) : [],
+      )
+      form.setValue(
+        'formData',
+        api?.formData?.length ? filterEmptyParams(api?.formData) : [],
+      )
       form.setValue('jsonBody', api?.jsonBody)
       form.setValue(
         'dynamicVariables',
@@ -220,6 +232,8 @@ export default function useApiComponent() {
         'activeBody',
         typeof api.jsonBody !== 'undefined' && Object.keys(api?.jsonBody).length
           ? 'json'
+          : api.formData?.length
+          ? 'form-data'
           : 'x-form-urlencoded',
       )
       form.setValue(
@@ -327,8 +341,6 @@ export default function useApiComponent() {
       const response = await fetcher({
         method: api.method,
         url: isProxyAdded ? `${config.CORS_BYPASS_URL}?${url}` : url,
-        submitDataBody: submitData.body,
-        isUpload: files?.length ? true : false,
         headers,
         requestBody:
           activeBody === 'json'

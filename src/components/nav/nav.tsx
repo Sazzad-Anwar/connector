@@ -44,7 +44,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
       id: uuid(),
     }
     createFolder(folder)
-    setIsCreatingFolder(false)
+    setIsCreatingCollection(false)
     form.reset()
     toast({
       variant: 'success',

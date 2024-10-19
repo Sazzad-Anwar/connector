@@ -4,7 +4,6 @@ import {
   Check,
   ChevronsRight,
   Copy,
-  InfoIcon,
   Pencil,
   Save,
   Waypoints,
@@ -113,11 +112,16 @@ export default function Api() {
   )
   useEffect(() => {
     if (
+      rootParentId &&
       containsDynamicVariable(url) &&
       !containsVariable(url, rootParent?.env ?? [])
     ) {
       setIsUrlError(true)
-    } else {
+    } else if (
+      rootParentId &&
+      containsDynamicVariable(url) &&
+      containsVariable(url, rootParent?.env ?? [])
+    ) {
       setIsUrlError(false)
     }
   }, [url])
@@ -210,7 +214,6 @@ export default function Api() {
             ref={urlDivRef}
             className={cn(
               'relative h-10 flex w-full items-center justify-between rounded overflow-hidden border',
-              isUrlError ? 'text-red-500' : '',
             )}
           >
             {isUrlEditing ? (
@@ -288,21 +291,10 @@ export default function Api() {
                     }
                   }}
                   className={cn(
-                    setBorderColor(isUrlError),
+                    setBorderColor(isUrlError) ? 'text-red-500' : '',
                     'text-sm rounded-l-none pl-1 h-full border-0',
                   )}
                 />
-
-                <Tooltip>
-                  <TooltipTrigger>
-                    {isUrlError && (
-                      <InfoIcon className="mb-2 ml-2 text-destructive" />
-                    )}
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>It is not a valid variable</p>
-                  </TooltipContent>
-                </Tooltip>
               </div>
             ) : (
               <div
@@ -604,8 +596,8 @@ export default function Api() {
                 isLoading={isLoading}
                 result={
                   typeof result !== 'string' &&
-                  ((JSON.stringify(result).startsWith('{') &&
-                    JSON.stringify(result).endsWith('}')) ||
+                  ((JSON.stringify(result || '{}').startsWith('{') &&
+                    JSON.stringify(result || '{}').endsWith('}')) ||
                     Array.isArray(result))
                     ? result
                     : typeof result === 'string' &&

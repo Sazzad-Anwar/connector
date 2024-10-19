@@ -412,7 +412,10 @@ export default function RenderNavigation({
               You can add, edit or delete env variables here.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <EnvVariables setIsEnvDialogOpen={setIsEnvDialogOpen} />
+          <EnvVariables
+            collectionId={collection?.id}
+            setIsEnvDialogOpen={setIsEnvDialogOpen}
+          />
           <AlertDialogFooter />
         </AlertDialogContent>
       </AlertDialog>
