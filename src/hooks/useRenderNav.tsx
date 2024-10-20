@@ -78,18 +78,22 @@ export default function useRenderNav({
 
   // Delete Collection
   const deleteApiHandler = (id: string) => {
-    updateTab(updateRecentlyOpenedApis(tabs, collection))
+    updateTab(tabs.filter((tab) => tab.id !== id))
     deleteApi(id)
     const tab = tabs.find((t) => t.id === params.apiId)
     if (!tab) {
       navigate('/')
     } else {
-      const nextTab =
-        tabs.indexOf(tab) === 0
-          ? tabs[tabs.indexOf(tab) + 1]
-          : tabs[tabs.indexOf(tab) - 1]
+      if (tabs.length === 1) {
+        navigate(`/api/${tabs[0].folderId}/${tabs[0].id}`)
+      } else if (tabs.length > 1) {
+        const nextTab =
+          tabs.indexOf(tab) === 0
+            ? tabs[tabs.indexOf(tab) + 1]
+            : tabs[tabs.indexOf(tab) - 1]
 
-      navigate(`/api/${nextTab.folderId}/${nextTab.id}`)
+        navigate(`/api/${nextTab.folderId}/${nextTab.id}`)
+      }
     }
     toast({
       variant: 'success',

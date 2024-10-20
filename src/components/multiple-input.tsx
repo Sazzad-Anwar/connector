@@ -65,7 +65,7 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
         description: '',
       })
     }
-  }, [])
+  }, [url])
 
   const isErrorIndex = (index: number, type: 'value' | 'key') => {
     const items = params?.filter(
