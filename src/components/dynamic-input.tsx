@@ -85,6 +85,7 @@ export default function DynamicInput({
   isCorrectVar,
   isErrorIndex,
   remove,
+  append,
 }: PropsTypes) {
   return (
     <TableRow
@@ -264,7 +265,18 @@ export default function DynamicInput({
             </Button>
             <Button
               disabled={propertyName === 'pathVariables'}
-              onClick={() => remove(index)}
+              onClick={() => {
+                remove(index)
+                if (form.getValues(propertyName)?.length === 0) {
+                  append({
+                    id: uuid(),
+                    key: '',
+                    value: '',
+                    isActive: true,
+                    description: '',
+                  })
+                }
+              }}
               variant="ghost"
               size="xs"
               type="button"

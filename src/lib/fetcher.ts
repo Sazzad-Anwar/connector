@@ -20,9 +20,11 @@ const fetcher = async ({
     | 'application/x-www-form-urlencoded'
 }) => {
   const formData = new FormData()
-  const files = requestBody?.filter((item: ParamsType) => item?.type === 'file')
+  const files =
+    Array.isArray(requestBody) &&
+    requestBody?.filter((item: ParamsType) => item?.type === 'file')
   if (contentType === 'multipart/form-data') {
-    if (files?.length) {
+    if (files && files?.length) {
       files.forEach((file: ParamsType) => {
         Array.from(file.value)?.map((item: any) => {
           formData.append(file.key, item)
