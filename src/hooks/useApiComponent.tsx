@@ -14,6 +14,7 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom'
+import { v4 as uuid } from 'uuid'
 import { ResponseStatus } from '../components/api/api'
 import { toast } from '../components/ui/use-toast'
 import { config } from '../config/config'
@@ -209,24 +210,34 @@ export default function useApiComponent() {
       )
       form.setValue(
         'params',
-        api?.params?.length ? filterEmptyParams(api?.params) : [],
+        api?.params?.length
+          ? filterEmptyParams(api?.params)
+          : [{ id: uuid(), key: '', value: '' }],
       )
       form.setValue(
         'headers',
-        api?.headers?.length ? filterEmptyParams(api?.headers) : [],
+        api?.headers?.length
+          ? filterEmptyParams(api?.headers)
+          : [{ id: uuid(), key: '', value: '' }],
       )
       form.setValue(
         'body',
-        api?.body?.length ? filterEmptyParams(api?.body) : [],
+        api?.body?.length
+          ? filterEmptyParams(api?.body)
+          : [{ id: uuid(), key: '', value: '' }],
       )
       form.setValue(
         'formData',
-        api?.formData?.length ? filterEmptyParams(api?.formData) : [],
+        api?.formData?.length
+          ? filterEmptyParams(api?.formData)
+          : [{ id: uuid(), key: '', value: '' }],
       )
       form.setValue('jsonBody', api?.jsonBody)
       form.setValue(
         'dynamicVariables',
-        api?.dynamicVariables?.length ? api?.dynamicVariables : [],
+        api?.dynamicVariables?.length
+          ? api?.dynamicVariables
+          : [{ id: uuid(), key: '', value: '' }],
       )
       form.setValue(
         'activeBody',
@@ -238,7 +249,9 @@ export default function useApiComponent() {
       )
       form.setValue(
         'pathVariables',
-        api?.pathVariables?.length ? api?.pathVariables : [],
+        api?.pathVariables?.length
+          ? api?.pathVariables
+          : [{ id: uuid(), key: '', value: '' }],
       )
       form.setValue('interactiveQuery', api?.interactiveQuery ?? {})
       form.setValue(

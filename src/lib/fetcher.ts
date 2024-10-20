@@ -38,7 +38,9 @@ const fetcher = async ({
   const requestConfigs = {
     method,
     body:
-      contentType === 'multipart/form-data'
+      method === 'GET'
+        ? undefined
+        : contentType === 'multipart/form-data'
         ? formData
         : contentType === 'application/x-www-form-urlencoded'
         ? new URLSearchParams(requestBody)
