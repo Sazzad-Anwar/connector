@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { cn } from '@/lib/utils'
 import useSidePanelToggleStore from '@/store/sidePanelToggle'
-import React, { useEffect, useState } from 'react'
+import React, { lazy, Suspense, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Pane } from 'split-pane-react'
 import SplitPane from 'split-pane-react/esm/SplitPane'
 import useUpdate from '../hooks/useUpdate'
 import useTabRenderStore from '../store/tabView'
-import SideNav from './nav/nav'
+import Loading from './loading'
 import { Toaster } from './ui/toaster'
+const SideNav = lazy(() => import('./nav/nav'))
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { isOpen } = useSidePanelToggleStore()
@@ -98,7 +99,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               minSize={isOpen ? sideNavWidth : 0}
               maxSize={sideNavWidth * 2}
             >
-              <SideNav />
+              <Suspense fallback={<Loading className="h-screen" />}>
+                <SideNav />
+              </Suspense>
             </Pane>
 
             <Pane

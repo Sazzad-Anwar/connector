@@ -63,8 +63,6 @@ const ApiResult = ({
     useResultRenderViewStore()
   const editorRef = useRef<Monaco>(null)
   const resultContainerRef = useRef<HTMLDivElement>(null)
-  // const [isModalOpen, setIsModalOpen] = useState(false)
-  // const isApplicationJson =headers?.['content-type']?.includes('application/json')
 
   const payloadSize = (data: any): string => {
     const json_string = JSON.stringify(data)
@@ -191,69 +189,23 @@ const ApiResult = ({
                     <TooltipContent align="start">Copy response</TooltipContent>
                   </Tooltip>
                 </Button>
-
-                {/* {url && (
-                  <Dialog
-                    open={isModalOpen}
-                    onOpenChange={setIsModalOpen}
-                  >
-                    <DialogContent className="max-w-3xl max-h-[80vh] overflow-auto">
-                      <DialogHeader>
-                        <DialogTitle>
-                          Content Preview {headers?.['content-type']}
-                        </DialogTitle>
-                      </DialogHeader>
-                      {headers?.['content-type']?.includes('image') ? (
-                        <img
-                          src={url}
-                          loading="lazy"
-                          alt="Content preview"
-                          className="w-auto mx-auto h-96 object-cover object-center"
-                        />
-                      ) : headers?.['content-type']?.includes('video') ? (
-                        <video
-                          src={url}
-                          controls
-                          className="w-full h-auto"
-                        >
-                          Your browser does not support the video tag.
-                        </video>
-                      ) : (
-                        <iframe
-                          src={url}
-                          className="w-full h-[60vh]"
-                          title="Content preview"
-                          // security="same-origin"
-                        />
-                      )}
-                    </DialogContent>
-                  </Dialog>
-                )} */}
-
-                {/* <Button
-                  type="button"
-                  variant="secondary"
-                  className="flex absolute right-[4.5rem] top-0 h-8 w-8 justify-self-end p-0 z-10"
-                  size="sm"
-                  onClick={() => setIsModalOpen(true)}
-                  disabled={!url}
-                >
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Eye size={18} />
-                    </TooltipTrigger>
-                    <TooltipContent align="start">
-                      Preview content
-                    </TooltipContent>
-                  </Tooltip>
-                </Button> */}
-
                 <MonacoEditor
                   beforeMount={setEditorTheme}
                   height={height! - 220}
                   saveViewState={true}
                   defaultLanguage="json"
-                  value={JSON.stringify(result, null, '\t')}
+                  language={
+                    headers?.['content-type']?.includes('application/json')
+                      ? 'json'
+                      : headers?.['content-type']?.includes('text/html')
+                      ? 'html'
+                      : 'text'
+                  }
+                  value={
+                    headers?.['content-type']?.includes('application/json')
+                      ? JSON.stringify(result, null, '\t')
+                      : result
+                  }
                   theme={theme === 'dark' ? 'onedark' : 'light'}
                   options={editorOptions({ readOnly: true })}
                   loading={

@@ -11,7 +11,7 @@ import {
   MoreVertical,
 } from 'lucide-react'
 
-import React, { Fragment, useRef } from 'react'
+import React, { Fragment, lazy, Suspense, useRef } from 'react'
 import { v4 as uuid } from 'uuid'
 
 import { cn, findRootCollection } from '@/lib/utils'
@@ -21,8 +21,7 @@ import { useParams } from 'react-router-dom'
 import useRenderNav from '../../hooks/useRenderNav'
 import useApiStore from '../../store/store'
 import { default as CreateFolder } from '../collections/create-folder'
-import MoveToFolderDialog from '../collections/move-to-folder-dialog'
-import EnvVariables from '../env/env-variables'
+import Loading from '../loading'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +41,10 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+const MoveToFolderDialog = lazy(
+  () => import('../collections/move-to-folder-dialog'),
+)
+const EnvVariables = lazy(() => import('../env/env-variables'))
 
 interface RenderNavigationProps {
   collection: FolderType
@@ -412,24 +415,29 @@ export default function RenderNavigation({
               You can add, edit or delete env variables here.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <EnvVariables
-            collectionId={collection?.id}
-            setIsEnvDialogOpen={setIsEnvDialogOpen}
-          />
+          <Suspense fallback={<Loading className="size-full" />}>
+            <EnvVariables
+              collectionId={collection?.id}
+              setIsEnvDialogOpen={setIsEnvDialogOpen}
+            />
+          </Suspense>
+
           <AlertDialogFooter />
         </AlertDialogContent>
       </AlertDialog>
-      <MoveToFolderDialog
-        apis={selectedApis}
-        isDialogOpen={isMoveToFolderDialogOpen}
-        setIsDialogOpen={setIsMoveToFolderDialogOpen}
-        folderId={
-          collection.type === 'folder'
-            ? collection.id
-            : findRootCollection(collections, collection.id)?.id || ''
-        }
-        setSelectedApis={setSelectedApis}
-      />
+      <Suspense fallback={<Loading className="size-full" />}>
+        <MoveToFolderDialog
+          apis={selectedApis}
+          isDialogOpen={isMoveToFolderDialogOpen}
+          setIsDialogOpen={setIsMoveToFolderDialogOpen}
+          folderId={
+            collection.type === 'folder'
+              ? collection.id
+              : findRootCollection(collections, collection.id)?.id || ''
+          }
+          setSelectedApis={setSelectedApis}
+        />
+      </Suspense>
     </div>
   )
 }

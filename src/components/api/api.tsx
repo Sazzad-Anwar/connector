@@ -575,6 +575,7 @@ export default function Api() {
                 : 80
             }
             maxSize="100%"
+            title="Response"
           >
             <Suspense
               fallback={
@@ -587,31 +588,20 @@ export default function Api() {
                 />
               }
             >
-              <ApiResult
-                height={
-                  resultRenderView === 'vertical'
-                    ? window.innerHeight + 20
-                    : sizes[1]! + 20
-                }
-                isLoading={isLoading}
-                result={
-                  typeof result !== 'string' &&
-                  ((JSON.stringify(result || '{}').startsWith('{') &&
-                    JSON.stringify(result || '{}').endsWith('}')) ||
-                    Array.isArray(result))
-                    ? result
-                    : typeof result === 'string' &&
-                      !JSON.stringify(result).startsWith('<!DOCTYPE') &&
-                      !JSON.stringify(result).endsWith('</html>')
-                    ? result
-                    : Object.entries(result || {}).length > 0
-                    ? "This request didn't return any data. Check your url and try again."
-                    : {}
-                }
-                headers={headers}
-                cookies={cookies}
-                responseStatus={responseStatus}
-              />
+              <div className="h-full">
+                <ApiResult
+                  height={
+                    resultRenderView === 'vertical'
+                      ? window.innerHeight + 20
+                      : sizes[1]! + 20
+                  }
+                  isLoading={isLoading}
+                  result={result}
+                  headers={headers}
+                  cookies={cookies}
+                  responseStatus={responseStatus}
+                />
+              </div>
             </Suspense>
           </Pane>
         </SplitPane>

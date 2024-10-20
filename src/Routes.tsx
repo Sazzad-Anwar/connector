@@ -4,7 +4,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import Error from './components/error'
 import Layout from './components/layout'
 import Loading from './components/loading'
-const Api = lazy(() => import('./pages/api/page'))
+const Api = lazy(() => import('./components/api/api'))
 const Home = lazy(() => import('./pages/page'))
 
 const RouterConfigs = createBrowserRouter([
