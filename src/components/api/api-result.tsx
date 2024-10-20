@@ -193,7 +193,6 @@ const ApiResult = ({
                   beforeMount={setEditorTheme}
                   height={height! - 220}
                   saveViewState={true}
-                  defaultLanguage="json"
                   language={
                     headers?.['content-type']?.includes('application/json')
                       ? 'json'

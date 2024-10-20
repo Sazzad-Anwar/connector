@@ -99,7 +99,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               minSize={isOpen ? sideNavWidth : 0}
               maxSize={sideNavWidth * 2}
             >
-              <Suspense fallback={<Loading className="h-screen" />}>
+              <Suspense fallback={<Loading className="h-full w-auto" />}>
                 <SideNav />
               </Suspense>
             </Pane>

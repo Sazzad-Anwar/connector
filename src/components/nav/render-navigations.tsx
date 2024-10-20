@@ -425,7 +425,7 @@ export default function RenderNavigation({
           <AlertDialogFooter />
         </AlertDialogContent>
       </AlertDialog>
-      <Suspense fallback={<Loading className="size-full" />}>
+      <Suspense fallback={<></>}>
         <MoveToFolderDialog
           apis={selectedApis}
           isDialogOpen={isMoveToFolderDialogOpen}

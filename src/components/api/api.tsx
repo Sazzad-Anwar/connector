@@ -572,7 +572,7 @@ export default function Api() {
               resultRenderView === 'vertical'
                 ? formDivRef?.current?.clientWidth &&
                   formDivRef?.current?.clientWidth / 2.9
-                : 80
+                : 200
             }
             maxSize="100%"
             title="Response"
@@ -583,7 +583,7 @@ export default function Api() {
                   height={
                     resultRenderView === 'vertical'
                       ? window.innerHeight + 20
-                      : sizes[1]! + 20
+                      : sizes[1] + 20
                   }
                 />
               }
@@ -593,7 +593,7 @@ export default function Api() {
                   height={
                     resultRenderView === 'vertical'
                       ? window.innerHeight + 20
-                      : sizes[1]! + 20
+                      : sizes[1] + 20
                   }
                   isLoading={isLoading}
                   result={result}
