@@ -533,7 +533,7 @@ export default function Api() {
             minSize={
               resultRenderView === 'vertical'
                 ? formDivRef?.current?.clientWidth &&
-                  formDivRef?.current?.clientWidth / 3
+                  formDivRef?.current?.clientWidth / 2.5
                 : 5
             }
             maxSize="100%"
@@ -588,20 +588,13 @@ export default function Api() {
                 />
               }
             >
-              <div className="h-full">
-                <ApiResult
-                  height={
-                    resultRenderView === 'vertical'
-                      ? window.innerHeight + 20
-                      : sizes[1] + 20
-                  }
-                  isLoading={isLoading}
-                  result={result}
-                  headers={headers}
-                  cookies={cookies}
-                  responseStatus={responseStatus}
-                />
-              </div>
+              <ApiResult
+                isLoading={isLoading}
+                result={result}
+                headers={headers}
+                cookies={cookies}
+                responseStatus={responseStatus}
+              />
             </Suspense>
           </Pane>
         </SplitPane>

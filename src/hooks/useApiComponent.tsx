@@ -63,8 +63,16 @@ export default function useApiComponent() {
   const breadCrumbDivRef = useRef<HTMLDivElement>(null)
   const urlDivRef = useRef<HTMLDivElement>(null)
   const [sizes, setSizes] = useState<number[]>([
-    (window.innerHeight - 320) / 2,
-    (window.innerHeight - 320) / 2,
+    resultRenderView === 'vertical'
+      ? formDivRef?.current?.clientWidth
+        ? formDivRef.current.clientWidth / 3
+        : (window.innerHeight - 320) / 2
+      : 5,
+    resultRenderView === 'vertical'
+      ? formDivRef?.current?.clientWidth
+        ? formDivRef.current.clientWidth / 2.9
+        : (window.innerHeight - 320) / 2
+      : 200,
   ])
   const [headers, setHeaders] = useState<{ [key: string]: any }>()
   const [responseStatus, setResponseStatus] = useState<ResponseStatus>({

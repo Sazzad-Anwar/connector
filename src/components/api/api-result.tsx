@@ -2,7 +2,7 @@
 import MonacoEditor, { Monaco } from '@monaco-editor/react'
 import copy from 'copy-to-clipboard'
 import { Check, Columns2, Copy, Download, Rows2, X } from 'lucide-react'
-import { memo, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import { editorOptions, setEditorTheme } from '../../config/editorOptions'
 import { cn, downloadFile } from '../../lib/utils'
@@ -62,7 +62,6 @@ const ApiResult = ({
   const { resultRenderView, toggleResultRenderView } =
     useResultRenderViewStore()
   const editorRef = useRef<Monaco>(null)
-  const resultContainerRef = useRef<HTMLDivElement>(null)
 
   const payloadSize = (data: any): string => {
     const json_string = JSON.stringify(data)
@@ -70,6 +69,12 @@ const ApiResult = ({
     const payload_size_kb = +(string_length / 1024).toFixed(2)
     return payload_size_kb > 1 ? `${payload_size_kb} KB` : `${string_length} B`
   }
+
+  useEffect(() => {
+    console.log(resultDivRef.current?.clientHeight)
+  }, [result])
+
+  console.log('rendering')
 
   const copyResponse = () => {
     setIsCopiedResponse(true)
@@ -91,14 +96,11 @@ const ApiResult = ({
         resultRenderView === 'vertical' ? 'border-l py-1' : 'border-t py-1',
         'bg-background',
       )}
-      style={{
-        height,
-      }}
     >
       {isLoading ? (
         <Loading
           name="Connecting"
-          height={height! - 300}
+          className="h-full"
         />
       ) : (
         <div className="relative flex justify-between pt-1 pb-3 pl-5 pr-0 text-sm animate__animated animated__fadeIn ">
@@ -131,11 +133,7 @@ const ApiResult = ({
               value="response"
               className="w-full"
             >
-              <div
-                ref={resultContainerRef}
-                style={{ height: height! - 220 }}
-                className="relative"
-              >
+              <div className="relative h-full">
                 <Button
                   disabled={
                     (result && Object.entries(result || {})?.length === 0) ||
@@ -148,8 +146,14 @@ const ApiResult = ({
                   onClick={() =>
                     downloadFile({
                       data: result,
-                      fileName: `Response-${uuid()}.json`,
-                      fileType: 'text/json',
+                      fileName: `Response-${uuid()}`,
+                      fileType: headers?.['content-type']?.includes(
+                        'application/json',
+                      )
+                        ? 'application/json'
+                        : headers?.['content-type']?.includes('text/html')
+                        ? 'text/html'
+                        : 'text/plain',
                     })
                   }
                 >
@@ -191,7 +195,12 @@ const ApiResult = ({
                 </Button>
                 <MonacoEditor
                   beforeMount={setEditorTheme}
-                  height={height! - 220}
+                  height={
+                    (resultDivRef?.current?.offsetHeight
+                      ? resultDivRef?.current?.offsetHeight
+                      : 700) - 220
+                  }
+                  className="h-full"
                   saveViewState={true}
                   language={
                     headers?.['content-type']?.includes('application/json')
@@ -219,8 +228,7 @@ const ApiResult = ({
             </TabsContent>
             <TabsContent
               value="headers"
-              className=" overflow-auto"
-              style={{ height: height! - 220 }}
+              className="overflow-auto h-full pb-36"
             >
               <Table>
                 <TableHeader className="border">
@@ -309,8 +317,8 @@ const ApiResult = ({
             </TabsContent>
             <TabsContent
               value="cookies"
-              className="overflow-auto"
-              style={{ height: height! - 230 }}
+              className="overflow-auto h-full"
+              // style={{ height: height! - 230 }}
             >
               <Table>
                 <TableHeader className="border">

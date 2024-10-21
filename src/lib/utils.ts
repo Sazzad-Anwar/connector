@@ -614,12 +614,24 @@ export const downloadFile = async ({
 }: {
   data: any
   fileName: string
-  fileType: 'text/json' | 'text/html' | 'text'
+  fileType:
+    | 'text/json'
+    | 'application/json'
+    | 'text/html'
+    | 'text'
+    | 'text/plain'
 }): Promise<void> => {
   const downloadFromBrowser = () => {
     const blob = new Blob([data], { type: fileType })
     const a = document.createElement('a')
-    a.download = fileName
+    a.download =
+      fileType === 'text/html'
+        ? `${fileName}.html`
+        : ['text/json', 'application/json'].includes(fileType)
+        ? `${fileName}.json`
+        : fileType === 'text'
+        ? `${fileName}.txt`
+        : fileName
     a.href = window.URL.createObjectURL(blob)
     const clickEvt = new MouseEvent('click', {
       view: window,
@@ -637,7 +649,7 @@ export const downloadFile = async ({
       platformName === 'macos' ||
       platformName === 'linux'
     ) {
-      if (fileType === 'text/json') {
+      if (['text/json', 'application/json'].includes(fileType)) {
         await writeTextFile(`${fileName}.json`, JSON.stringify(data), {
           baseDir: BaseDirectory.Download,
         })
