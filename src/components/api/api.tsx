@@ -589,6 +589,11 @@ export default function Api() {
               }
             >
               <ApiResult
+                height={
+                  resultRenderView === 'vertical'
+                    ? window.innerHeight + 20
+                    : sizes[1]! + 20
+                }
                 isLoading={isLoading}
                 result={result}
                 headers={headers}

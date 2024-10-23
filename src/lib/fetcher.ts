@@ -59,8 +59,16 @@ const fetcher = async ({
   try {
     platform()
     return await TFetch(url, requestConfigs)
-  } catch (error) {
-    return await fetch(url, requestConfigs)
+  } catch (error: any) {
+    if (
+      error.message?.includes(
+        "Cannot read properties of undefined (reading 'invoke')",
+      )
+    ) {
+      return await fetch(url, requestConfigs)
+    } else {
+      throw error
+    }
   }
 }
 

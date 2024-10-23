@@ -47,7 +47,10 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
   useEffect(() => {
     if (form.formState.dirtyFields?.url) {
       if (url.includes('/:')) {
-        form.setValue('pathVariables', parseURLParameters(url))
+        form.setValue(
+          'pathVariables',
+          parseURLParameters(url, form.getValues('pathVariables')),
+        )
       } else {
         form.setValue('pathVariables', [])
       }
@@ -111,12 +114,15 @@ export default function MultipleInput({ form, propertyName }: PropsType) {
 
   return (
     <Table
-      style={{ maxHeight: window.innerHeight - 300 }}
+      style={{
+        minHeight: 100,
+        maxHeight: window.innerHeight - 300,
+      }}
       className="overflow-auto block"
     >
       <TableHeader>
         <TableRow className="border">
-          <TableHead className="h-[35px] w-auto resize-x border pl-2 text-accent-foreground"></TableHead>
+          <TableHead className="h-[35px] w-[35px] resize-x border pl-2 text-accent-foreground"></TableHead>
           <TableHead className="h-[35px] w-[30%] resize-x border pl-2 text-accent-foreground">
             Key
           </TableHead>

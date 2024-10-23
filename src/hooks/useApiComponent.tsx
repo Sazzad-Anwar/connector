@@ -444,6 +444,11 @@ export default function useApiComponent() {
         if (process.env.NODE_ENV === 'development') {
           console.log(error)
         }
+        toast({
+          variant: 'error',
+          title: 'Error',
+          description: error,
+        })
         responseData = null
       }
       setIsLoading(false)

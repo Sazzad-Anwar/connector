@@ -31,20 +31,13 @@ export const InputTabs = ({
   const [jsonBodyData, setJsonBodyData] = useState<any>({})
   const [interactiveQueryData, setInteractiveQueryData] = useState<any>({})
   const [isTimedOut, setTimedOut] = useState<boolean>(false)
-  const [activeBodyPayloadType, setActiveBodyPayloadType] = useState<
-    'x-form-urlencoded' | 'json' | 'form-data'
-  >()
-  const [defaultOpen, setDefaultOpen] = useState<string>('params')
   const { resultRenderView } = useResultRenderViewStore()
 
   const setJsonBody = (data: string) => {
     try {
       setJsonBodyData(JSON.parse(data))
       const jsonData = JSON.parse(data)
-
-      if (activeBodyPayloadType === 'json') {
-        form.setValue('jsonBody', jsonData, { shouldDirty: true })
-      }
+      form.setValue('jsonBody', jsonData, { shouldDirty: true })
     } catch (error: any) {
       console.log(error)
     }
@@ -80,41 +73,35 @@ export const InputTabs = ({
   }, [api])
 
   useEffect(() => {
-    setDefaultOpen(
-      (api && api?.body?.find((item: ParamsType) => item.isActive)) ||
-        (api && api?.formData?.find((item: ParamsType) => item.isActive)) ||
-        (typeof api?.jsonBody === 'object' && Object.keys(api?.jsonBody).length)
-        ? 'body'
-        : api?.params?.find((item: ParamsType) => item.isActive) ||
-          (typeof api?.interactiveQuery === 'object' &&
-            Object.keys(api?.interactiveQuery).length)
-        ? 'params'
-        : api?.headers?.find((item: ParamsType) => item.isActive)
-        ? 'headers'
-        : api?.dynamicVariables?.find((item: ParamsType) => item.isActive)
-        ? 'dynamicVariable'
-        : 'params',
-    )
-    setActiveBodyPayloadType(
-      api?.formData?.find((item: ParamsType) => item.isActive)
-        ? 'form-data'
-        : api?.body?.find((item: ParamsType) => item.isActive)
-        ? 'x-form-urlencoded'
-        : 'json',
-    )
+    // setDefaultOpen(
+    //   api
+    //     ? api.params?.some((item: ParamsType) => item.value) ||
+    //       api.pathVariables?.some((item: ParamsType) => item.value) ||
+    //       (typeof api.interactiveQuery === 'object' &&
+    //         Object.keys(api.interactiveQuery).length)
+    //       ? 'params'
+    //       : api.headers?.some((item: ParamsType) => item.value)
+    //       ? 'headers'
+    //       : api.body?.some((item: ParamsType) => item.value) ||
+    //         api.formData?.some((item: ParamsType) => item.value) ||
+    //         (typeof api.jsonBody === 'object' &&
+    //           Object.keys(api.jsonBody).length)
+    //       ? 'body'
+    //       : api.dynamicVariables?.some((item: ParamsType) => item.value)
+    //       ? 'dynamicVariable'
+    //       : 'params'
+    //     : 'params',
+    // )
   }, [])
 
   return (
     <div className={className}>
       <Tabs
-        value={defaultOpen}
+        defaultValue="params"
         className="w-full"
       >
         <TabsList>
-          <TabsTrigger
-            onClick={() => setDefaultOpen('params')}
-            value="params"
-          >
+          <TabsTrigger value="params">
             Params{' '}
             {api?.params?.find((item: ParamsType) => item.isActive) ||
             api?.pathVariables?.filter(
@@ -125,19 +112,13 @@ export const InputTabs = ({
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
           </TabsTrigger>
-          <TabsTrigger
-            onClick={() => setDefaultOpen('headers')}
-            value="headers"
-          >
+          <TabsTrigger value="headers">
             Headers{' '}
             {api?.headers?.find((item: ParamsType) => item.isActive) ? (
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}{' '}
           </TabsTrigger>
-          <TabsTrigger
-            onClick={() => setDefaultOpen('body')}
-            value="body"
-          >
+          <TabsTrigger value="body">
             Body{' '}
             {api?.body?.find((item: ParamsType) => item.isActive) ||
             (api?.jsonBody && Object.keys(api?.jsonBody).length) ||
@@ -145,10 +126,7 @@ export const InputTabs = ({
               <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
             ) : null}
           </TabsTrigger>
-          <TabsTrigger
-            onClick={() => setDefaultOpen('dynamicVariable')}
-            value="dynamicVariable"
-          >
+          <TabsTrigger value="dynamicVariable">
             Set variables
             {api?.dynamicVariables?.filter(
               (item) => item.key !== '' && item.value !== '',
@@ -308,7 +286,7 @@ export const InputTabs = ({
           className="animate__animated animate__fadeIn"
         >
           <Tabs
-            value={activeBodyPayloadType}
+            defaultValue="json"
             className="w-full"
           >
             <TabsList className="px-.5 h-9">
@@ -316,7 +294,6 @@ export const InputTabs = ({
                 value="form-data"
                 className="h-7"
                 onClick={() => {
-                  setActiveBodyPayloadType('form-data')
                   form.setValue('activeBody', 'form-data')
                 }}
               >
@@ -329,7 +306,6 @@ export const InputTabs = ({
                 value="x-form-urlencoded"
                 className="h-7"
                 onClick={() => {
-                  setActiveBodyPayloadType('x-form-urlencoded')
                   form.setValue('activeBody', 'x-form-urlencoded')
                 }}
               >
@@ -342,7 +318,6 @@ export const InputTabs = ({
                 value="json"
                 className="h-7"
                 onClick={() => {
-                  setActiveBodyPayloadType('json')
                   form.setValue('activeBody', 'json')
                 }}
               >

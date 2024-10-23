@@ -253,7 +253,10 @@ export function updateUrlWithPathVariables(url: string, params: ParamsType[]) {
 
 const pathVariableMatcher = /\/:(?![0-9])[^/?]+/g
 
-export function parseURLParameters(url: string) {
+export function parseURLParameters(
+  url: string,
+  existingPathVariables: ParamsType[] = [],
+) {
   const parameters: ParamsType[] = []
   let match
 
@@ -261,12 +264,24 @@ export function parseURLParameters(url: string) {
   while ((match = pathVariableMatcher.exec(url)) !== null) {
     if (url.includes('?') && match.index > url.indexOf('?')) break // Stop at query string
 
-    parameters.push({
-      id: uuid(), // This will be filled later based on your data
-      key: match[0].substring(2), // Extracting the parameter key without '/:'
-      value: '',
-      description: '',
-    })
+    const key = match[0].substring(2) // Extracting the parameter key without '/:'
+    const existingVariable = existingPathVariables.find((v) => v.key === key)
+
+    if (existingVariable) {
+      // If the key exists in existingPathVariables, use that object
+      parameters.push({
+        ...existingVariable,
+        id: existingVariable.id || uuid(), // Use existing id if available, otherwise generate new
+      })
+    } else {
+      // If the key doesn't exist, create a new object
+      parameters.push({
+        id: uuid(),
+        key,
+        value: '',
+        description: '',
+      })
+    }
   }
 
   return parameters

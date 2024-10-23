@@ -2,7 +2,7 @@
 import MonacoEditor, { Monaco } from '@monaco-editor/react'
 import copy from 'copy-to-clipboard'
 import { Check, Columns2, Copy, Download, Rows2, X } from 'lucide-react'
-import { memo, useEffect, useRef, useState } from 'react'
+import { memo, useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import { editorOptions, setEditorTheme } from '../../config/editorOptions'
 import { cn, downloadFile } from '../../lib/utils'
@@ -70,12 +70,6 @@ const ApiResult = ({
     return payload_size_kb > 1 ? `${payload_size_kb} KB` : `${string_length} B`
   }
 
-  useEffect(() => {
-    console.log(resultDivRef.current?.clientHeight)
-  }, [result])
-
-  console.log('rendering')
-
   const copyResponse = () => {
     setIsCopiedResponse(true)
     copy(JSON.stringify(result))
@@ -89,9 +83,12 @@ const ApiResult = ({
     }, 2000)
   }
 
+  console.log(headers?.['Content-Type'])
+
   return (
     <section
       ref={resultDivRef}
+      style={{ height }}
       className={cn(
         resultRenderView === 'vertical' ? 'border-l py-1' : 'border-t py-1',
         'bg-background',
@@ -100,7 +97,7 @@ const ApiResult = ({
       {isLoading ? (
         <Loading
           name="Connecting"
-          className="h-full"
+          height={height! - 300}
         />
       ) : (
         <div className="relative flex justify-between pt-1 pb-3 pl-5 pr-0 text-sm animate__animated animated__fadeIn ">
@@ -132,6 +129,7 @@ const ApiResult = ({
             <TabsContent
               value="response"
               className="w-full"
+              style={{ height: height! - 220 }}
             >
               <div className="relative h-full">
                 <Button
@@ -195,11 +193,7 @@ const ApiResult = ({
                 </Button>
                 <MonacoEditor
                   beforeMount={setEditorTheme}
-                  height={
-                    (resultDivRef?.current?.offsetHeight
-                      ? resultDivRef?.current?.offsetHeight
-                      : 700) - 220
-                  }
+                  height={height! - 220}
                   className="h-full"
                   saveViewState={true}
                   language={
@@ -212,7 +206,10 @@ const ApiResult = ({
                   value={
                     headers?.['content-type']?.includes('application/json')
                       ? JSON.stringify(result, null, '\t')
-                      : result
+                      : headers?.['content-type']?.includes('text/html') ||
+                        headers?.['content-type']?.includes('text/plain')
+                      ? result
+                      : JSON.stringify({}, null, '\t')
                   }
                   theme={theme === 'dark' ? 'onedark' : 'light'}
                   options={editorOptions({ readOnly: true })}
@@ -228,7 +225,8 @@ const ApiResult = ({
             </TabsContent>
             <TabsContent
               value="headers"
-              className="overflow-auto h-full pb-36"
+              className="overflow-auto"
+              style={{ height: height! - 220 }}
             >
               <Table>
                 <TableHeader className="border">
@@ -263,34 +261,41 @@ const ApiResult = ({
                               >
                                 {headers[item].startsWith('{') &&
                                 headers[item].endsWith('}') ? (
-                                  <MonacoEditor
-                                    beforeMount={setEditorTheme}
-                                    height={
-                                      JSON.stringify(
-                                        JSON.parse(headers[item]),
-                                        null,
-                                        2,
-                                      ).split('\n').length * 20
-                                    }
-                                    width="100%"
-                                    saveViewState={true}
-                                    defaultLanguage="json"
-                                    value={JSON.stringify(
+                                  // <MonacoEditor
+                                  //   beforeMount={setEditorTheme}
+                                  //   height={
+                                  //     JSON.stringify(
+                                  //       JSON.parse(headers[item]),
+                                  //       null,
+                                  //       2,
+                                  //     ).split('\n').length * 20
+                                  //   }
+                                  //   width="100%"
+                                  //   saveViewState={true}
+                                  //   defaultLanguage="json"
+                                  //   value={JSON.stringify(
+                                  //     JSON.parse(headers[item]),
+                                  //     null,
+                                  //     2,
+                                  //   )}
+                                  //   theme={
+                                  //     theme === 'dark' ? 'onedark' : 'light'
+                                  //   }
+                                  //   options={editorOptions({
+                                  //     readOnly: true,
+                                  //   })}
+                                  //   loading={<Loading />}
+                                  //   onMount={(editor: Monaco) =>
+                                  //     (editorRef.current = editor)
+                                  //   }
+                                  // />
+                                  <pre className="px-3 break-words text-cyan-500 max-w-fit overflow-x-auto">
+                                    {JSON.stringify(
                                       JSON.parse(headers[item]),
                                       null,
                                       2,
                                     )}
-                                    theme={
-                                      theme === 'dark' ? 'onedark' : 'light'
-                                    }
-                                    options={editorOptions({
-                                      readOnly: true,
-                                    })}
-                                    loading={<Loading />}
-                                    onMount={(editor: Monaco) =>
-                                      (editorRef.current = editor)
-                                    }
-                                  />
+                                  </pre>
                                 ) : (
                                   headers[item]
                                 )}
@@ -317,8 +322,8 @@ const ApiResult = ({
             </TabsContent>
             <TabsContent
               value="cookies"
-              className="overflow-auto h-full"
-              // style={{ height: height! - 230 }}
+              className="overflow-auto"
+              style={{ height: height! - 230 }}
             >
               <Table>
                 <TableHeader className="border">
