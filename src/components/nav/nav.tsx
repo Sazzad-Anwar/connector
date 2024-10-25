@@ -5,8 +5,9 @@ import { cn } from '@/lib/utils'
 import useSidePanelToggleStore from '@/store/sidePanelToggle'
 import useApiStore from '@/store/store'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FileJson2, Folder, Plus } from 'lucide-react'
+import { FileJson2, Plus } from 'lucide-react'
 import { SubmitHandler, useForm } from 'react-hook-form'
+import { FaFolder } from 'react-icons/fa'
 import { v4 as uuid } from 'uuid'
 import * as z from 'zod'
 import { useDebounce } from '../../hooks/useDebounce'
@@ -132,7 +133,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
         <div className="max-h-[calc(100vh-106px)] overflow-auto pb-5 relative">
           {!collections?.length && !isCreatingCollection && (
             <div className="flex flex-col h-[calc(100vh-126px)] w-full items-center justify-center">
-              <Folder
+              <FaFolder
                 size={60}
                 className="opacity-40"
               />
@@ -150,6 +151,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
               name={''}
               onSubmit={onSubmit}
               type="collection"
+              isFolderOpen={false}
               actionType={'create'}
             />
           )}

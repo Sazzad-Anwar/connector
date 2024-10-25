@@ -4,12 +4,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu'
-import {
-  ChevronRight,
-  FileDown,
-  FolderClosed,
-  MoreVertical,
-} from 'lucide-react'
+import { ChevronRight, FileDown, MoreVertical } from 'lucide-react'
 
 import React, { Fragment, lazy, Suspense, useRef } from 'react'
 import { v4 as uuid } from 'uuid'
@@ -17,6 +12,7 @@ import { v4 as uuid } from 'uuid'
 import { cn, findRootCollection } from '@/lib/utils'
 import { FolderType } from '@/types/api'
 
+import { FaFolder, FaFolderOpen } from 'react-icons/fa'
 import { useParams } from 'react-router-dom'
 import useRenderNav from '../../hooks/useRenderNav'
 import useApiStore from '../../store/store'
@@ -106,6 +102,7 @@ export default function RenderNavigation({
 
                 <CreateFolder
                   name={collection.name}
+                  isFolderOpen={isFolderOpen}
                   onSubmit={renameCollectionName}
                   type="folder"
                   className="w-full flex text-[13px] items-center"
@@ -129,10 +126,14 @@ export default function RenderNavigation({
                   />
                 </div>
                 <div className="mr-2 size-[18px]">
-                  <FolderClosed size={18} />
+                  {isFolderOpen ? (
+                    <FaFolderOpen size={18} />
+                  ) : (
+                    <FaFolder size={18} />
+                  )}
                 </div>
 
-                <span className="w-full text-left mt-2 block px-1 text-[13px] h-7">
+                <span className="w-full text-left mt-2 block px-1 text-sm font-semibold h-7">
                   {collection.name}
                 </span>
               </button>
@@ -217,6 +218,7 @@ export default function RenderNavigation({
           {isCreatingFolder && collection.id === collectionId && (
             <CreateFolder
               name={collection.name}
+              isFolderOpen={isFolderOpen}
               onSubmit={addFolder}
               type="folder"
               actionType={'create'}

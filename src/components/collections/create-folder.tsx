@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FolderClosed } from 'lucide-react'
 import { useRef } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
+import { FaFolder, FaFolderOpen } from 'react-icons/fa'
 import * as z from 'zod'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form'
 import { Input } from '../ui/input'
@@ -15,6 +15,7 @@ type PropsType = {
   type?: 'collection' | 'folder'
   actionType: 'create' | 'update'
   className?: string
+  isFolderOpen?: boolean
 }
 
 export default function CreateFolder({
@@ -22,6 +23,7 @@ export default function CreateFolder({
   onSubmit,
   type,
   actionType,
+  isFolderOpen,
   className = 'flex items-center ml-10 my-1 mr-6',
 }: PropsType) {
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -56,7 +58,11 @@ export default function CreateFolder({
               <FormControl className="mb-0">
                 <div className={className}>
                   <div className="size-[18px] mr-2 ml-1.5">
-                    <FolderClosed size={18} />
+                    {isFolderOpen ? (
+                      <FaFolderOpen size={18} />
+                    ) : (
+                      <FaFolder size={18} />
+                    )}
                   </div>
 
                   <Input
@@ -65,7 +71,7 @@ export default function CreateFolder({
                     }
                     autoFocus
                     autoComplete="off"
-                    className="w-full px-1 text-[13px] h-7 mb-0"
+                    className="w-full px-1 text-sm font-semibold h-7 mb-0"
                     {...field}
                     value={field.value ?? ''}
                   />
