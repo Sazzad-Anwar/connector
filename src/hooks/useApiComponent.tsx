@@ -268,7 +268,7 @@ export default function useApiComponent() {
           ? (searchParams.get('activeQuery')! as
               | 'query-params'
               | 'interactive-query')
-          : api?.params?.filter((item: ParamsType) => item.isActive)?.length
+          : api?.params?.filter((item: ParamsType) => item.key !== '')?.length
           ? 'query-params'
           : typeof api?.interactiveQuery === 'object' &&
             Object.keys(api?.interactiveQuery).length
