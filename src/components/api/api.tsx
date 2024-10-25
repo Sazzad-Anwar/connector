@@ -5,6 +5,7 @@ import {
   ChevronsRight,
   Copy,
   Pencil,
+  RotateCw,
   Save,
   Waypoints,
 } from 'lucide-react'
@@ -16,13 +17,11 @@ import {
   containsVariable,
   extractVariable,
   getBreadcrumbsForNthChildren,
-  getRootParentIdForNthChildren,
   replaceVariables,
 } from '@/lib/utils'
 
 import useApiComponent from '@/hooks/useApiComponent'
 import useResultRenderViewStore from '@/store/resultRenderView'
-import { FolderType } from '@/types/api'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import SplitPane, { Pane } from 'split-pane-react'
@@ -101,15 +100,31 @@ export default function Api() {
     copyCurl,
     isProxyAdded,
     setIsProxyAdded,
+    reload,
+    setReload,
+    rootParent,
+    rootParentId,
   } = useApiComponent()
   const [isDesktopDownloaderShow, setIsDesktopDownloaderShow] = useState(false)
   const { resultRenderView } = useResultRenderViewStore()
   const [isOpenCurlDialog, setIsOpenCurlDialog] = useState<boolean>(false)
   const [isUrlError, setIsUrlError] = useState<boolean>(false)
-  const rootParentId = getRootParentIdForNthChildren(collections, folderId)
-  const rootParent = collections.find(
-    (item: FolderType) => item.id === rootParentId,
-  )
+  const [animatingClass, setAnimatingClass] = useState('')
+
+  useEffect(() => {
+    if (reload) {
+      setAnimatingClass('animate-spin')
+      setTimeout(() => {
+        setAnimatingClass('')
+        toast({
+          variant: 'success',
+          title: 'Reloaded!',
+          description: 'The API has been reloaded.',
+        })
+      }, 1000)
+    }
+  }, [reload])
+
   useEffect(() => {
     if (
       rootParentId &&
@@ -124,7 +139,7 @@ export default function Api() {
     ) {
       setIsUrlError(false)
     }
-  }, [url])
+  }, [url, reload])
 
   const setBorderColor = (isError: boolean) =>
     isError ? 'border-destructive' : ''
@@ -207,6 +222,22 @@ export default function Api() {
                 <Check size={12} />
               </span>
             )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="link"
+                  size="icon"
+                  className="p-0 w-6 h-6 ml-1"
+                  onClick={() => setReload((prev) => !prev)}
+                >
+                  <RotateCw
+                    size={15}
+                    className={cn(animatingClass, 'duration-500')}
+                  />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Reload the API</TooltipContent>
+            </Tooltip>
           </div>
         </div>
         <div className="ml-5">
@@ -321,9 +352,11 @@ export default function Api() {
                   {containsDynamicVariable(url) ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="text-cyan-500">{`{{${extractVariable(
-                          url,
-                        )}}}`}</span>
+                        <span
+                          className={cn(
+                            isUrlError ? 'text-red-500' : 'text-cyan-500',
+                          )}
+                        >{`{{${extractVariable(url)}}}`}</span>
                       </TooltipTrigger>
                       <TooltipContent
                         className="flex items-center text-sm"
@@ -335,13 +368,20 @@ export default function Api() {
                             description: 'Env value is copied to clipboard',
                           })
                         }}
+                        align="start"
                       >
-                        {replaceVariables(`{{${extractVariable(url)}}}`, env)}
-
-                        <Copy
-                          className="h-4 w-4 justify-self-end p-0 ml-2 cursor-pointer"
-                          size={16}
-                        />
+                        {isUrlError
+                          ? 'Please add this to ENV with value'
+                          : replaceVariables(
+                              `{{${extractVariable(url)}}}`,
+                              env,
+                            )}
+                        {!isUrlError && (
+                          <Copy
+                            className="h-4 w-4 justify-self-end p-0 ml-2 cursor-pointer"
+                            size={16}
+                          />
+                        )}
                       </TooltipContent>
                     </Tooltip>
                   ) : (

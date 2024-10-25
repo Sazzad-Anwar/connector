@@ -26,6 +26,7 @@ import {
   filterEmptyParams,
   generateCurlFromJson,
   getQueryString,
+  getRootParentIdForNthChildren,
   isCurlCall,
   parseCookie,
   parseCurlToJson,
@@ -38,10 +39,16 @@ import useResultRenderViewStore from '../store/resultRenderView'
 import useSidePanelToggleStore from '../store/sidePanelToggle'
 import useApiStore, { isLocalStorageAvailable } from '../store/store'
 import useTabRenderStore from '../store/tabView'
-import { ApiSchema, ApiType, CookieType, ParamsType } from '../types/api'
+import {
+  ApiSchema,
+  ApiType,
+  CookieType,
+  FolderType,
+  ParamsType,
+} from '../types/api'
 
 export default function useApiComponent() {
-  const { api, getApi, updateApi, collections, env, getEnv, updateEnv } =
+  const { api, getApi, updateApi, collections, getEnv, updateEnv } =
     useApiStore()
   const params = useParams()
   const [cookies, setCookies] = useState<CookieType[]>([])
@@ -81,6 +88,13 @@ export default function useApiComponent() {
     time: '',
   })
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const apiId = params.apiId as string
+  const folderId = params.folderId as string
+  const rootParentId = getRootParentIdForNthChildren(collections, folderId)
+  const rootParent = collections.find(
+    (item: FolderType) => item.id === rootParentId,
+  )
+  const env = rootParent?.env || []
   const form = useForm<ApiType>({
     mode: 'onChange',
     resolver: zodResolver(ApiSchema),
@@ -102,8 +116,13 @@ export default function useApiComponent() {
         Object.keys(interactiveQuery)?.length
       ? url + '?' + getQueryString(interactiveQuery)
       : url
-  const apiId = params.apiId as string
-  const folderId = params.folderId as string
+  const [reload, setReload] = useState(false)
+
+  useEffect(() => {
+    if (reload) {
+      setReload(false)
+    }
+  }, [reload])
 
   useEffect(() => {
     state?.isUrlEditing ? setIsUrlEditing(true) : null
@@ -605,5 +624,9 @@ export default function useApiComponent() {
     copyCurl,
     isProxyAdded,
     setIsProxyAdded,
+    reload,
+    setReload,
+    rootParent,
+    rootParentId,
   }
 }
