@@ -173,7 +173,7 @@ export default function useRenderNav({
       onClick: () => {
         downloadFile({
           data: collection,
-          fileName: collection.name + '.json',
+          fileName: collection.name,
           fileType: 'text/json',
         })
       },

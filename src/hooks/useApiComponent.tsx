@@ -419,6 +419,8 @@ export default function useApiComponent() {
         : response.text())
       setResult(responseData)
 
+      console.log(responseData)
+
       responseStatusData = {
         status: response && response?.status,
         statusText: 'ok',

@@ -23,10 +23,12 @@ import {
 import useApiComponent from '@/hooks/useApiComponent'
 import useResultRenderViewStore from '@/store/resultRenderView'
 import { lazy, Suspense, useEffect, useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import { Link } from 'react-router-dom'
 import SplitPane, { Pane } from 'split-pane-react'
 import { downloadUrls } from '../../config/downloading-urls'
 import Breadcrumbs from '../breadcrumb'
+import Error from '../error'
 import Loading from '../loading'
 import SideNavToggler from '../nav/sidenav-toggler'
 import NotFound from '../notFound'
@@ -589,21 +591,23 @@ export default function Api() {
                 />
               }
             >
-              <InputTabs
-                className={cn(
-                  'pl-5 pt-2',
-                  resultRenderView === 'horizontal'
-                    ? `w-[${sizes[0] - 120}px]`
-                    : '',
-                )}
-                height={
-                  resultRenderView === 'vertical'
-                    ? window.innerHeight - 200
-                    : sizes[0]
-                }
-                form={form}
-                api={api}
-              />
+              <ErrorBoundary fallback={<Error />}>
+                <InputTabs
+                  className={cn(
+                    'pl-5 pt-2',
+                    resultRenderView === 'horizontal'
+                      ? `w-[${sizes[0] - 120}px]`
+                      : '',
+                  )}
+                  height={
+                    resultRenderView === 'vertical'
+                      ? window.innerHeight - 200
+                      : sizes[0]
+                  }
+                  form={form}
+                  api={api}
+                />
+              </ErrorBoundary>
             </Suspense>
           </Pane>
 
@@ -628,18 +632,20 @@ export default function Api() {
                 />
               }
             >
-              <ApiResult
-                height={
-                  resultRenderView === 'vertical'
-                    ? window.innerHeight + 20
-                    : sizes[1]! + 20
-                }
-                isLoading={isLoading}
-                result={result}
-                headers={headers}
-                cookies={cookies}
-                responseStatus={responseStatus}
-              />
+              <ErrorBoundary fallback={<Error />}>
+                <ApiResult
+                  height={
+                    resultRenderView === 'vertical'
+                      ? window.innerHeight + 20
+                      : sizes[1]! + 20
+                  }
+                  isLoading={isLoading}
+                  result={result}
+                  headers={headers}
+                  cookies={cookies}
+                  responseStatus={responseStatus}
+                />
+              </ErrorBoundary>
             </Suspense>
           </Pane>
         </SplitPane>

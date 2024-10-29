@@ -83,8 +83,6 @@ const ApiResult = ({
     }, 2000)
   }
 
-  console.log(headers?.['Content-Type'])
-
   return (
     <section
       ref={resultDivRef}
