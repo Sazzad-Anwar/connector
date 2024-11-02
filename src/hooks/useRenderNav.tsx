@@ -254,5 +254,6 @@ export default function useRenderNav({
     setIsEnvDialogOpen,
     isFolderOpen,
     setIsFolderOpen,
+    addApi,
   }
 }

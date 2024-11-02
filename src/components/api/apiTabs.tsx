@@ -44,7 +44,7 @@ export default function ApiTabs() {
             <CarouselItem
               key={`folder-${tab.folderId}-api-${tab.id}`}
               className={cn(
-                'basis-44 mr-0.5  text-left rounded-t-lg border flex items-center pl-2.5 pr-1.5 py-1 selection:bg-transparent',
+                'basis-44 mr-0.5  text-left rounded-t-sm border flex items-center pl-2.5 pr-1.5 py-1 selection:bg-transparent',
                 tab.id === apiId ? 'bg-secondary' : 'bg-background',
               )}
               onClick={() => {

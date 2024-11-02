@@ -4,7 +4,12 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu'
-import { ChevronRight, FileDown, MoreVertical } from 'lucide-react'
+import {
+  ChevronRight,
+  FileDown,
+  GitPullRequestCreate,
+  MoreVertical,
+} from 'lucide-react'
 
 import React, { Fragment, lazy, Suspense, useRef } from 'react'
 import { v4 as uuid } from 'uuid'
@@ -75,6 +80,7 @@ export default function RenderNavigation({
     handleClickApi,
     setSelectedApis,
     downloadFile,
+    addApi,
   } = useRenderNav({ collection })
 
   return (
@@ -138,6 +144,12 @@ export default function RenderNavigation({
                 </span>
               </button>
             )}
+            <button
+              className="p-1 opacity-20 group-hover:opacity-100"
+              onClick={() => addApi()}
+            >
+              <GitPullRequestCreate size={16} />
+            </button>
             <div className="flex items-center">
               <InputFile
                 id={uuid()}

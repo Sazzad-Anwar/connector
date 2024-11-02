@@ -259,34 +259,6 @@ const ApiResult = ({
                               >
                                 {headers[item].startsWith('{') &&
                                 headers[item].endsWith('}') ? (
-                                  // <MonacoEditor
-                                  //   beforeMount={setEditorTheme}
-                                  //   height={
-                                  //     JSON.stringify(
-                                  //       JSON.parse(headers[item]),
-                                  //       null,
-                                  //       2,
-                                  //     ).split('\n').length * 20
-                                  //   }
-                                  //   width="100%"
-                                  //   saveViewState={true}
-                                  //   defaultLanguage="json"
-                                  //   value={JSON.stringify(
-                                  //     JSON.parse(headers[item]),
-                                  //     null,
-                                  //     2,
-                                  //   )}
-                                  //   theme={
-                                  //     theme === 'dark' ? 'onedark' : 'light'
-                                  //   }
-                                  //   options={editorOptions({
-                                  //     readOnly: true,
-                                  //   })}
-                                  //   loading={<Loading />}
-                                  //   onMount={(editor: Monaco) =>
-                                  //     (editorRef.current = editor)
-                                  //   }
-                                  // />
                                   <pre className="px-3 break-words text-cyan-500 max-w-fit overflow-x-auto">
                                     {JSON.stringify(
                                       JSON.parse(headers[item]),
