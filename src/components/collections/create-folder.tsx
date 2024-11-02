@@ -57,7 +57,7 @@ export default function CreateFolder({
             <FormItem>
               <FormControl className="mb-0">
                 <div className={className}>
-                  <div className="size-[18px] mr-2 ml-1.5">
+                  <div className="size-[18px] mr-2">
                     {isFolderOpen ? (
                       <FaFolderOpen size={18} />
                     ) : (

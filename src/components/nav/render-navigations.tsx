@@ -90,13 +90,17 @@ export default function RenderNavigation({
           <div
             ref={navWidthRef}
             className={cn(
-              buttonVariants({ variant: 'ghost', size: 'xs' }),
+              buttonVariants({
+                variant: 'ghost',
+                size: 'xs',
+                className: 'py-px',
+              }),
               'group sticky top-0 w-full bg-background z-10 cursor-pointer items-center justify-between rounded-none',
             )}
           >
             {isFolderNameUpdating && collection.id === collectionId ? (
               <>
-                <div className="size-[18px] mr-3">
+                <div className="size-[18px] mr-1">
                   <ChevronRight
                     size={18}
                     className={
@@ -120,9 +124,9 @@ export default function RenderNavigation({
                 onClick={() => {
                   setIsFolderOpen(!isFolderOpen)
                 }}
-                className="flex flex-1 truncate w-full h-7 text-[13px] items-center focus-within:outline-none focus-visible:outline-none"
+                className="truncate inline-flex w-full h-7 text-[13px] items-center focus-within:outline-none focus-visible:outline-none"
               >
-                <div className="size-[18px] mr-3">
+                <span className="size-[18px] mr-1">
                   <ChevronRight
                     size={18}
                     className={
@@ -130,16 +134,16 @@ export default function RenderNavigation({
                       ' transition-all duration-100 ease-linear'
                     }
                   />
-                </div>
-                <div className="mr-2 size-[18px]">
+                </span>
+                <span className="mr-2 size-[18px]">
                   {isFolderOpen ? (
                     <FaFolderOpen size={18} />
                   ) : (
                     <FaFolder size={18} />
                   )}
-                </div>
+                </span>
 
-                <span className="w-full text-left mt-2 block px-1 text-sm font-semibold h-7">
+                <span className="w-full truncate text-left mt-2 block px-1 text-sm font-semibold h-7">
                   {collection.name}
                 </span>
               </button>

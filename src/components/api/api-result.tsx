@@ -89,7 +89,7 @@ const ApiResult = ({
       style={{ height }}
       className={cn(
         resultRenderView === 'vertical' ? 'border-l py-1' : 'border-t py-1',
-        'bg-background',
+        'bg-background h-full',
       )}
     >
       {isLoading ? (
@@ -189,36 +189,65 @@ const ApiResult = ({
                     <TooltipContent align="start">Copy response</TooltipContent>
                   </Tooltip>
                 </Button>
-                <MonacoEditor
-                  beforeMount={setEditorTheme}
-                  height={height! - 220}
-                  className="h-full"
-                  saveViewState={true}
-                  language={
-                    headers?.['content-type']?.includes('application/json')
-                      ? 'json'
-                      : headers?.['content-type']?.includes('text/html')
-                      ? 'html'
-                      : 'text'
-                  }
-                  value={
-                    headers?.['content-type']?.includes('application/json')
-                      ? JSON.stringify(result, null, '\t')
-                      : headers?.['content-type']?.includes('text/html') ||
-                        headers?.['content-type']?.includes('text/plain')
-                      ? result
-                      : JSON.stringify({}, null, '\t')
-                  }
-                  theme={theme === 'dark' ? 'onedark' : 'light'}
-                  options={editorOptions({ readOnly: true })}
-                  loading={
-                    <Loading
-                      name="Connecting"
-                      height={height! - 220}
-                    />
-                  }
-                  onMount={(editor: Monaco) => (editorRef.current = editor)}
-                />
+                {headers?.['content-type']?.includes('image') ? (
+                  <img
+                    src={URL.createObjectURL(new Blob([result]))}
+                    alt="image"
+                  />
+                ) : headers?.['content-type']?.includes('application/json') ||
+                  headers?.['content-type']?.includes('text/html') ||
+                  headers?.['content-type']?.includes('text/plain') ? (
+                  <MonacoEditor
+                    beforeMount={setEditorTheme}
+                    height={height! - 220}
+                    className="h-full"
+                    saveViewState={true}
+                    language={
+                      headers?.['content-type']?.includes('application/json')
+                        ? 'json'
+                        : headers?.['content-type']?.includes('text/html')
+                        ? 'html'
+                        : 'text'
+                    }
+                    value={
+                      headers?.['content-type']?.includes('application/json')
+                        ? JSON.stringify(result, null, '\t')
+                        : headers?.['content-type']?.includes('text/html') ||
+                          headers?.['content-type']?.includes('text/plain')
+                        ? result
+                        : '{}'
+                    }
+                    theme={theme === 'dark' ? 'onedark' : 'light'}
+                    options={editorOptions({ readOnly: true })}
+                    loading={
+                      <Loading
+                        name="Connecting"
+                        height={height! - 220}
+                      />
+                    }
+                    onMount={(editor: Monaco) => (editorRef.current = editor)}
+                  />
+                ) : (
+                  <MonacoEditor
+                    beforeMount={setEditorTheme}
+                    height={height! - 220}
+                    className="h-full"
+                    language="json"
+                    value={JSON.stringify(
+                      { message: 'Unsupported content type' },
+                      null,
+                      '\t',
+                    )}
+                    theme={theme === 'dark' ? 'onedark' : 'light'}
+                    options={editorOptions({ readOnly: true })}
+                    loading={
+                      <Loading
+                        name="Connecting"
+                        height={height! - 220}
+                      />
+                    }
+                  />
+                )}
               </div>
             </TabsContent>
             <TabsContent

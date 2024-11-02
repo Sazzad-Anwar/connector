@@ -12,6 +12,7 @@ export const editorOptions = ({ readOnly }: { readOnly: boolean }) => {
     mouseWheelScrollSensitivity: 3,
     fontSize: 14,
     tabSize: 6,
+    autoIndent: 'brackets',
     smoothScrolling: true,
   }
 }

@@ -188,9 +188,9 @@ export default function useApiComponent() {
           if (resultRenderView === 'vertical') {
             setSizes([
               formDivRef?.current?.clientWidth &&
-                formDivRef?.current?.clientWidth / 3,
+                formDivRef?.current?.clientWidth / 2.5,
               formDivRef?.current?.clientWidth &&
-                formDivRef?.current?.clientWidth / 2.8,
+                formDivRef?.current?.clientWidth / 2.9,
             ])
           } else {
             setSizes([
@@ -419,6 +419,9 @@ export default function useApiComponent() {
         : response.headers.get('Content-Type')?.includes('image')
         ? response.blob()
         : response.text())
+      if (response.headers.get('Content-Type')?.includes('text/html')) {
+        setSizes([0, window.innerHeight])
+      }
       setResult(responseData)
 
       responseStatusData = {

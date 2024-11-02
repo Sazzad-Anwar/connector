@@ -26,7 +26,9 @@ export default function useRenderNav({
   const [collectionId, setCollectionId] = useState<string>('')
   const [isCreatingFolder, setIsCreatingFolder] = useState(false)
   const [isEnvDialogOpen, setIsEnvDialogOpen] = useState(false)
-  const [isFolderOpen, setIsFolderOpen] = useState(false)
+  const [isFolderOpen, setIsFolderOpen] = useState(
+    params.collectionId === collection.id || false,
+  )
   const [isFolderNameUpdating, setIsFolderNameUpdating] = useState(false)
   const [isMoveToFolderDialogOpen, setIsMoveToFolderDialogOpen] =
     useState(false)
@@ -184,6 +186,15 @@ export default function useRenderNav({
       },
     },
   ]
+
+  useEffect(() => {
+    if (
+      params.folderId === collection.id ||
+      collection.children?.find((item) => item.id === params.folderId)
+    ) {
+      setIsFolderOpen(true)
+    }
+  }, [params.folderId, collection.id])
 
   useEffect(() => {
     const handleEscapeKeyPress = (event: KeyboardEvent) => {
