@@ -114,7 +114,7 @@ export default function RenderNavigation({
                 onClick={() => {
                   setIsFolderOpen(!isFolderOpen)
                 }}
-                className="flex flex-1 h-7 text-[13px] items-center focus-within:outline-none focus-visible:outline-none"
+                className="flex flex-1 truncate w-full h-7 text-[13px] items-center focus-within:outline-none focus-visible:outline-none"
               >
                 <div className="size-[18px] mr-3">
                   <ChevronRight
@@ -207,14 +207,6 @@ export default function RenderNavigation({
       </ContextMenu>
       {isFolderOpen && (
         <div className="animate__animated animate__fadeIn child ml-6 border-l">
-          {collection?.children
-            ?.sort((a, b) => a.name?.localeCompare(b.name))
-            .map((folder) => (
-              <RenderNavigation
-                collection={folder}
-                key={`folder-${folder.id}`}
-              />
-            ))}
           {isCreatingFolder && collection.id === collectionId && (
             <CreateFolder
               name={collection.name}
@@ -224,6 +216,14 @@ export default function RenderNavigation({
               actionType={'create'}
             />
           )}
+          {collection?.children
+            ?.sort((a, b) => a.name?.localeCompare(b.name))
+            .map((folder) => (
+              <RenderNavigation
+                collection={folder}
+                key={`folder-${folder.id}`}
+              />
+            ))}
           {collection.apis
             ?.sort((a, b) => a.name?.localeCompare(b.name))
             .map((api) => (

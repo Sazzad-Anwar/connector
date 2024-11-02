@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { fetch as TFetch } from '@tauri-apps/plugin-http'
-import { platform } from '@tauri-apps/plugin-os'
 import { ParamsType } from '../types/api'
 
 const fetcher = async ({
@@ -57,7 +56,6 @@ const fetcher = async ({
   }
 
   try {
-    platform()
     return await TFetch(url, requestConfigs)
   } catch (error: any) {
     if (

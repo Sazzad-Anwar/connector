@@ -312,14 +312,16 @@ export default function useApiComponent() {
         setIsApiNameEditing(false)
       }
     }
+    if (formDivRef.current) {
+      // Add the event listener when the component mounts
+      formDivRef.current.addEventListener('keydown', handleKeyPress)
 
-    // Add the event listener when the component mounts
-    document.addEventListener('keydown', handleKeyPress)
-    // document.addEventListener('keyup', handleKeyPress)
-    setAllParams()
+      setAllParams()
+    }
+
     // Remove the event listener when the component unmounts
     return () => {
-      document.removeEventListener('keydown', handleKeyPress)
+      formDivRef.current?.removeEventListener('keydown', handleKeyPress)
       // document.addEventListener('keyup', handleKeyPress)
     }
   }, [form, api, searchParams])
@@ -418,8 +420,6 @@ export default function useApiComponent() {
         ? response.blob()
         : response.text())
       setResult(responseData)
-
-      console.log(responseData)
 
       responseStatusData = {
         status: response && response?.status,
@@ -568,9 +568,7 @@ export default function useApiComponent() {
   }
 
   const copyCurl = () => {
-    let request = api
-    request.url = url
-    copy(generateCurlFromJson(request))
+    copy(curl)
     toast({
       variant: 'success',
       title: 'Success',

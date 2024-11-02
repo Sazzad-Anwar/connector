@@ -1,13 +1,25 @@
+import { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { v4 as uuid } from 'uuid'
 import SideNavToggler from '../components/nav/sidenav-toggler'
 import { Button, buttonVariants } from '../components/ui/button'
 import useImportJSON from '../hooks/useImportJSON'
-import useCreatingFolderStore from '../store/createFolder'
 
 export default function page() {
   const { InputFile } = useImportJSON()
-  const { isCreatingCollection, setIsCreatingCollection } =
-    useCreatingFolderStore()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [isCreatingCollection, setIsCreatingCollection] = useState(
+    Boolean(searchParams.get('isCreatingCollection')) || false,
+  )
+
+  useEffect(() => {
+    if (Boolean(searchParams.get('isCreatingCollection'))) {
+      setIsCreatingCollection(Boolean(searchParams.get('isCreatingCollection')))
+    } else {
+      setIsCreatingCollection(false)
+    }
+  }, [searchParams])
 
   return (
     <section className="flex h-screen flex-col items-center justify-center text-center relative">
@@ -35,7 +47,8 @@ export default function page() {
           variant="outline"
           className="bg-secondary/50 text-muted-foreground hover:text-foreground"
           onClick={() => {
-            setIsCreatingCollection(true)
+            navigate(`?isCreatingCollection=${!isCreatingCollection}`)
+            setIsCreatingCollection(!isCreatingCollection)
           }}
         >
           Create Collection

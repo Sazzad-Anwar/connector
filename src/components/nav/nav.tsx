@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import useImportJSON from '@/hooks/useImportJSON'
 import { cn } from '@/lib/utils'
@@ -8,10 +8,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { FileJson2, Plus } from 'lucide-react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { FaFolder } from 'react-icons/fa'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { v4 as uuid } from 'uuid'
 import * as z from 'zod'
 import { useDebounce } from '../../hooks/useDebounce'
-import useCreatingFolderStore from '../../store/createFolder'
 import { CollectionSchema, FolderType } from '../../types/api'
 import CreateFolder from '../collections/create-folder'
 import { Button } from '../ui/button'
@@ -29,14 +29,25 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
   const { InputFile } = useImportJSON()
   const { isOpen } = useSidePanelToggleStore()
   const [search, setSearch] = useState<string>('')
-  const { setIsCreatingFolder, isCreatingCollection, setIsCreatingCollection } =
-    useCreatingFolderStore()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
+  const [isCreatingCollection, setIsCreatingCollection] = useState(
+    Boolean(searchParams.get('isCreatingCollection')) || false,
+  )
+  const asideRef = useRef<HTMLDivElement>(null)
   const { collections, createFolder, searchApi, getCollections } = useApiStore()
   const debouncedValue = useDebounce(search, 700)
   const form = useForm<z.infer<typeof CollectionSchema>>({
     mode: 'onChange',
     resolver: zodResolver(CollectionSchema),
   })
+
+  useEffect(() => {
+    if (Boolean(searchParams.get('isCreatingCollection'))) {
+      setIsCreatingCollection(Boolean(searchParams.get('isCreatingCollection')))
+    }
+  }, [searchParams])
 
   const onSubmit: SubmitHandler<z.infer<typeof CollectionSchema>> = (data) => {
     const folder: FolderType = {
@@ -45,7 +56,7 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
       id: uuid(),
     }
     createFolder(folder)
-    setIsCreatingCollection(false)
+    // setIsCreatingCollection(false)
     form.reset()
     toast({
       variant: 'success',
@@ -66,22 +77,25 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
     const handleEscapeKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         // Handle the "Escape" key press here
-        setIsCreatingFolder(false)
         setIsCreatingCollection(false)
+        navigate(location.pathname, { replace: true })
       }
     }
 
-    // Add the event listener when the component mounts
-    document.addEventListener('keydown', handleEscapeKeyPress)
+    if (asideRef?.current) {
+      // Add the event listener when the component mounts
+      asideRef.current.addEventListener('keydown', handleEscapeKeyPress)
+    }
+
     // Remove the event listener when the component unmounts
     return () => {
-      document.removeEventListener('keydown', handleEscapeKeyPress)
+      asideRef.current?.removeEventListener('keydown', handleEscapeKeyPress)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
     <aside
+      ref={asideRef}
       className={cn(
         'relative min-h-screen overflow-hidden border-r bg-background',
         isLoadingInSheet
@@ -140,12 +154,6 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
               <h1 className="opacity-40">No Collection Found</h1>
             </div>
           )}
-          {collections?.map((collection: FolderType) => (
-            <RenderNavigation
-              key={collection.id}
-              collection={collection}
-            />
-          ))}
           {isCreatingCollection && (
             <CreateFolder
               name={''}
@@ -155,6 +163,12 @@ export default function SideNav({ isLoadingInSheet }: PropsType) {
               actionType={'create'}
             />
           )}
+          {collections?.map((collection: FolderType) => (
+            <RenderNavigation
+              key={collection.id}
+              collection={collection}
+            />
+          ))}
         </div>
       </div>
     </aside>
