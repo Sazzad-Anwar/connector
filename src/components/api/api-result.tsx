@@ -62,6 +62,12 @@ const ApiResult = ({
   const { resultRenderView, toggleResultRenderView } =
     useResultRenderViewStore()
 
+  console.log(
+    !headers?.['content-type'].includes('application/json') &&
+      !headers?.['content-type'].includes('text/plain') &&
+      !headers?.['content-type'].includes('text/html'),
+  )
+
   const payloadSize = (data: any): string => {
     const json_string = JSON.stringify(data)
     const string_length = new TextEncoder().encode(json_string).length
@@ -131,11 +137,11 @@ const ApiResult = ({
               <div className="relative h-full">
                 <Button
                   disabled={
-                    (result && Object.entries(result || {})?.length === 0) ||
                     !result ||
-                    !['application/json', 'text/html', 'text/plain'].includes(
-                      headers?.['content-type'],
-                    )
+                    Object.entries(result ?? {})?.length === 0 ||
+                    (!headers?.['content-type'].includes('application/json') &&
+                      !headers?.['content-type'].includes('text/plain') &&
+                      !headers?.['content-type'].includes('text/html'))
                   }
                   type="button"
                   variant="secondary"
@@ -166,11 +172,11 @@ const ApiResult = ({
                 </Button>
                 <Button
                   disabled={
-                    (result && Object.entries(result)?.length === 0) ||
                     !result ||
-                    !['application/json', 'text/html', 'text/plain'].includes(
-                      headers?.['content-type'],
-                    )
+                    Object.entries(result ?? {})?.length === 0 ||
+                    (!headers?.['content-type'].includes('application/json') &&
+                      !headers?.['content-type'].includes('text/plain') &&
+                      !headers?.['content-type'].includes('text/html'))
                   }
                   type="button"
                   variant="secondary"
@@ -240,11 +246,7 @@ const ApiResult = ({
                     language="json"
                     value={
                       !Object.entries(result || {}).length
-                        ? JSON.stringify(
-                            { message: 'Unsupported content type' },
-                            null,
-                            '\t',
-                          )
+                        ? JSON.stringify({}, null, '\t')
                         : '{}'
                     }
                     theme={theme === 'dark' ? 'onedark' : 'light'}
