@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import MonacoEditor, { Monaco } from '@monaco-editor/react'
+import MonacoEditor from '@monaco-editor/react'
 import copy from 'copy-to-clipboard'
 import { Check, Columns2, Copy, Download, Rows2, X } from 'lucide-react'
 import { memo, useRef, useState } from 'react'
@@ -61,7 +61,6 @@ const ApiResult = ({
   const resultDivRef = useRef<HTMLDivElement>(null)
   const { resultRenderView, toggleResultRenderView } =
     useResultRenderViewStore()
-  const editorRef = useRef<Monaco>(null)
 
   const payloadSize = (data: any): string => {
     const json_string = JSON.stringify(data)
@@ -133,7 +132,10 @@ const ApiResult = ({
                 <Button
                   disabled={
                     (result && Object.entries(result || {})?.length === 0) ||
-                    !result
+                    !result ||
+                    !['application/json', 'text/html', 'text/plain'].includes(
+                      headers?.['content-type'],
+                    )
                   }
                   type="button"
                   variant="secondary"
@@ -164,7 +166,11 @@ const ApiResult = ({
                 </Button>
                 <Button
                   disabled={
-                    (result && Object.entries(result)?.length === 0) || !result
+                    (result && Object.entries(result)?.length === 0) ||
+                    !result ||
+                    !['application/json', 'text/html', 'text/plain'].includes(
+                      headers?.['content-type'],
+                    )
                   }
                   type="button"
                   variant="secondary"
@@ -191,7 +197,7 @@ const ApiResult = ({
                 </Button>
                 {headers?.['content-type']?.includes('image') ? (
                   <img
-                    src={URL.createObjectURL(new Blob([result]))}
+                    src={`data:image/png;base64,${result}`}
                     alt="image"
                   />
                 ) : headers?.['content-type']?.includes('application/json') ||
@@ -225,7 +231,6 @@ const ApiResult = ({
                         height={height! - 220}
                       />
                     }
-                    onMount={(editor: Monaco) => (editorRef.current = editor)}
                   />
                 ) : (
                   <MonacoEditor
@@ -233,11 +238,15 @@ const ApiResult = ({
                     height={height! - 220}
                     className="h-full"
                     language="json"
-                    value={JSON.stringify(
-                      { message: 'Unsupported content type' },
-                      null,
-                      '\t',
-                    )}
+                    value={
+                      !Object.entries(result || {}).length
+                        ? JSON.stringify(
+                            { message: 'Unsupported content type' },
+                            null,
+                            '\t',
+                          )
+                        : '{}'
+                    }
                     theme={theme === 'dark' ? 'onedark' : 'light'}
                     options={editorOptions({ readOnly: true })}
                     loading={

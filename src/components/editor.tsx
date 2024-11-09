@@ -1,5 +1,5 @@
-import MonacoEditor, { Monaco } from '@monaco-editor/react'
-import { forwardRef, ReactElement, useEffect, useRef, useState } from 'react'
+import MonacoEditor from '@monaco-editor/react'
+import { forwardRef, ReactElement, useEffect, useState } from 'react'
 import { editorOptions, setEditorTheme } from '../config/editorOptions'
 import LoadingComponent from './loading'
 type Props = {
@@ -16,14 +16,6 @@ const Editor = forwardRef<HTMLDivElement, Props>(function Editor(
   ref,
 ) {
   const [value, setValue] = useState<string>(content ?? '{}')
-
-  // The Monaco Editor instance reference
-  const editorRef = useRef<Monaco>(null)
-
-  // Handle editor mount
-  const handleEditorDidMount = (editor: Monaco) => {
-    editorRef.current = editor
-  }
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -43,21 +35,11 @@ const Editor = forwardRef<HTMLDivElement, Props>(function Editor(
   // Function to handle content change
   const handleEditorChange = (value: string | undefined) => {
     if (value) {
-      // Get the current position of the cursor
-      const editor = editorRef.current
-      const position = editor.getPosition()
-
       // Set the new content only if it has changed
       if (value !== content) {
-        // setValue(value)
+        setValue(value)
         setContent(value)
       }
-
-      // Restore the cursor position to prevent jumping to the end
-      setTimeout(() => {
-        editor.setPosition(position)
-        editor.focus() // Optionally refocus the editor
-      }, 0)
     }
   }
 
@@ -80,7 +62,6 @@ const Editor = forwardRef<HTMLDivElement, Props>(function Editor(
         onChange={handleEditorChange}
         options={editorOptions({ readOnly: readOnly ?? false })}
         loading={loading ?? <LoadingComponent />}
-        onMount={handleEditorDidMount}
       />
     </div>
   )

@@ -3,16 +3,16 @@ import { Monaco } from '@monaco-editor/react'
 export const editorOptions = ({ readOnly }: { readOnly: boolean }) => {
   return {
     readOnly,
-    wordWrap: 'on',
+    wordWrap: 'on' as const,
     automaticLayout: true,
     scrollBeyondLastLine: false,
     minimap: { enabled: false },
-    renderLineHighlight: 'none',
+    renderLineHighlight: 'none' as const,
     fastScrollSensitivity: 10,
     mouseWheelScrollSensitivity: 3,
     fontSize: 14,
     tabSize: 6,
-    autoIndent: 'brackets',
+    autoIndent: 'brackets' as const,
     smoothScrolling: true,
   }
 }

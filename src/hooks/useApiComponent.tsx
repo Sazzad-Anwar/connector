@@ -21,6 +21,7 @@ import { config } from '../config/config'
 import fetcher from '../lib/fetcher'
 import {
   arrayToObjectConversion,
+  blobToBase64,
   checkAndReplaceWithDynamicVariable,
   containsDynamicVariable,
   filterEmptyParams,
@@ -119,12 +120,6 @@ export default function useApiComponent() {
   const [reload, setReload] = useState(false)
 
   useEffect(() => {
-    if (reload) {
-      setReload(false)
-    }
-  }, [reload])
-
-  useEffect(() => {
     state?.isUrlEditing ? setIsUrlEditing(true) : null
     state?.isApiNameEditing ? setIsApiNameEditing(true) : null
   }, [state])
@@ -140,6 +135,21 @@ export default function useApiComponent() {
     setResult(null)
     setHeaders({})
   }, [apiId, folderId, getApi, navigate, getEnv])
+
+  useEffect(() => {
+    if (formDivRef?.current) {
+      setSizes([
+        resultRenderView === 'vertical'
+          ? formDivRef?.current?.clientWidth &&
+            formDivRef?.current?.clientWidth * 0.4
+          : formDivRef?.current?.clientHeight * 0.3,
+        resultRenderView === 'vertical'
+          ? formDivRef?.current?.clientWidth &&
+            formDivRef?.current?.clientWidth * 0.6
+          : formDivRef?.current?.clientHeight * 0.7,
+      ])
+    }
+  }, [resultRenderView])
 
   useEffect(() => {
     if (isLocalStorageAvailable()) {
@@ -272,7 +282,7 @@ export default function useApiComponent() {
           ? 'json'
           : api.formData?.length
           ? 'form-data'
-          : 'x-form-urlencoded',
+          : 'x-www-form-urlencoded',
       )
       form.setValue(
         'pathVariables',
@@ -322,7 +332,6 @@ export default function useApiComponent() {
     // Remove the event listener when the component unmounts
     return () => {
       formDivRef.current?.removeEventListener('keydown', handleKeyPress)
-      // document.addEventListener('keyup', handleKeyPress)
     }
   }, [form, api, searchParams])
 
@@ -342,7 +351,7 @@ export default function useApiComponent() {
 
       // This will check if the {{dynamic_variable}} exists on body payload. If exists then replace with the value
       const requestBody = checkAndReplaceWithDynamicVariable(
-        submitData.activeBody === 'x-form-urlencoded'
+        submitData.activeBody === 'x-www-form-urlencoded'
           ? arrayToObjectConversion(submitData.body!)
           : arrayToObjectConversion(submitData.formData!),
         env,
@@ -420,9 +429,21 @@ export default function useApiComponent() {
         ? response.blob()
         : response.text())
       if (response.headers.get('Content-Type')?.includes('text/html')) {
-        setSizes([0, window.innerHeight])
+        setSizes([
+          resultRenderView === 'vertical' ? sizes[0] : 0,
+          window.innerHeight,
+        ])
       }
-      setResult(responseData)
+
+      const image = response.headers.get('Content-Type')?.includes('image')
+        ? await blobToBase64(responseData)
+        : ''
+
+      if (response.headers.get('Content-Type')?.includes('image')) {
+        setResult(image)
+      } else {
+        setResult(responseData)
+      }
 
       responseStatusData = {
         status: response && response?.status,
@@ -447,11 +468,14 @@ export default function useApiComponent() {
         {
           ...form.getValues(),
           responseHeaders: form.getValues('responseHeaders'),
-          response: JSON.stringify(responseData),
+          response: response.headers.get('Content-Type')?.includes('image')
+            ? image
+            : JSON.stringify(responseData),
           responseStatus: JSON.stringify(responseStatusData),
         },
         api.id,
       )
+      getApi(api.id)
     } catch (error: any) {
       const endTime = Date.now()
       const responseTime = endTime - startTime

@@ -27,7 +27,7 @@ export const ApiSchema = z.object({
   dynamicVariables: z.array(ParamsSchema).optional(),
   jsonBody: z.any().optional(),
   interactiveQuery: z.any().optional(),
-  activeBody: z.enum(['x-form-urlencoded', 'json', 'form-data']).optional(),
+  activeBody: z.enum(['x-www-form-urlencoded', 'json', 'form-data']).optional(),
   activeQuery: z
     .enum(['interactive-query', 'query-params', 'url-params'])
     .optional(),

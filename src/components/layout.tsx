@@ -2,11 +2,13 @@
 import { cn } from '@/lib/utils'
 import useSidePanelToggleStore from '@/store/sidePanelToggle'
 import React, { lazy, Suspense, useEffect, useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import { useNavigate } from 'react-router-dom'
 import { Pane } from 'split-pane-react'
 import SplitPane from 'split-pane-react/esm/SplitPane'
 import useUpdate from '../hooks/useUpdate'
 import useTabRenderStore from '../store/tabView'
+import Error from './error'
 import Loading from './loading'
 import { Toaster } from './ui/toaster'
 const SideNav = lazy(() => import('./nav/nav'))
@@ -100,7 +102,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               maxSize={sideNavWidth * 2}
             >
               <Suspense fallback={<Loading className="h-full w-auto" />}>
-                <SideNav />
+                <ErrorBoundary fallback={<Error />}>
+                  <SideNav />
+                </ErrorBoundary>
               </Suspense>
             </Pane>
 

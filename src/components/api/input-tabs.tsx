@@ -303,10 +303,10 @@ export const InputTabs = ({
                 ) : null}
               </TabsTrigger>
               <TabsTrigger
-                value="x-form-urlencoded"
+                value="x-www-form-urlencoded"
                 className="h-7"
                 onClick={() => {
-                  form.setValue('activeBody', 'x-form-urlencoded')
+                  form.setValue('activeBody', 'x-www-form-urlencoded')
                 }}
               >
                 x-www-form-urlencoded{' '}
@@ -376,7 +376,7 @@ export const InputTabs = ({
               </Suspense>
             </TabsContent>
             <TabsContent
-              value="x-form-urlencoded"
+              value="x-www-form-urlencoded"
               className="animate__animated animate__fadeIn relative overflow-auto"
               style={{
                 maxHeight: height as number,

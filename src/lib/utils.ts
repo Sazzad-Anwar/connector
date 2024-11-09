@@ -10,7 +10,7 @@ import {
   ParamsType,
   TabType,
 } from '@/types/api'
-import { BaseDirectory, writeTextFile } from '@tauri-apps/plugin-fs'
+import { BaseDirectory, writeFile } from '@tauri-apps/plugin-fs'
 import { platform } from '@tauri-apps/plugin-os'
 import clsx, { ClassValue } from 'clsx'
 import dayjs from 'dayjs'
@@ -629,24 +629,20 @@ export const downloadFile = async ({
 }: {
   data: any
   fileName: string
-  fileType:
-    | 'text/json'
-    | 'application/json'
-    | 'text/html'
-    | 'text'
-    | 'text/plain'
+  fileType: any
 }): Promise<void> => {
   const downloadFromBrowser = () => {
-    const blob = new Blob([data], { type: fileType })
+    console.log(fileType)
+    const blob = new Blob([JSON.stringify(data)], { type: fileType })
     const a = document.createElement('a')
-    a.download =
-      fileType === 'text/html'
-        ? `${fileName}.html`
-        : ['text/json', 'application/json'].includes(fileType)
-        ? `${fileName}.json`
-        : fileType === 'text'
-        ? `${fileName}.txt`
-        : fileName
+    a.download = fileType.includes('plain')
+      ? `${fileName}.txt`
+      : `${fileName}.${
+          fileType.split('/').length < 2
+            ? fileType.split('/')[0]
+            : fileType.split('/')[1]
+        }`
+
     a.href = window.URL.createObjectURL(blob)
     const clickEvt = new MouseEvent('click', {
       view: window,
@@ -664,19 +660,16 @@ export const downloadFile = async ({
       platformName === 'macos' ||
       platformName === 'linux'
     ) {
-      if (['text/json', 'application/json'].includes(fileType)) {
-        await writeTextFile(`${fileName}.json`, JSON.stringify(data), {
+      await writeFile(
+        fileType.includes('plain')
+          ? `${fileName}.txt`
+          : `${fileName}.${fileType.split('/')[1]}`,
+        fileType.includes('json') ? JSON.stringify(data) : data,
+        {
           baseDir: BaseDirectory.Download,
-        })
-      } else if (fileType === 'text/html') {
-        await writeTextFile(`${fileName}.html`, data, {
-          baseDir: BaseDirectory.Download,
-        })
-      } else {
-        await writeTextFile(`${fileName}.txt`, data, {
-          baseDir: BaseDirectory.Download,
-        })
-      }
+        },
+      )
+
       toast({
         variant: 'success',
         title: 'Success',
@@ -737,15 +730,16 @@ export function parseCurlToJson(curl: string, id: string): ApiType {
     activeQuery: undefined,
   }
 
-  const headerRegex = /-H\s+['"]([^:]+):\s*([^'"]+)['"]/g // Update for -H flag
-  const bodyRegex = /(--data-urlencode|--data|-d|--form|-F)\s+(['"])(.*?)\2/g
-  const methodRegex = /-X\s*(\w+)/ // Extract method
-  const urlRegex = /(https?:\/\/[^\s'"]+)/ // Extract URL
+  const headerRegex = /-H\s+['"]([^:]+):\s*([^'"]+)['"]/g
+  const bodyRegex =
+    /(--data-urlencode|--data|-d|--form|-F)\s+(['"])([\s\S]*?)\2/g
+  const methodRegex = /-X\s*(\w+)/
+  const urlRegex = /(https?:\/\/[^\s'"]+)/
 
   // Extract headers
   let headerMatch
   while ((headerMatch = headerRegex.exec(curl)) !== null) {
-    result.headers?.push({
+    result?.headers?.push({
       id: uuid(),
       isActive: true,
       key: headerMatch[1].trim(),
@@ -753,14 +747,13 @@ export function parseCurlToJson(curl: string, id: string): ApiType {
     })
   }
 
-  // Extract body including --data, -d, --data-urlencode, and form data (-F)
+  // Extract body
   let bodyMatch
   while ((bodyMatch = bodyRegex.exec(curl)) !== null) {
     const option = bodyMatch[1]
-    const value = bodyMatch[3]
+    const value = bodyMatch[3].trim()
 
     if (option === '--data-urlencode') {
-      // Handle URL-encoded data
       const [key, encodedValue] = value.split('=')
       const decodedValue = decodeURIComponent(encodedValue || '')
       result?.body?.push({
@@ -769,9 +762,8 @@ export function parseCurlToJson(curl: string, id: string): ApiType {
         key: key.trim(),
         value: decodedValue.trim(),
       })
-      result.activeBody = 'x-form-urlencoded'
+      result.activeBody = 'x-www-form-urlencoded'
     } else if (option === '-F' || option === '--form') {
-      // Handle multipart form data
       const [key, formValue] = value.split('=')
       result?.formData?.push({
         id: uuid(),
@@ -779,22 +771,21 @@ export function parseCurlToJson(curl: string, id: string): ApiType {
         key: key.trim(),
         value: formValue.trim(),
       })
-      result.activeBody = 'x-form-urlencoded'
+      result.activeBody = 'form-data'
     } else {
-      // Handle JSON data from -d or --data
+      // Attempt to parse as JSON
       try {
         const parsedJson = JSON.parse(value)
         result.jsonBody = { ...result.jsonBody, ...parsedJson }
         result.activeBody = 'json'
       } catch (error) {
-        // If it's not JSON, push it to the body array
         result?.body?.push({
           id: uuid(),
           isActive: true,
           key: 'body',
           value: value,
         })
-        result.activeBody = 'x-form-urlencoded'
+        result.activeBody = 'json'
       }
     }
   }
@@ -853,4 +844,27 @@ export function generateCurlFromJson(apiData: ApiType): string {
   }
 
   return curlCommand
+}
+
+// Function to convert Blob to Base64 string
+export async function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onloadend = () => {
+      // The result is a Data URL, extract the Base64 part
+      const base64String = reader.result?.toString().split(',')[1] // Ensure it's a string and split
+      if (base64String) {
+        resolve(base64String)
+      } else {
+        reject(new Error('Failed to convert Blob to Base64'))
+      }
+    }
+
+    reader.onerror = (error) => {
+      reject(error)
+    }
+
+    reader.readAsDataURL(blob) // Read the Blob as a Data URL
+  })
 }

@@ -123,7 +123,9 @@ export default function Api() {
           title: 'Reloaded!',
           description: 'The API has been reloaded.',
         })
-      }, 1000)
+        getApi(apiId)
+        setReload(false)
+      }, 700)
     }
   }, [reload])
 
@@ -575,7 +577,7 @@ export default function Api() {
             minSize={
               resultRenderView === 'vertical'
                 ? formDivRef?.current?.clientWidth &&
-                  formDivRef?.current?.clientWidth / 2.5
+                  formDivRef?.current?.clientWidth * 0.3
                 : 5
             }
             maxSize="100%"
@@ -615,7 +617,7 @@ export default function Api() {
             minSize={
               resultRenderView === 'vertical'
                 ? formDivRef?.current?.clientWidth &&
-                  formDivRef?.current?.clientWidth / 2.9
+                  formDivRef?.current?.clientWidth * 0.4
                 : 190
             }
             maxSize="100%"
@@ -637,13 +639,14 @@ export default function Api() {
                   height={
                     resultRenderView === 'vertical'
                       ? window.innerHeight + 20
-                      : headers?.['content-type']?.includes('text/html')
+                      : resultRenderView === 'horizontal' &&
+                        headers?.['content-type']?.includes('text/html')
                       ? window.innerHeight
                       : sizes[1]! + 20
                   }
                   isLoading={isLoading}
                   result={result}
-                  headers={headers}
+                  headers={form.getValues('responseHeaders')}
                   cookies={cookies}
                   responseStatus={responseStatus}
                 />
