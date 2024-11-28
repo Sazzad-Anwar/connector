@@ -1,24 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import MonacoEditor from '@monaco-editor/react'
-import copy from 'copy-to-clipboard'
-import { Check, Columns2, Copy, Download, Rows2, X } from 'lucide-react'
-import { memo, useRef, useState } from 'react'
-import { v4 as uuid } from 'uuid'
-import { editorOptions, setEditorTheme } from '../../config/editorOptions'
-import { cn, downloadFile } from '../../lib/utils'
-import useResultRenderViewStore from '../../store/resultRenderView'
-import { CookieType } from '../../types/api'
-import Loading from '../loading'
-import { useTheme } from '../theme-provider'
-import { Button } from '../ui/button'
+import MonacoEditor from "@monaco-editor/react";
+import copy from "copy-to-clipboard";
+import { Check, Columns2, Copy, Download, Rows2, X } from "lucide-react";
+import { memo, useRef, useState } from "react";
+import { v4 as uuid } from "uuid";
+import { editorOptions, setEditorTheme } from "../../config/editorOptions";
+import { cn, downloadFile } from "../../lib/utils";
+import useResultRenderViewStore from "../../store/resultRenderView";
+import { CookieType } from "../../types/api";
+import Loading from "../loading";
+import { useTheme } from "../theme-provider";
+import { Button } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu'
-import { Separator } from '../ui/separator'
+} from "../ui/dropdown-menu";
+import { Separator } from "../ui/separator";
 import {
   Table,
   TableBody,
@@ -26,27 +26,27 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../ui/table'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
+} from "../ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '../ui/tooltip'
-import { toast } from '../ui/use-toast'
-import { ResponseStatus } from './api'
+} from "../ui/tooltip";
+import { toast } from "../ui/use-toast";
+import { ResponseStatus } from "./api";
 
 type PropsType = {
-  isLoading: boolean
-  result: any
-  height?: number
-  responseStatus: ResponseStatus
+  isLoading: boolean;
+  result: any;
+  height?: number;
+  responseStatus: ResponseStatus;
   headers?: {
-    [key: string]: any
-  }
-  cookies: CookieType[]
-}
+    [key: string]: any;
+  };
+  cookies: CookieType[];
+};
 
 const ApiResult = ({
   isLoading,
@@ -56,65 +56,59 @@ const ApiResult = ({
   headers,
   cookies,
 }: PropsType) => {
-  const { theme } = useTheme()
-  const [isCopiedResponse, setIsCopiedResponse] = useState<boolean>(false)
-  const resultDivRef = useRef<HTMLDivElement>(null)
+  const { theme } = useTheme();
+  const [isCopiedResponse, setIsCopiedResponse] = useState<boolean>(false);
+  const resultDivRef = useRef<HTMLDivElement>(null);
   const { resultRenderView, toggleResultRenderView } =
-    useResultRenderViewStore()
+    useResultRenderViewStore();
 
   console.log(
-    !headers?.['content-type'].includes('application/json') &&
-      !headers?.['content-type'].includes('text/plain') &&
-      !headers?.['content-type'].includes('text/html'),
-  )
+    !headers?.["content-type"].includes("application/json") &&
+    !headers?.["content-type"].includes("text/plain") &&
+    !headers?.["content-type"].includes("text/html"),
+  );
 
   const payloadSize = (data: any): string => {
-    const json_string = JSON.stringify(data)
-    const string_length = new TextEncoder().encode(json_string).length
-    const payload_size_kb = +(string_length / 1024).toFixed(2)
-    return payload_size_kb > 1 ? `${payload_size_kb} KB` : `${string_length} B`
-  }
+    const json_string = JSON.stringify(data);
+    const string_length = new TextEncoder().encode(json_string).length;
+    const payload_size_kb = +(string_length / 1024).toFixed(2);
+    return payload_size_kb > 1 ? `${payload_size_kb} KB` : `${string_length} B`;
+  };
 
   const copyResponse = () => {
-    setIsCopiedResponse(true)
-    copy(JSON.stringify(result))
+    setIsCopiedResponse(true);
+    copy(JSON.stringify(result));
     toast({
-      variant: 'success',
-      title: 'Success',
-      description: 'Data is copied to clipboard',
-    })
+      variant: "success",
+      title: "Success",
+      description: "Data is copied to clipboard",
+    });
     setTimeout(() => {
-      setIsCopiedResponse(false)
-    }, 2000)
-  }
+      setIsCopiedResponse(false);
+    }, 2000);
+  };
 
   return (
     <section
       ref={resultDivRef}
       style={{ height }}
       className={cn(
-        resultRenderView === 'vertical' ? 'border-l py-1' : 'border-t py-1',
-        'bg-background h-full',
+        resultRenderView === "vertical" ? "border-l py-1" : "border-t py-1",
+        "bg-background h-full",
       )}
     >
       {isLoading ? (
-        <Loading
-          name="Connecting"
-          height={height! - 300}
-        />
+        <Loading name="Connecting" height={height! - 300} />
       ) : (
-        <div className="relative flex justify-between pt-1 pb-3 pl-5 pr-0 text-sm animate__animated animated__fadeIn ">
-          <Tabs
-            defaultValue="response"
-            className="w-full"
-          >
-            <TabsList>
+        <div className="flex relative justify-between pt-1 pr-0 pb-3 pl-5 text-sm animate__animated animated__fadeIn">
+          <Tabs defaultValue="response" className="w-full">
+            <TabsList className="no-select">
               <TabsTrigger value="response">Response</TabsTrigger>
               <TabsTrigger value="headers">
-                Headers{' '}
-                {typeof headers === 'object' &&
+                Headers{" "}
+                {typeof headers === "object" &&
                   Object.keys(headers).length > 0 && (
-                    <span className="text-green-500 ml-2 text-xs">
+                    <span className="ml-2 text-xs text-green-500">
                       {Object.keys(headers).length - 1}
                     </span>
                   )}
@@ -122,7 +116,7 @@ const ApiResult = ({
               <TabsTrigger value="cookies">
                 Cookies
                 {!!cookies?.length && (
-                  <span className="text-green-500 ml-2 text-xs">
+                  <span className="ml-2 text-xs text-green-500">
                     {cookies?.length}
                   </span>
                 )}
@@ -139,25 +133,25 @@ const ApiResult = ({
                   disabled={
                     !result ||
                     Object.entries(result ?? {})?.length === 0 ||
-                    (!headers?.['content-type'].includes('application/json') &&
-                      !headers?.['content-type'].includes('text/plain') &&
-                      !headers?.['content-type'].includes('text/html'))
+                    (!headers?.["content-type"].includes("application/json") &&
+                      !headers?.["content-type"].includes("text/plain") &&
+                      !headers?.["content-type"].includes("text/html"))
                   }
                   type="button"
                   variant="secondary"
-                  className="flex absolute right-9 top-0 h-8 w-8 justify-self-end p-0 z-10"
+                  className="flex absolute top-0 right-9 z-10 justify-self-end p-0 w-8 h-8"
                   size="sm"
                   onClick={() =>
                     downloadFile({
                       data: result,
                       fileName: `Response-${uuid()}`,
-                      fileType: headers?.['content-type']?.includes(
-                        'application/json',
+                      fileType: headers?.["content-type"]?.includes(
+                        "application/json",
                       )
-                        ? 'application/json'
-                        : headers?.['content-type']?.includes('text/html')
-                        ? 'text/html'
-                        : 'text/plain',
+                        ? "application/json"
+                        : headers?.["content-type"]?.includes("text/html")
+                          ? "text/html"
+                          : "text/plain",
                     })
                   }
                 >
@@ -174,13 +168,13 @@ const ApiResult = ({
                   disabled={
                     !result ||
                     Object.entries(result ?? {})?.length === 0 ||
-                    (!headers?.['content-type'].includes('application/json') &&
-                      !headers?.['content-type'].includes('text/plain') &&
-                      !headers?.['content-type'].includes('text/html'))
+                    (!headers?.["content-type"].includes("application/json") &&
+                      !headers?.["content-type"].includes("text/plain") &&
+                      !headers?.["content-type"].includes("text/html"))
                   }
                   type="button"
                   variant="secondary"
-                  className="flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
+                  className="flex absolute top-0 right-0 z-10 justify-self-end p-0 w-8 h-8"
                   size="sm"
                   onClick={() => copyResponse()}
                 >
@@ -201,41 +195,35 @@ const ApiResult = ({
                     <TooltipContent align="start">Copy response</TooltipContent>
                   </Tooltip>
                 </Button>
-                {headers?.['content-type']?.includes('image') ? (
-                  <img
-                    src={`data:image/png;base64,${result}`}
-                    alt="image"
-                  />
-                ) : headers?.['content-type']?.includes('application/json') ||
-                  headers?.['content-type']?.includes('text/html') ||
-                  headers?.['content-type']?.includes('text/plain') ? (
+                {headers?.["content-type"]?.includes("image") ? (
+                  <img src={`data:image/png;base64,${result}`} alt="image" />
+                ) : headers?.["content-type"]?.includes("application/json") ||
+                  headers?.["content-type"]?.includes("text/html") ||
+                  headers?.["content-type"]?.includes("text/plain") ? (
                   <MonacoEditor
                     beforeMount={setEditorTheme}
                     height={height! - 220}
                     className="h-full"
                     saveViewState={true}
                     language={
-                      headers?.['content-type']?.includes('application/json')
-                        ? 'json'
-                        : headers?.['content-type']?.includes('text/html')
-                        ? 'html'
-                        : 'text'
+                      headers?.["content-type"]?.includes("application/json")
+                        ? "json"
+                        : headers?.["content-type"]?.includes("text/html")
+                          ? "html"
+                          : "text"
                     }
                     value={
-                      headers?.['content-type']?.includes('application/json')
-                        ? JSON.stringify(result, null, '\t')
-                        : headers?.['content-type']?.includes('text/html') ||
-                          headers?.['content-type']?.includes('text/plain')
-                        ? result
-                        : '{}'
+                      headers?.["content-type"]?.includes("application/json")
+                        ? JSON.stringify(result, null, "\t")
+                        : headers?.["content-type"]?.includes("text/html") ||
+                          headers?.["content-type"]?.includes("text/plain")
+                          ? result
+                          : "{}"
                     }
-                    theme={theme === 'dark' ? 'onedark' : 'light'}
+                    theme={theme === "dark" ? "onedark" : "light"}
                     options={editorOptions({ readOnly: true })}
                     loading={
-                      <Loading
-                        name="Connecting"
-                        height={height! - 220}
-                      />
+                      <Loading name="Connecting" height={height! - 220} />
                     }
                   />
                 ) : (
@@ -246,16 +234,13 @@ const ApiResult = ({
                     language="json"
                     value={
                       !Object.entries(result || {}).length
-                        ? JSON.stringify({}, null, '\t')
-                        : '{}'
+                        ? JSON.stringify({}, null, "\t")
+                        : "{}"
                     }
-                    theme={theme === 'dark' ? 'onedark' : 'light'}
+                    theme={theme === "dark" ? "onedark" : "light"}
                     options={editorOptions({ readOnly: true })}
                     loading={
-                      <Loading
-                        name="Connecting"
-                        height={height! - 220}
-                      />
+                      <Loading name="Connecting" height={height! - 220} />
                     }
                   />
                 )}
@@ -269,37 +254,34 @@ const ApiResult = ({
               <Table>
                 <TableHeader className="border">
                   <TableRow className="w-full">
-                    <TableHead className="border w-1/2 min-w-52">Key</TableHead>
-                    <TableHead className="border w-1/2 min-w-80">
+                    <TableHead className="w-1/2 border min-w-52">Key</TableHead>
+                    <TableHead className="w-1/2 border min-w-80">
                       Value
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {typeof headers === 'object' &&
-                  Object.keys(headers).length > 0 ? (
+                  {typeof headers === "object" &&
+                    Object.keys(headers).length > 0 ? (
                     <>
                       {Object.keys(headers!).map((item) => {
-                        if (item !== 'set-cookie') {
+                        if (item !== "set-cookie") {
                           return (
                             <TableRow key={uuid()}>
-                              <TableCell
-                                key={uuid()}
-                                className="border"
-                              >
+                              <TableCell key={uuid()} className="border">
                                 {item}
                               </TableCell>
                               <TableCell
                                 className={cn(
-                                  'border',
-                                  headers[item].startsWith('{') &&
-                                    headers[item].endsWith('}') &&
-                                    'p-0',
+                                  "border",
+                                  headers[item].startsWith("{") &&
+                                  headers[item].endsWith("}") &&
+                                  "p-0",
                                 )}
                               >
-                                {headers[item].startsWith('{') &&
-                                headers[item].endsWith('}') ? (
-                                  <pre className="px-3 break-words text-cyan-500 max-w-fit overflow-x-auto">
+                                {headers[item].startsWith("{") &&
+                                  headers[item].endsWith("}") ? (
+                                  <pre className="overflow-x-auto px-3 text-cyan-500 break-words max-w-fit">
                                     {JSON.stringify(
                                       JSON.parse(headers[item]),
                                       null,
@@ -311,9 +293,9 @@ const ApiResult = ({
                                 )}
                               </TableCell>
                             </TableRow>
-                          )
+                          );
                         } else {
-                          return null
+                          return null;
                         }
                       })}
                     </>
@@ -321,7 +303,7 @@ const ApiResult = ({
                     <TableRow>
                       <TableCell
                         colSpan={2}
-                        className="text-center border h-40 text-sm text-primary"
+                        className="h-40 text-sm text-center border text-primary"
                       >
                         Not found
                       </TableCell>
@@ -338,41 +320,37 @@ const ApiResult = ({
               <Table>
                 <TableHeader className="border">
                   <TableRow className="w-full">
-                    <TableHead className="border text-center min-w-52">
+                    <TableHead className="text-center border min-w-52">
                       Key
                     </TableHead>
-                    <TableHead className="border text-center min-w-52">
+                    <TableHead className="text-center border min-w-52">
                       Value
                     </TableHead>
-                    <TableHead className="border text-center min-w-52">
+                    <TableHead className="text-center border min-w-52">
                       Path
                     </TableHead>
-                    <TableHead className="border text-center min-w-52">
+                    <TableHead className="text-center border min-w-52">
                       Expires
                     </TableHead>
-                    <TableHead className="border text-center min-w-52">
+                    <TableHead className="text-center border min-w-52">
                       HttpOnly
                     </TableHead>
-                    <TableHead className="border text-center min-w-52">
+                    <TableHead className="text-center border min-w-52">
                       Secure
                     </TableHead>
-                    <TableHead className="border text-center min-w-52">
+                    <TableHead className="text-center border min-w-52">
                       SameSite
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {cookies?.length ? (
-                    <>
-                      {cookies?.map((item) => (
-                        <CookiesTable {...item} />
-                      ))}
-                    </>
+                    <>{cookies?.map((item) => <CookiesTable {...item} />)}</>
                   ) : (
                     <TableRow>
                       <TableCell
                         colSpan={7}
-                        className="text-center border h-40 text-sm text-primary"
+                        className="h-40 text-sm text-center border text-primary"
                       >
                         Not found
                       </TableCell>
@@ -382,19 +360,19 @@ const ApiResult = ({
               </Table>
             </TabsContent>
           </Tabs>
-          <div className="flex items-center absolute top-1 right-1">
+          <div className="flex absolute top-1 right-1 items-center">
             <Button
               type="button"
               variant="ghost"
-              className="mr-2 flex h-8 w-8 justify-self-end p-0"
+              className="flex justify-self-end p-0 mr-2 w-8 h-8"
               size="sm"
               onClick={() => {
-                toggleResultRenderView()
+                toggleResultRenderView();
               }}
             >
               <Tooltip>
                 <TooltipTrigger asChild>
-                  {resultRenderView === 'vertical' ? (
+                  {resultRenderView === "vertical" ? (
                     <Rows2
                       size={18}
                       className="animate__animated animate__fadeIn text-muted-foreground dark:text-foreground"
@@ -408,9 +386,9 @@ const ApiResult = ({
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>
-                    {resultRenderView === 'horizontal'
-                      ? 'Change to vertical split'
-                      : ' Change to horizontal split'}
+                    {resultRenderView === "horizontal"
+                      ? "Change to vertical split"
+                      : " Change to horizontal split"}
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -419,7 +397,7 @@ const ApiResult = ({
               <>
                 <Separator
                   orientation="vertical"
-                  className="h-5 text-muted-foreground mr-1"
+                  className="mr-1 h-5 text-muted-foreground"
                 />
                 <DropdownMenu>
                   <TooltipProvider>
@@ -438,10 +416,10 @@ const ApiResult = ({
                                 className={cn(
                                   responseStatus.status
                                     ?.toString()
-                                    .startsWith('2', 0)
-                                    ? 'ml-1 font-medium text-green-600 dark:font-normal dark:text-green-400'
-                                    : 'ml-1 font-medium text-red-500 dark:font-normal',
-                                  'mr-2',
+                                    .startsWith("2", 0)
+                                    ? "ml-1 font-medium text-green-600 dark:font-normal dark:text-green-400"
+                                    : "ml-1 font-medium text-red-500 dark:font-normal",
+                                  "mr-2",
                                 )}
                               >
                                 {responseStatus.status}
@@ -451,10 +429,10 @@ const ApiResult = ({
                         </DropdownMenuTrigger>
                       </TooltipTrigger>
                       <TooltipContent>
-                        See{' '}
-                        {responseStatus.status?.toString().startsWith('2', 0)
-                          ? 'success'
-                          : 'failed'}{' '}
+                        See{" "}
+                        {responseStatus.status?.toString().startsWith("2", 0)
+                          ? "success"
+                          : "failed"}{" "}
                         response status
                       </TooltipContent>
                     </Tooltip>
@@ -464,7 +442,7 @@ const ApiResult = ({
                     <DropdownMenuItem>
                       <p className="mr-4 text-xs">
                         Time:
-                        <span className={'pl-1 text-green-500'}>
+                        <span className={"pl-1 text-green-500"}>
                           {responseStatus.time}
                         </span>
                       </p>
@@ -474,7 +452,7 @@ const ApiResult = ({
                     <DropdownMenuItem>
                       <p className="mr-2 text-xs">
                         Size:
-                        <span className={'ml-1 text-green-500'}>
+                        <span className={"ml-1 text-green-500"}>
                           {payloadSize(result)}
                         </span>
                       </p>
@@ -487,8 +465,8 @@ const ApiResult = ({
         </div>
       )}
     </section>
-  )
-}
+  );
+};
 
 const CookiesTable = ({
   customKey,
@@ -499,29 +477,29 @@ const CookiesTable = ({
   secure,
   sameSite,
 }: CookieType) => {
-  const [isCopied, setIsCopied] = useState(false)
+  const [isCopied, setIsCopied] = useState(false);
   const copyData = (data: string) => {
-    setIsCopied(true)
-    copy(data)
+    setIsCopied(true);
+    copy(data);
     toast({
-      variant: 'success',
-      title: 'Success',
-      description: 'Value is copied to clipboard',
-    })
+      variant: "success",
+      title: "Success",
+      description: "Value is copied to clipboard",
+    });
     setTimeout(() => {
-      setIsCopied(false)
-    }, 2000)
-  }
+      setIsCopied(false);
+    }, 2000);
+  };
   return (
     <TableRow key={uuid()}>
-      <TableCell className="border text-center">{customKey}</TableCell>
-      <TableCell className="border text-center relative max-w-72 truncate">
+      <TableCell className="text-center border">{customKey}</TableCell>
+      <TableCell className="relative text-center border max-w-72 truncate">
         <span className="truncate text-wrap">{customValue}</span>
         {customValue && (
           <Button
             type="button"
             variant="secondary"
-            className="flex h-8 w-8 justify-self-end p-0 absolute right-0 top-0 z-10"
+            className="flex absolute top-0 right-0 z-10 justify-self-end p-0 w-8 h-8"
             size="sm"
             onClick={() => copyData(customValue)}
           >
@@ -546,21 +524,21 @@ const CookiesTable = ({
           </Button>
         )}
       </TableCell>
-      <TableCell className="border text-center">{path}</TableCell>
-      <TableCell className="border text-center">{expires}</TableCell>
-      <TableCell className="border text-center">
+      <TableCell className="text-center border">{path}</TableCell>
+      <TableCell className="text-center border">{expires}</TableCell>
+      <TableCell className="text-center border">
         <span className="flex justify-center items-center">
           {httpOnly ? <Check size={14} /> : <X size={14} />}
         </span>
       </TableCell>
-      <TableCell className="border text-center">
+      <TableCell className="text-center border">
         <span className="flex justify-center items-center">
           {secure ? <Check size={14} /> : <X size={14} />}
         </span>
       </TableCell>
-      <TableCell className="border text-center">{sameSite}</TableCell>
+      <TableCell className="text-center border">{sameSite}</TableCell>
     </TableRow>
-  )
-}
+  );
+};
 
-export default memo(ApiResult)
+export default memo(ApiResult);

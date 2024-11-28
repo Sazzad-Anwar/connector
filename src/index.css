@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
-@import 'animate.css';
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import "animate.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -64,15 +64,20 @@
 @layer base {
   * {
     @apply border-border;
-    font-family: 'Inter', 'OpenSans', Helvetica, Arial, sans-serif;
+    font-family: "Inter", "OpenSans", Helvetica, Arial, sans-serif;
   }
+
   html {
     scroll-behavior: smooth;
   }
+
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: 'rlig' 1, 'calt' 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
+
   /* width */
   ::-webkit-scrollbar {
     width: 5px;
@@ -94,6 +99,10 @@
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-accent rounded-3xl;
   }
+}
+
+.no-select {
+  user-select: none;
 }
 
 .dark .react-split__sash--vertical:hover,

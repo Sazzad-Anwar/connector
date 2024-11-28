@@ -8,8 +8,8 @@ import {
   RotateCw,
   Save,
   Waypoints,
-} from 'lucide-react'
-import { FaApple, FaLinux, FaWindows } from 'react-icons/fa'
+} from "lucide-react";
+import { FaApple, FaLinux, FaWindows } from "react-icons/fa";
 
 import {
   cn,
@@ -18,20 +18,20 @@ import {
   extractVariable,
   getBreadcrumbsForNthChildren,
   replaceVariables,
-} from '@/lib/utils'
+} from "@/lib/utils";
 
-import useApiComponent from '@/hooks/useApiComponent'
-import useResultRenderViewStore from '@/store/resultRenderView'
-import { lazy, Suspense, useEffect, useState } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
-import { Link } from 'react-router-dom'
-import SplitPane, { Pane } from 'split-pane-react'
-import { downloadUrls } from '../../config/downloading-urls'
-import Breadcrumbs from '../breadcrumb'
-import Error from '../error'
-import Loading from '../loading'
-import SideNavToggler from '../nav/sidenav-toggler'
-import NotFound from '../notFound'
+import useApiComponent from "@/hooks/useApiComponent";
+import useResultRenderViewStore from "@/store/resultRenderView";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { Link } from "react-router-dom";
+import SplitPane, { Pane } from "split-pane-react";
+import { downloadUrls } from "../../config/downloading-urls";
+import Breadcrumbs from "../breadcrumb";
+import Error from "../error";
+import Loading from "../loading";
+import SideNavToggler from "../nav/sidenav-toggler";
+import NotFound from "../notFound";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,32 +41,32 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '../ui/alert-dialog'
-import { Button, buttonVariants } from '../ui/button'
-import { Input } from '../ui/input'
+} from "../ui/alert-dialog";
+import { Button, buttonVariants } from "../ui/button";
+import { Input } from "../ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../ui/select'
-import { Textarea } from '../ui/textarea'
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
-import { toast } from '../ui/use-toast'
-const ApiTabs = lazy(() => import('./apiTabs'))
-const InputTabs = lazy(() => import('./input-tabs'))
-const ApiResult = lazy(() => import('./api-result'))
+} from "../ui/select";
+import { Textarea } from "../ui/textarea";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { toast } from "../ui/use-toast";
+const ApiTabs = lazy(() => import("./apiTabs"));
+const InputTabs = lazy(() => import("./input-tabs"));
+const ApiResult = lazy(() => import("./api-result"));
 export type JSONErrorType = {
-  isError: boolean
-  error: string
-}
+  isError: boolean;
+  error: string;
+};
 
 export type ResponseStatus = {
-  status?: number
-  statusText: string
-  time: string
-}
+  status?: number;
+  statusText: string;
+  time: string;
+};
 
 export default function Api() {
   const {
@@ -106,28 +106,28 @@ export default function Api() {
     setReload,
     rootParent,
     rootParentId,
-  } = useApiComponent()
-  const [isDesktopDownloaderShow, setIsDesktopDownloaderShow] = useState(false)
-  const { resultRenderView } = useResultRenderViewStore()
-  const [isOpenCurlDialog, setIsOpenCurlDialog] = useState<boolean>(false)
-  const [isUrlError, setIsUrlError] = useState<boolean>(false)
-  const [animatingClass, setAnimatingClass] = useState('')
+  } = useApiComponent();
+  const [isDesktopDownloaderShow, setIsDesktopDownloaderShow] = useState(false);
+  const { resultRenderView } = useResultRenderViewStore();
+  const [isOpenCurlDialog, setIsOpenCurlDialog] = useState<boolean>(false);
+  const [isUrlError, setIsUrlError] = useState<boolean>(false);
+  const [animatingClass, setAnimatingClass] = useState("");
 
   useEffect(() => {
     if (reload) {
-      setAnimatingClass('animate-spin')
+      setAnimatingClass("animate-spin");
       setTimeout(() => {
-        setAnimatingClass('')
+        setAnimatingClass("");
         toast({
-          variant: 'success',
-          title: 'Reloaded!',
-          description: 'The API has been reloaded.',
-        })
-        getApi(apiId)
-        setReload(false)
-      }, 700)
+          variant: "success",
+          title: "Reloaded!",
+          description: "The API has been reloaded.",
+        });
+        getApi(apiId);
+        setReload(false);
+      }, 700);
     }
-  }, [reload])
+  }, [reload]);
 
   useEffect(() => {
     if (
@@ -135,30 +135,30 @@ export default function Api() {
       containsDynamicVariable(url) &&
       !containsVariable(url, rootParent?.env ?? [])
     ) {
-      setIsUrlError(true)
+      setIsUrlError(true);
     } else if (
       rootParentId &&
       containsDynamicVariable(url) &&
       containsVariable(url, rootParent?.env ?? [])
     ) {
-      setIsUrlError(false)
+      setIsUrlError(false);
     }
-  }, [url, reload])
+  }, [url, reload]);
 
   const setBorderColor = (isError: boolean) =>
-    isError ? 'border-destructive' : ''
+    isError ? "border-destructive" : "";
 
   if (
-    apiId === 'undefined' ||
-    apiId === 'null' ||
-    folderId === 'undefined' ||
-    folderId === 'null' ||
+    apiId === "undefined" ||
+    apiId === "null" ||
+    folderId === "undefined" ||
+    folderId === "null" ||
     !collections?.length
   ) {
-    return <NotFound />
+    return <NotFound />;
   }
   if (apiId && folderId && !api.id) {
-    return <Loading className="h-screen" />
+    return <Loading className="h-screen" />;
   }
 
   return (
@@ -171,38 +171,32 @@ export default function Api() {
         className="overflow-hidden"
         style={{ height: window.innerHeight }}
       >
-        <div
-          ref={breadCrumbDivRef}
-          className="flex items-center ml-5 py-3"
-        >
+        <div ref={breadCrumbDivRef} className="flex items-center py-3 ml-5">
           <SideNavToggler />
           <Breadcrumbs
             breadcrumbs={getBreadcrumbsForNthChildren(collections, folderId!)}
           />
-          <ChevronsRight
-            size={13}
-            className="mx-2"
-          />
+          <ChevronsRight size={13} className="mx-2" />
           <div className="flex items-center group">
             {isApiNameEditing ? (
               <Input
-                value={form.watch('name') ?? ''}
+                value={form.watch("name") ?? ""}
                 onChange={(e) => {
-                  form.setValue('name', e.target.value, {
+                  form.setValue("name", e.target.value, {
                     shouldDirty: true,
-                  })
+                  });
                 }}
                 autoFocus
                 className={cn(
-                  'bg-transparent h-auto px-1 py-px text-sm w-auto border',
+                  "bg-transparent h-auto px-1 py-px text-sm w-auto border",
                 )}
               />
             ) : (
               <span
                 onDoubleClick={() => setIsApiNameEditing(true)}
-                className="text-sm h-auto px-1 py-px w-auto border border-transparent"
+                className="py-px px-1 w-auto h-auto text-sm border border-transparent"
               >
-                {form.watch('name')}
+                {form.watch("name")}
               </span>
             )}
             {!isApiNameEditing ? (
@@ -214,13 +208,13 @@ export default function Api() {
             ) : (
               <span
                 className={buttonVariants({
-                  size: 'icon',
-                  variant: 'secondary',
-                  className: 'p-0 w-6 h-6 ml-1 cursor-pointer',
+                  size: "icon",
+                  variant: "secondary",
+                  className: "p-0 w-6 h-6 ml-1 cursor-pointer",
                 })}
                 onClick={() => {
-                  saveUpdate()
-                  setIsApiNameEditing(false)
+                  saveUpdate();
+                  setIsApiNameEditing(false);
                 }}
               >
                 <Check size={12} />
@@ -231,12 +225,12 @@ export default function Api() {
                 <Button
                   variant="link"
                   size="icon"
-                  className="p-0 w-6 h-6 ml-1"
+                  className="p-0 ml-1 w-6 h-6"
                   onClick={() => setReload((prev) => !prev)}
                 >
                   <RotateCw
                     size={15}
-                    className={cn(animatingClass, 'duration-500')}
+                    className={cn(animatingClass, "duration-500")}
                   />
                 </Button>
               </TooltipTrigger>
@@ -248,32 +242,32 @@ export default function Api() {
           <div
             ref={urlDivRef}
             className={cn(
-              'relative h-10 flex w-full items-center justify-between rounded overflow-hidden border',
+              "relative h-10 flex w-full items-center justify-between rounded overflow-hidden border",
             )}
           >
             {isUrlEditing ? (
-              <div className="flex w-full items-center">
+              <div className="flex items-center w-full">
                 <Select
                   onValueChange={(value) =>
                     form.setValue(
-                      'method',
-                      value as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+                      "method",
+                      value as "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
                     )
                   }
-                  value={form.watch('method') ?? 'GET'}
+                  value={form.watch("method") ?? "GET"}
                 >
                   <SelectTrigger
                     className={cn(
-                      form.getValues('method') === 'GET'
-                        ? ' bg-green-700 border border-green-500'
-                        : form.getValues('method') === 'POST'
-                        ? 'bg-yellow-700 border-yellow-500'
-                        : form.getValues('method') === 'PUT'
-                        ? 'bg-cyan-700 border-cyan-500'
-                        : form.getValues('method') === 'PATCH'
-                        ? 'bg-purple-700 border-purple-500'
-                        : 'bg-red-700 border-red-500',
-                      'w-auto h-6 mx-h-6 border-0 font-medium text-white ml-1.5 text-xs pl-2 pr-1 py-0',
+                      form.getValues("method") === "GET"
+                        ? " bg-green-700 border border-green-500"
+                        : form.getValues("method") === "POST"
+                          ? "bg-yellow-700 border-yellow-500"
+                          : form.getValues("method") === "PUT"
+                            ? "bg-cyan-700 border-cyan-500"
+                            : form.getValues("method") === "PATCH"
+                              ? "bg-purple-700 border-purple-500"
+                              : "bg-red-700 border-red-500",
+                      "w-auto h-6 mx-h-6 border-0 font-medium text-white ml-1.5 text-xs pl-2 pr-1 py-0",
 
                       setBorderColor(
                         !!form.formState.errors.method || isUrlError,
@@ -283,18 +277,18 @@ export default function Api() {
                     <SelectValue placeholder="Method" />
                   </SelectTrigger>
                   <SelectContent>
-                    {['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map((item) => (
+                    {["GET", "POST", "PUT", "PATCH", "DELETE"].map((item) => (
                       <SelectItem
                         className={
-                          (item === 'GET'
-                            ? 'text-green-500'
-                            : item === 'POST'
-                            ? 'text-yellow-500'
-                            : item === 'PUT'
-                            ? 'text-cyan-500'
-                            : item === 'PATCH'
-                            ? 'text-purple-500'
-                            : 'text-red-500') + ' font-bold'
+                          (item === "GET"
+                            ? "text-green-500"
+                            : item === "POST"
+                              ? "text-yellow-500"
+                              : item === "PUT"
+                                ? "text-cyan-500"
+                                : item === "PATCH"
+                                  ? "text-purple-500"
+                                  : "text-red-500") + " font-bold"
                         }
                         key={item}
                         value={item}
@@ -309,25 +303,25 @@ export default function Api() {
                   autoComplete="off"
                   placeholder="https://example.com"
                   autoFocus
-                  value={form.watch('url') ?? ''}
+                  value={form.watch("url") ?? ""}
                   size={200}
                   onChange={(e) => {
                     if (
-                      e.target.value.includes('?') ||
-                      e.target.value.includes('&')
+                      e.target.value.includes("?") ||
+                      e.target.value.includes("&")
                     ) {
                       e.target.value = e.target.value
-                        .replace('?', '')
-                        .replace('&', '')
+                        .replace("?", "")
+                        .replace("&", "");
                     } else {
-                      form.setValue('url', e.target.value, {
+                      form.setValue("url", e.target.value, {
                         shouldDirty: true,
-                      })
+                      });
                     }
                   }}
                   className={cn(
-                    setBorderColor(isUrlError) ? 'text-red-500' : '',
-                    'text-sm rounded-l-none pl-1 h-full border-0',
+                    setBorderColor(isUrlError) ? "text-red-500" : "",
+                    "text-sm rounded-l-none pl-1 h-full border-0",
                   )}
                 />
               </div>
@@ -338,51 +332,51 @@ export default function Api() {
               >
                 <span
                   className={cn(
-                    api.method === 'GET'
-                      ? ' bg-green-700 border border-green-500'
-                      : api.method === 'POST'
-                      ? 'bg-yellow-700 border-yellow-500'
-                      : api.method === 'PUT'
-                      ? 'bg-cyan-700 border-cyan-500'
-                      : api.method === 'PATCH'
-                      ? 'bg-purple-700 border-purple-500'
-                      : 'bg-red-700 border-red-500',
-                    'font-medium text-white ml-1.5 text-xs px-1 py-0.5 rounded-md',
+                    api.method === "GET"
+                      ? " bg-green-700 border border-green-500"
+                      : api.method === "POST"
+                        ? "bg-yellow-700 border-yellow-500"
+                        : api.method === "PUT"
+                          ? "bg-cyan-700 border-cyan-500"
+                          : api.method === "PATCH"
+                            ? "bg-purple-700 border-purple-500"
+                            : "bg-red-700 border-red-500",
+                    "font-medium text-white ml-1.5 text-xs px-1 py-0.5 rounded-md",
                   )}
                 >
                   {api.method}
                 </span>
-                <div className="truncate px-2 text-sm">
+                <div className="px-2 text-sm truncate">
                   {containsDynamicVariable(url) ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span
                           className={cn(
-                            isUrlError ? 'text-red-500' : 'text-cyan-500',
+                            isUrlError ? "text-red-500" : "text-cyan-500",
                           )}
                         >{`{{${extractVariable(url)}}}`}</span>
                       </TooltipTrigger>
                       <TooltipContent
                         className="flex items-center text-sm"
                         onClick={() => {
-                          copyUrl()
+                          copyUrl();
                           toast({
-                            variant: 'success',
-                            title: 'Success',
-                            description: 'Env value is copied to clipboard',
-                          })
+                            variant: "success",
+                            title: "Success",
+                            description: "Env value is copied to clipboard",
+                          });
                         }}
                         align="start"
                       >
                         {isUrlError
-                          ? 'Please add this to ENV with value'
+                          ? "Please add this to ENV with value"
                           : replaceVariables(
-                              `{{${extractVariable(url)}}}`,
-                              env,
-                            )}
+                            `{{${extractVariable(url)}}}`,
+                            env,
+                          )}
                         {!isUrlError && (
                           <Copy
-                            className="h-4 w-4 justify-self-end p-0 ml-2 cursor-pointer"
+                            className="justify-self-end p-0 ml-2 w-4 h-4 cursor-pointer"
                             size={16}
                           />
                         )}
@@ -393,7 +387,7 @@ export default function Api() {
                   )}
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span>{url?.split('}}')[1]}</span>
+                      <span>{url?.split("}}")[1]}</span>
                     </TooltipTrigger>
                     <TooltipContent>
                       Double click to edit this URL
@@ -403,7 +397,7 @@ export default function Api() {
               </div>
             )}
 
-            <div className="flex items-center justify-end absolute right-0 h-auto bg-background pl-1">
+            <div className="flex absolute right-0 justify-end items-center pl-1 h-auto bg-background">
               {!isUrlEditing && (
                 <>
                   <Tooltip>
@@ -411,23 +405,23 @@ export default function Api() {
                       <Button
                         type="button"
                         variant="ghost"
-                        className="flex border-x justify-self-end px-3 text-xs rounded-none"
+                        className="flex justify-self-end px-3 text-xs rounded-none border-x"
                         size="sm"
                         onClick={() => setIsProxyAdded(!isProxyAdded)}
                       >
                         <Waypoints
                           className={cn(
                             isProxyAdded
-                              ? 'text-green-500'
-                              : 'text-muted-foreground',
+                              ? "text-green-500"
+                              : "text-muted-foreground",
                           )}
                         />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
                       {isProxyAdded
-                        ? 'A proxy server is forwarding your request'
-                        : 'Turn on proxy server'}
+                        ? "A proxy server is forwarding your request"
+                        : "Turn on proxy server"}
                     </TooltipContent>
                   </Tooltip>
                   <Tooltip>
@@ -435,7 +429,7 @@ export default function Api() {
                       <Button
                         type="button"
                         variant="ghost"
-                        className="flex border-r justify-self-end px-3 text-xs rounded-none"
+                        className="flex justify-self-end px-3 text-xs rounded-none border-r"
                         size="sm"
                         onClick={() => setIsOpenCurlDialog(true)}
                       >
@@ -449,7 +443,7 @@ export default function Api() {
                       <Button
                         type="button"
                         variant="ghost"
-                        className="flex border-r justify-self-end px-3 rounded-none"
+                        className="flex justify-self-end px-3 rounded-none border-r"
                         size="sm"
                         onClick={() => copyUrl()}
                       >
@@ -508,20 +502,20 @@ export default function Api() {
                       <div
                         onClick={() => {
                           if (!isUrlError) {
-                            saveUpdate()
-                            getApi(api?.id)
+                            saveUpdate();
+                            getApi(api?.id);
                           } else {
                             toast({
-                              variant: 'error',
-                              title: 'Error',
-                              description: 'Url or variable is not valid',
-                            })
+                              variant: "error",
+                              title: "Error",
+                              description: "Url or variable is not valid",
+                            });
                           }
                         }}
                         className={buttonVariants({
-                          className: 'p-1 rounded-l-none cursor-pointer',
-                          variant: 'secondary',
-                          size: 'icon',
+                          className: "p-1 rounded-l-none cursor-pointer",
+                          variant: "secondary",
+                          size: "icon",
                         })}
                       >
                         <Save size={18} />
@@ -539,25 +533,25 @@ export default function Api() {
                       size="icon"
                       onClick={() => {
                         if (
-                          window.location.protocol === 'https' &&
+                          window.location.protocol === "https" &&
                           (replaceVariables(
                             `{{${extractVariable(url)}}}`,
                             env,
-                          ).includes('localhost') ||
+                          ).includes("localhost") ||
                             replaceVariables(
                               `{{${extractVariable(url)}}}`,
                               env,
-                            ).includes('127.0.0.1') ||
-                            url.includes('localhost') ||
-                            url.includes('127.0.0.1'))
+                            ).includes("127.0.0.1") ||
+                            url.includes("localhost") ||
+                            url.includes("127.0.0.1"))
                         ) {
-                          setIsDesktopDownloaderShow(true)
+                          setIsDesktopDownloaderShow(true);
                         } else {
-                          form.handleSubmit(onSubmit)()
+                          form.handleSubmit(onSubmit)();
                         }
                       }}
                     >
-                      <i className="bi bi-plugin text-xl font-bold" />
+                      <i className="text-xl font-bold bi bi-plugin" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Send request</TooltipContent>
@@ -575,9 +569,9 @@ export default function Api() {
         >
           <Pane
             minSize={
-              resultRenderView === 'vertical'
+              resultRenderView === "vertical"
                 ? formDivRef?.current?.clientWidth &&
-                  formDivRef?.current?.clientWidth * 0.3
+                formDivRef?.current?.clientWidth * 0.3
                 : 5
             }
             maxSize="100%"
@@ -586,7 +580,7 @@ export default function Api() {
               fallback={
                 <Loading
                   height={
-                    resultRenderView === 'vertical'
+                    resultRenderView === "vertical"
                       ? window.innerHeight - 200
                       : sizes[0]
                   }
@@ -596,13 +590,13 @@ export default function Api() {
               <ErrorBoundary fallback={<Error />}>
                 <InputTabs
                   className={cn(
-                    'pl-5 pt-2',
-                    resultRenderView === 'horizontal'
+                    "pl-5 pt-2",
+                    resultRenderView === "horizontal"
                       ? `w-[${sizes[0] - 120}px]`
-                      : '',
+                      : "",
                   )}
                   height={
-                    resultRenderView === 'vertical'
+                    resultRenderView === "vertical"
                       ? window.innerHeight - 200
                       : sizes[0]
                   }
@@ -615,9 +609,9 @@ export default function Api() {
 
           <Pane
             minSize={
-              resultRenderView === 'vertical'
+              resultRenderView === "vertical"
                 ? formDivRef?.current?.clientWidth &&
-                  formDivRef?.current?.clientWidth * 0.4
+                formDivRef?.current?.clientWidth * 0.4
                 : 190
             }
             maxSize="100%"
@@ -627,7 +621,7 @@ export default function Api() {
               fallback={
                 <Loading
                   height={
-                    resultRenderView === 'vertical'
+                    resultRenderView === "vertical"
                       ? window.innerHeight + 20
                       : sizes[1] + 20
                   }
@@ -637,16 +631,16 @@ export default function Api() {
               <ErrorBoundary fallback={<Error />}>
                 <ApiResult
                   height={
-                    resultRenderView === 'vertical'
+                    resultRenderView === "vertical"
                       ? window.innerHeight + 20
-                      : resultRenderView === 'horizontal' &&
-                        headers?.['content-type']?.includes('text/html')
-                      ? window.innerHeight
-                      : sizes[1]! + 20
+                      : resultRenderView === "horizontal" &&
+                        headers?.["content-type"]?.includes("text/html")
+                        ? window.innerHeight
+                        : sizes[1]! + 20
                   }
                   isLoading={isLoading}
                   result={result}
-                  headers={form.getValues('responseHeaders')}
+                  headers={form.getValues("responseHeaders")}
                   cookies={cookies}
                   responseStatus={responseStatus}
                 />
@@ -656,10 +650,7 @@ export default function Api() {
         </SplitPane>
       </div>
       {/* curl dialog */}
-      <AlertDialog
-        open={isOpenCurlDialog}
-        onOpenChange={setIsOpenCurlDialog}
-      >
+      <AlertDialog open={isOpenCurlDialog} onOpenChange={setIsOpenCurlDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>cURL</AlertDialogTitle>
@@ -670,22 +661,19 @@ export default function Api() {
           <Textarea
             rows={7}
             value={curl}
-            className="resize-none w-auto border focus:ring-0 focus-visible:ring-0 focus-within:ring-0 "
+            className="w-auto border resize-none focus-within:ring-0 focus:ring-0 focus-visible:ring-0"
             onChange={(e) => setCurl(e.target.value)}
           />
           <AlertDialogFooter>
-            <AlertDialogCancel
-              className="h-8"
-              onClick={() => copyCurl()}
-            >
+            <AlertDialogCancel className="h-8" onClick={() => copyCurl()}>
               Copy
             </AlertDialogCancel>
             <AlertDialogCancel className="h-8">Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="h-8"
               onClick={() => {
-                saveRequestFromCurl(curl, api?.id)
-                setCurl('')
+                saveRequestFromCurl(curl, api?.id);
+                setCurl("");
               }}
             >
               Save
@@ -705,30 +693,30 @@ export default function Api() {
               <span>Download Desktop Agent</span>
             </AlertDialogTitle>
             <AlertDialogDescription>
-              <span className="mr-1 px-1.5 py-1 rounded-md bg-secondary text-xs font-medium text-foreground">
+              <span className="py-1 px-1.5 mr-1 text-xs font-medium rounded-md bg-secondary text-foreground">
                 localhost
               </span>
               or
-              <span className="ml-1 px-1.5 py-1 rounded-md bg-secondary text-xs font-medium text-foreground">
+              <span className="py-1 px-1.5 ml-1 text-xs font-medium rounded-md bg-secondary text-foreground">
                 127.0.0.1
-              </span>{' '}
+              </span>{" "}
               is not allowed. Please download the desktop agent to test the
               locally hosted API server
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <AlertDialogFooter className="flex-col space-y-2 sm:space-y-0 sm:flex-row sm:space-x-2 items-end">
+          <AlertDialogFooter className="flex-col items-end space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
             <AlertDialogAction
               className={buttonVariants({
-                variant: navigator.userAgent.includes('Mac OS X')
-                  ? 'secondary'
-                  : 'outline',
-                size: 'sm',
+                variant: navigator.userAgent.includes("Mac OS X")
+                  ? "secondary"
+                  : "outline",
+                size: "sm",
                 className: cn(
-                  'text-muted-foreground',
-                  navigator.userAgent.includes('Mac OS X')
-                    ? ''
-                    : 'bg-background',
+                  "text-muted-foreground",
+                  navigator.userAgent.includes("Mac OS X")
+                    ? ""
+                    : "bg-background",
                 ),
               })}
             >
@@ -738,72 +726,54 @@ export default function Api() {
                 target="_self"
                 className="flex items-center"
               >
-                <FaApple
-                  className="mr-1"
-                  size={18}
-                />
+                <FaApple className="mr-1" size={18} />
                 MacOS
               </Link>
             </AlertDialogAction>
             <AlertDialogAction
               className={buttonVariants({
-                variant: navigator.userAgent.includes('Win64; x64')
-                  ? 'secondary'
-                  : 'outline',
-                size: 'sm',
+                variant: navigator.userAgent.includes("Win64; x64")
+                  ? "secondary"
+                  : "outline",
+                size: "sm",
                 className: cn(
-                  'text-muted-foreground',
-                  navigator.userAgent.includes('Win64; x64')
-                    ? ''
-                    : 'bg-background',
+                  "text-muted-foreground",
+                  navigator.userAgent.includes("Win64; x64")
+                    ? ""
+                    : "bg-background",
                 ),
               })}
               asChild
             >
-              <Link
-                to={downloadUrls.windows.url}
-                download
-                target="_self"
-              >
-                <FaWindows
-                  className="mr-1"
-                  size={16}
-                />{' '}
-                Windows
+              <Link to={downloadUrls.windows.url} download target="_self">
+                <FaWindows className="mr-1" size={16} /> Windows
               </Link>
             </AlertDialogAction>
             <AlertDialogAction
               className={buttonVariants({
-                variant: navigator.userAgent.includes('Linux x86_64')
-                  ? 'secondary'
-                  : 'outline',
-                size: 'sm',
+                variant: navigator.userAgent.includes("Linux x86_64")
+                  ? "secondary"
+                  : "outline",
+                size: "sm",
                 className: cn(
-                  'text-muted-foreground',
-                  navigator.userAgent.includes('Linux x86_64')
-                    ? ''
-                    : 'bg-background',
+                  "text-muted-foreground",
+                  navigator.userAgent.includes("Linux x86_64")
+                    ? ""
+                    : "bg-background",
                 ),
               })}
               asChild
             >
-              <Link
-                to={downloadUrls.linux.url}
-                download
-                target="_self"
-              >
-                <FaLinux
-                  className="mr-1"
-                  size={18}
-                />
+              <Link to={downloadUrls.linux.url} download target="_self">
+                <FaLinux className="mr-1" size={18} />
                 Linux
               </Link>
             </AlertDialogAction>
             <AlertDialogCancel
               className={buttonVariants({
-                variant: 'outline',
-                size: 'sm',
-                className: 'text-muted-foreground',
+                variant: "outline",
+                size: "sm",
+                className: "text-muted-foreground",
               })}
             >
               OK
@@ -812,5 +782,5 @@ export default function Api() {
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

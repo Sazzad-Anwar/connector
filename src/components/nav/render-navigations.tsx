@@ -3,26 +3,26 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from '@/components/ui/context-menu'
+} from "@/components/ui/context-menu";
 import {
   ChevronRight,
   FileDown,
   GitPullRequestCreate,
   MoreVertical,
-} from 'lucide-react'
+} from "lucide-react";
 
-import React, { Fragment, lazy, Suspense, useRef } from 'react'
-import { v4 as uuid } from 'uuid'
+import React, { Fragment, lazy, Suspense, useRef } from "react";
+import { v4 as uuid } from "uuid";
 
-import { cn, findRootCollection } from '@/lib/utils'
-import { FolderType } from '@/types/api'
+import { cn, findRootCollection } from "@/lib/utils";
+import { FolderType } from "@/types/api";
 
-import { FaFolder, FaFolderOpen } from 'react-icons/fa'
-import { useParams } from 'react-router-dom'
-import useRenderNav from '../../hooks/useRenderNav'
-import useApiStore from '../../store/store'
-import { default as CreateFolder } from '../collections/create-folder'
-import Loading from '../loading'
+import { FaFolder, FaFolderOpen } from "react-icons/fa";
+import { useParams } from "react-router-dom";
+import useRenderNav from "../../hooks/useRenderNav";
+import useApiStore from "../../store/store";
+import { default as CreateFolder } from "../collections/create-folder";
+import Loading from "../loading";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,30 +33,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '../ui/alert-dialog'
-import { buttonVariants } from '../ui/button'
+} from "../ui/alert-dialog";
+import { buttonVariants } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+} from "../ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 const MoveToFolderDialog = lazy(
-  () => import('../collections/move-to-folder-dialog'),
-)
-const EnvVariables = lazy(() => import('../env/env-variables'))
+  () => import("../collections/move-to-folder-dialog"),
+);
+const EnvVariables = lazy(() => import("../env/env-variables"));
 
 interface RenderNavigationProps {
-  collection: FolderType
+  collection: FolderType;
 }
 
 export default function RenderNavigation({
   collection,
 }: RenderNavigationProps): JSX.Element {
-  const { collections } = useApiStore()
-  const navWidthRef = useRef<HTMLDivElement>(null)
-  const params = useParams()
+  const { collections } = useApiStore();
+  const navWidthRef = useRef<HTMLDivElement>(null);
+  const params = useParams();
   const {
     isFolderOpen,
     setIsFolderOpen,
@@ -81,31 +81,31 @@ export default function RenderNavigation({
     setSelectedApis,
     downloadFile,
     addApi,
-  } = useRenderNav({ collection })
+  } = useRenderNav({ collection });
 
   return (
-    <div className="scroll-smooth">
+    <div className="scroll-smooth no-select">
       <ContextMenu>
         <ContextMenuTrigger>
           <div
             ref={navWidthRef}
             className={cn(
               buttonVariants({
-                variant: 'ghost',
-                size: 'xs',
-                className: 'py-px',
+                variant: "ghost",
+                size: "xs",
+                className: "py-px",
               }),
-              'group sticky top-0 w-full bg-background z-10 cursor-pointer items-center justify-between rounded-none',
+              "group sticky top-0 w-full bg-background z-10 cursor-pointer items-center justify-between rounded-none",
             )}
           >
             {isFolderNameUpdating && collection.id === collectionId ? (
               <>
-                <div className="size-[18px] mr-1">
+                <div className="mr-1 size-[18px]">
                   <ChevronRight
                     size={18}
                     className={
-                      (isFolderOpen ? 'rotate-90' : '') +
-                      ' transition-all duration-100 ease-linear'
+                      (isFolderOpen ? "rotate-90" : "") +
+                      " transition-all duration-100 ease-linear"
                     }
                   />
                 </div>
@@ -115,23 +115,23 @@ export default function RenderNavigation({
                   isFolderOpen={isFolderOpen}
                   onSubmit={renameCollectionName}
                   type="folder"
-                  className="w-full flex text-[13px] items-center"
-                  actionType={'update'}
+                  className="flex items-center w-full text-[13px]"
+                  actionType={"update"}
                 />
               </>
             ) : (
               <button
                 onClick={() => {
-                  setIsFolderOpen(!isFolderOpen)
+                  setIsFolderOpen(!isFolderOpen);
                 }}
-                className="truncate inline-flex w-full h-7 text-[13px] items-center focus-within:outline-none focus-visible:outline-none"
+                className="inline-flex items-center w-full h-7 focus-within:outline-none focus-visible:outline-none truncate text-[13px]"
               >
-                <span className="size-[18px] mr-1">
+                <span className="mr-1 size-[18px]">
                   <ChevronRight
                     size={18}
                     className={
-                      (isFolderOpen ? 'rotate-90' : '') +
-                      ' transition-all duration-100 ease-linear'
+                      (isFolderOpen ? "rotate-90" : "") +
+                      " transition-all duration-100 ease-linear"
                     }
                   />
                 </span>
@@ -143,7 +143,7 @@ export default function RenderNavigation({
                   )}
                 </span>
 
-                <span className="w-full truncate text-left mt-2 block px-1 text-sm font-semibold h-7">
+                <span className="block px-1 mt-2 w-full h-7 text-sm font-semibold text-left truncate">
                   {collection.name}
                 </span>
               </button>
@@ -187,14 +187,14 @@ export default function RenderNavigation({
                         <DropdownMenuItem
                           key={uuid()}
                           onClick={(e) => {
-                            item.onClick(e)
+                            item.onClick(e);
                           }}
                         >
                           {item.name}
                         </DropdownMenuItem>
-                      )
+                      );
                     } else {
-                      return null
+                      return null;
                     }
                   })}
                 </DropdownMenuContent>
@@ -209,27 +209,27 @@ export default function RenderNavigation({
                 <ContextMenuItem
                   key={uuid()}
                   onClick={(e) => {
-                    item.onClick(e)
+                    item.onClick(e);
                   }}
                 >
                   {item.name}
                 </ContextMenuItem>
-              )
+              );
             } else {
-              return null
+              return null;
             }
           })}
         </ContextMenuContent>
       </ContextMenu>
       {isFolderOpen && (
-        <div className="animate__animated animate__fadeIn child ml-6 border-l">
+        <div className="ml-6 border-l animate__animated animate__fadeIn child">
           {isCreatingFolder && collection.id === collectionId && (
             <CreateFolder
               name={collection.name}
               isFolderOpen={isFolderOpen}
               onSubmit={addFolder}
               type="folder"
-              actionType={'create'}
+              actionType={"create"}
             />
           )}
           {collection?.children
@@ -258,29 +258,29 @@ export default function RenderNavigation({
                         )
                       }
                       className={cn(
-                        buttonVariants({ variant: 'ghost', size: 'xs' }),
-                        'group relative w-full cursor-pointer items-center justify-between rounded-none truncate scroll-mt-20',
+                        buttonVariants({ variant: "ghost", size: "xs" }),
+                        "group relative w-full cursor-pointer items-center justify-between rounded-none truncate scroll-mt-20",
                         (params.apiId && params.apiId === api.id) ||
                           selectedApis
                             .map((apiType) => apiType.id)
                             .includes(api.id)
-                          ? 'border-l-2 border-primary bg-secondary'
-                          : 'border-l-2 border-transparent',
+                          ? "border-l-2 border-primary bg-secondary"
+                          : "border-l-2 border-transparent",
                       )}
                     >
                       <div className="w-full truncate">
                         <span
                           className={cn(
-                            api.method === 'GET'
-                              ? ' bg-green-700 border border-green-500'
-                              : api.method === 'POST'
-                              ? 'bg-yellow-700 border-yellow-500'
-                              : api.method === 'PUT'
-                              ? 'bg-cyan-700 border-cyan-500'
-                              : api.method === 'PATCH'
-                              ? 'bg-purple-700 border-purple-500'
-                              : 'bg-red-700 border-red-500',
-                            'font-medium text-white mr-2 text-[10px] px-1 py-0.5 rounded-md',
+                            api.method === "GET"
+                              ? " bg-green-700 border border-green-500"
+                              : api.method === "POST"
+                                ? "bg-yellow-700 border-yellow-500"
+                                : api.method === "PUT"
+                                  ? "bg-cyan-700 border-cyan-500"
+                                  : api.method === "PATCH"
+                                    ? "bg-purple-700 border-purple-500"
+                                    : "bg-red-700 border-red-500",
+                            "font-medium text-white mr-2 text-[10px] px-1 py-0.5 rounded-md",
                           )}
                         >
                           {api.method}
@@ -297,8 +297,8 @@ export default function RenderNavigation({
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             onClick={() => {
-                              setSelectedApis([...selectedApis, api])
-                              setIsMoveToFolderDialogOpen(true)
+                              setSelectedApis([...selectedApis, api]);
+                              setIsMoveToFolderDialogOpen(true);
                             }}
                           >
                             Move
@@ -308,9 +308,9 @@ export default function RenderNavigation({
                               onClick={() => {
                                 downloadFile({
                                   data: api,
-                                  fileName: api.name + '.json',
-                                  fileType: 'text/json',
-                                })
+                                  fileName: api.name + ".json",
+                                  fileType: "text/json",
+                                });
                               }}
                             >
                               Export
@@ -318,9 +318,9 @@ export default function RenderNavigation({
                           )}
                           <DropdownMenuItem
                             onClick={(e) => {
-                              setApiDetails(api)
-                              e.stopPropagation()
-                              deleteButtonRef.current?.click()
+                              setApiDetails(api);
+                              e.stopPropagation();
+                              deleteButtonRef.current?.click();
                             }}
                             className="text-red-500"
                           >
@@ -333,9 +333,9 @@ export default function RenderNavigation({
                   <ContextMenuContent>
                     <ContextMenuItem
                       onClick={() => {
-                        setIsMoveToFolderDialogOpen(true)
+                        setIsMoveToFolderDialogOpen(true);
                         if (!selectedApis.map((a) => a.id).includes(api.id)) {
-                          setSelectedApis([...selectedApis, api])
+                          setSelectedApis([...selectedApis, api]);
                         }
                       }}
                     >
@@ -346,9 +346,9 @@ export default function RenderNavigation({
                         onClick={() => {
                           downloadFile({
                             data: api,
-                            fileName: api.name + '.json',
-                            fileType: 'text/json',
-                          })
+                            fileName: api.name + ".json",
+                            fileType: "text/json",
+                          });
                         }}
                       >
                         Export
@@ -357,9 +357,9 @@ export default function RenderNavigation({
 
                     <ContextMenuItem
                       onClick={(e) => {
-                        setApiDetails(api)
-                        e.stopPropagation()
-                        deleteButtonRef.current?.click()
+                        setApiDetails(api);
+                        e.stopPropagation();
+                        deleteButtonRef.current?.click();
                       }}
                       className="text-red-500"
                     >
@@ -376,10 +376,7 @@ export default function RenderNavigation({
 
       {/* Delete Dialog */}
       <AlertDialog>
-        <AlertDialogTrigger
-          className="hidden"
-          ref={deleteButtonRef}
-        >
+        <AlertDialogTrigger className="hidden" ref={deleteButtonRef}>
           Delete
         </AlertDialogTrigger>
         <AlertDialogContent>
@@ -396,9 +393,9 @@ export default function RenderNavigation({
             <AlertDialogCancel
               type="button"
               className={buttonVariants({
-                size: 'xs',
-                variant: 'outline',
-                className: 'h-8',
+                size: "xs",
+                variant: "outline",
+                className: "h-8",
               })}
             >
               Cancel
@@ -410,9 +407,9 @@ export default function RenderNavigation({
                   : deleteCollection(collection.id)
               }
               className={buttonVariants({
-                variant: 'destructive',
-                size: 'xs',
-                className: 'h-8',
+                variant: "destructive",
+                size: "xs",
+                className: "h-8",
               })}
             >
               Yes
@@ -422,10 +419,7 @@ export default function RenderNavigation({
       </AlertDialog>
 
       {/* Env Dialog */}
-      <AlertDialog
-        open={isEnvDialogOpen}
-        onOpenChange={setIsEnvDialogOpen}
-      >
+      <AlertDialog open={isEnvDialogOpen} onOpenChange={setIsEnvDialogOpen}>
         <AlertDialogContent className="min-w-[80%] w-auto h-auto block">
           <AlertDialogHeader className="h-auto">
             <AlertDialogTitle>Env Variables</AlertDialogTitle>
@@ -449,13 +443,13 @@ export default function RenderNavigation({
           isDialogOpen={isMoveToFolderDialogOpen}
           setIsDialogOpen={setIsMoveToFolderDialogOpen}
           folderId={
-            collection.type === 'folder'
+            collection.type === "folder"
               ? collection.id
-              : findRootCollection(collections, collection.id)?.id || ''
+              : findRootCollection(collections, collection.id)?.id || ""
           }
           setSelectedApis={setSelectedApis}
         />
       </Suspense>
     </div>
-  )
+  );
 }

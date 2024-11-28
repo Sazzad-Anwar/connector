@@ -1,8 +1,8 @@
-import configs from '@/../package.json'
+import configs from "@/../package.json";
 // import { Settings } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link } from "react-router-dom";
 // import useUpdate from '../../hooks/useUpdate'
-import { ThemeToggle } from '../theme-toggler'
+import { ThemeToggle } from "../theme-toggler";
 // import { Button } from '../ui/button'
 // import {
 //   Dialog,
@@ -34,13 +34,10 @@ export function SideNavHeader() {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-6 border-b px-3 py-[11px] md:gap-10">
-        <Link
-          to="/"
-          className="flex items-center space-x-2"
-        >
-          <i className="bi bi-plugin text-2xl" />
-          <span className="inline-block font-bold text-xl">Connector</span>
+      <div className="flex gap-6 justify-between items-center px-3 border-b md:gap-10 no-select py-[11px]">
+        <Link to="/" className="flex items-center space-x-2">
+          <i className="text-2xl bi bi-plugin" />
+          <span className="inline-block text-xl font-bold">Connector</span>
           <sup className="text-[9px]">{configs.version}</sup>
         </Link>
 
@@ -50,7 +47,7 @@ export function SideNavHeader() {
               <DialogTrigger>
                 <Settings size={20} />
               </DialogTrigger>
-              <DialogContent className="h-72 block">
+              <DialogContent className="block h-72">
                 <DialogHeader>
                   <DialogTitle>Connector</DialogTitle>
                   <DialogDescription className="text-muted-foreground">
@@ -58,7 +55,7 @@ export function SideNavHeader() {
                     using API
                   </DialogDescription>
                 </DialogHeader>
-                <div className="flex flex-col mt-10 items-center justify-center">
+                <div className="flex flex-col justify-center items-center mt-10">
                   <h1 className="text-2xl text-muted-foreground">
                     v{updateDetails?.currentVersion}
                   </h1>
@@ -79,5 +76,5 @@ export function SideNavHeader() {
       </div>
       {/* <RestartApp /> */}
     </>
-  )
+  );
 }

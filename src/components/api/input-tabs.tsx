@@ -1,23 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
-import { UseFormReturn } from 'react-hook-form'
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { UseFormReturn } from "react-hook-form";
 
-import { ApiType, ParamsType } from '@/types/api'
+import { ApiType, ParamsType } from "@/types/api";
 
-import { useLocation } from 'react-router-dom'
-import useResultRenderViewStore from '../../store/resultRenderView'
-import Loading from '../loading'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
-const MultipleInput = lazy(() => import('../multiple-input'))
-const ResultRender = lazy(() => import('../result-renderer'))
+import { useLocation } from "react-router-dom";
+import useResultRenderViewStore from "../../store/resultRenderView";
+import Loading from "../loading";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+const MultipleInput = lazy(() => import("../multiple-input"));
+const ResultRender = lazy(() => import("../result-renderer"));
 
 type PropsType = {
-  form: UseFormReturn<ApiType, any, undefined>
-  api?: ApiType
-  className?: string
-  height?: number | string
-  type?: 'create' | 'update'
-}
+  form: UseFormReturn<ApiType, any, undefined>;
+  api?: ApiType;
+  className?: string;
+  height?: number | string;
+  type?: "create" | "update";
+};
 
 export const InputTabs = ({
   form,
@@ -26,51 +26,51 @@ export const InputTabs = ({
   type,
   className,
 }: PropsType) => {
-  const location = useLocation()
-  const jsonBodyDivRef = useRef<HTMLDivElement>(null)
-  const [jsonBodyData, setJsonBodyData] = useState<any>({})
-  const [interactiveQueryData, setInteractiveQueryData] = useState<any>({})
-  const [isTimedOut, setTimedOut] = useState<boolean>(false)
-  const { resultRenderView } = useResultRenderViewStore()
+  const location = useLocation();
+  const jsonBodyDivRef = useRef<HTMLDivElement>(null);
+  const [jsonBodyData, setJsonBodyData] = useState<any>({});
+  const [interactiveQueryData, setInteractiveQueryData] = useState<any>({});
+  const [isTimedOut, setTimedOut] = useState<boolean>(false);
+  const { resultRenderView } = useResultRenderViewStore();
 
   const setJsonBody = (data: string) => {
     try {
-      setJsonBodyData(JSON.parse(data))
-      const jsonData = JSON.parse(data)
-      form.setValue('jsonBody', jsonData, { shouldDirty: true })
+      setJsonBodyData(JSON.parse(data));
+      const jsonData = JSON.parse(data);
+      form.setValue("jsonBody", jsonData, { shouldDirty: true });
     } catch (error: any) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
   const setInteractiveQuery = (data: string) => {
     try {
-      const jsonData = JSON.parse(data)
-      setInteractiveQueryData(jsonData)
-      form.setValue('interactiveQuery', jsonData, { shouldDirty: true })
+      const jsonData = JSON.parse(data);
+      setInteractiveQueryData(jsonData);
+      form.setValue("interactiveQuery", jsonData, { shouldDirty: true });
     } catch (error: any) {
       // console.log(error)
     }
-  }
+  };
 
   useEffect(() => {
-    let timer: any
+    let timer: any;
     if (api) {
       timer = setTimeout(() => {
-        setTimedOut(true)
-        setJsonBodyData(api?.jsonBody)
-        setInteractiveQueryData(api?.interactiveQuery)
-      }, 100)
+        setTimedOut(true);
+        setJsonBodyData(api?.jsonBody);
+        setInteractiveQueryData(api?.interactiveQuery);
+      }, 100);
     } else {
-      setJsonBodyData({})
-      setInteractiveQueryData({})
-      setTimedOut(true)
+      setJsonBodyData({});
+      setInteractiveQueryData({});
+      setTimedOut(true);
     }
     return () => {
-      clearTimeout(timer)
-      setTimedOut(false)
-    }
-  }, [api])
+      clearTimeout(timer);
+      setTimedOut(false);
+    };
+  }, [api]);
 
   useEffect(() => {
     // setDefaultOpen(
@@ -92,46 +92,43 @@ export const InputTabs = ({
     //       : 'params'
     //     : 'params',
     // )
-  }, [])
+  }, []);
 
   return (
     <div className={className}>
-      <Tabs
-        defaultValue="params"
-        className="w-full"
-      >
-        <TabsList>
+      <Tabs defaultValue="params" className="w-full">
+        <TabsList className="no-select">
           <TabsTrigger value="params">
-            Params{' '}
+            Params{" "}
             {api?.params?.find((item: ParamsType) => item.isActive) ||
-            api?.pathVariables?.filter(
-              (item) => item.key !== '' && item.value !== '',
-            ).length ||
-            (typeof api?.interactiveQuery === 'object' &&
-              Object.keys(api?.interactiveQuery).length) ? (
-              <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+              api?.pathVariables?.filter(
+                (item) => item.key !== "" && item.value !== "",
+              ).length ||
+              (typeof api?.interactiveQuery === "object" &&
+                Object.keys(api?.interactiveQuery).length) ? (
+              <span className="ml-2 w-2 h-2 bg-green-500 rounded-full" />
             ) : null}
           </TabsTrigger>
           <TabsTrigger value="headers">
-            Headers{' '}
+            Headers{" "}
             {api?.headers?.find((item: ParamsType) => item.isActive) ? (
-              <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
-            ) : null}{' '}
+              <span className="ml-2 w-2 h-2 bg-green-500 rounded-full" />
+            ) : null}{" "}
           </TabsTrigger>
           <TabsTrigger value="body">
-            Body{' '}
+            Body{" "}
             {api?.body?.find((item: ParamsType) => item.isActive) ||
-            (api?.jsonBody && Object.keys(api?.jsonBody).length) ||
-            api?.formData?.find((item: ParamsType) => item.isActive) ? (
-              <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+              (api?.jsonBody && Object.keys(api?.jsonBody).length) ||
+              api?.formData?.find((item: ParamsType) => item.isActive) ? (
+              <span className="ml-2 w-2 h-2 bg-green-500 rounded-full" />
             ) : null}
           </TabsTrigger>
           <TabsTrigger value="dynamicVariable">
             Set variables
             {api?.dynamicVariables?.filter(
-              (item) => item.key !== '' && item.value !== '',
+              (item) => item.key !== "" && item.value !== "",
             ).length ? (
-              <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+              <span className="ml-2 w-2 h-2 bg-green-500 rounded-full" />
             ) : null}
           </TabsTrigger>
         </TabsList>
@@ -142,54 +139,54 @@ export const InputTabs = ({
           <Tabs
             defaultValue={
               api?.params?.find((item: ParamsType) => item.isActive)
-                ? 'query-params'
-                : typeof api?.interactiveQuery === 'object' &&
+                ? "query-params"
+                : typeof api?.interactiveQuery === "object" &&
                   Object.keys(api?.interactiveQuery).length
-                ? 'interactive-query'
-                : api?.pathVariables?.find(
-                    (item: ParamsType) => item.key === '',
+                  ? "interactive-query"
+                  : api?.pathVariables?.find(
+                    (item: ParamsType) => item.key === "",
                   )
-                ? 'url-params'
-                : 'interactive-query'
+                    ? "url-params"
+                    : "interactive-query"
             }
             className="w-full"
           >
-            <TabsList className="px-.5 h-9">
+            <TabsList className="h-9 px-.5">
               <TabsTrigger
                 onClick={() => {
-                  form.setValue('activeQuery', 'query-params')
+                  form.setValue("activeQuery", "query-params");
                 }}
                 value="query-params"
                 className="h-7"
               >
                 Query
                 {api?.params?.find((item: ParamsType) => item.isActive) ? (
-                  <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+                  <span className="ml-2 w-2 h-2 bg-green-500 rounded-full" />
                 ) : null}
               </TabsTrigger>
               <TabsTrigger
                 onClick={() => {
-                  form.setValue('activeQuery', 'interactive-query')
+                  form.setValue("activeQuery", "interactive-query");
                 }}
                 value="interactive-query"
                 className="h-7"
               >
                 JSON Query
-                {typeof api?.interactiveQuery === 'object' &&
-                Object.keys(api?.interactiveQuery).length ? (
-                  <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+                {typeof api?.interactiveQuery === "object" &&
+                  Object.keys(api?.interactiveQuery).length ? (
+                  <span className="ml-2 w-2 h-2 bg-green-500 rounded-full" />
                 ) : null}
               </TabsTrigger>
               <TabsTrigger
                 onClick={() => {
-                  form.setValue('activeQuery', 'url-params')
+                  form.setValue("activeQuery", "url-params");
                 }}
                 value="url-params"
                 className="h-7"
               >
                 Path
                 {api?.pathVariables?.length ? (
-                  <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+                  <span className="ml-2 w-2 h-2 bg-green-500 rounded-full" />
                 ) : null}
               </TabsTrigger>
             </TabsList>
@@ -201,15 +198,12 @@ export const InputTabs = ({
               }}
             >
               <Suspense fallback={<Loading />}>
-                <MultipleInput
-                  propertyName="params"
-                  form={form}
-                />
+                <MultipleInput propertyName="params" form={form} />
               </Suspense>
             </TabsContent>
             <TabsContent
               value="url-params"
-              className="animate__animated animate__fadeIn relative overflow-auto"
+              className="overflow-auto relative animate__animated animate__fadeIn"
               style={{
                 maxHeight: height as number,
               }}
@@ -226,7 +220,7 @@ export const InputTabs = ({
               value="interactive-query"
               className="animate__animated animate__fadeIn"
               style={{
-                height: (height as number) - (type === 'create' ? 96 : 0),
+                height: (height as number) - (type === "create" ? 96 : 0),
               }}
             >
               {isTimedOut ? (
@@ -235,12 +229,12 @@ export const InputTabs = ({
                     <Loading
                       height={
                         (height as number) -
-                        (location.pathname.includes('/add') ||
-                        location.pathname.includes('/update')
+                        (location.pathname.includes("/add") ||
+                          location.pathname.includes("/update")
                           ? 105
-                          : resultRenderView === 'horizontal'
-                          ? 115
-                          : 55)
+                          : resultRenderView === "horizontal"
+                            ? 115
+                            : 55)
                       }
                     />
                   }
@@ -250,12 +244,12 @@ export const InputTabs = ({
                     result={interactiveQueryData}
                     height={
                       (height as number) -
-                      (location.pathname.includes('/add') ||
-                      location.pathname.includes('/update')
+                      (location.pathname.includes("/add") ||
+                        location.pathname.includes("/update")
                         ? 105
-                        : resultRenderView === 'horizontal'
-                        ? 115
-                        : 55)
+                        : resultRenderView === "horizontal"
+                          ? 115
+                          : 55)
                     }
                     readOnly={false}
                     setData={setInteractiveQuery}
@@ -269,62 +263,53 @@ export const InputTabs = ({
         </TabsContent>
         <TabsContent
           value="headers"
-          className="animate__animated animate__fadeIn overflow-auto"
+          className="overflow-auto animate__animated animate__fadeIn"
           style={{
             maxHeight: (height as number) + 95,
           }}
         >
           <Suspense fallback={<Loading />}>
-            <MultipleInput
-              propertyName="headers"
-              form={form}
-            />
+            <MultipleInput propertyName="headers" form={form} />
           </Suspense>
         </TabsContent>
-        <TabsContent
-          value="body"
-          className="animate__animated animate__fadeIn"
-        >
-          <Tabs
-            defaultValue="json"
-            className="w-full"
-          >
-            <TabsList className="px-.5 h-9">
+        <TabsContent value="body" className="animate__animated animate__fadeIn">
+          <Tabs defaultValue="json" className="w-full">
+            <TabsList className="h-9 px-.5">
               <TabsTrigger
                 value="form-data"
                 className="h-7"
                 onClick={() => {
-                  form.setValue('activeBody', 'form-data')
+                  form.setValue("activeBody", "form-data");
                 }}
               >
-                Form Data{' '}
+                Form Data{" "}
                 {api?.formData?.find((item: ParamsType) => item.isActive) ? (
-                  <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+                  <span className="ml-2 w-2 h-2 bg-green-500 rounded-full" />
                 ) : null}
               </TabsTrigger>
               <TabsTrigger
                 value="x-www-form-urlencoded"
                 className="h-7"
                 onClick={() => {
-                  form.setValue('activeBody', 'x-www-form-urlencoded')
+                  form.setValue("activeBody", "x-www-form-urlencoded");
                 }}
               >
-                x-www-form-urlencoded{' '}
+                x-www-form-urlencoded{" "}
                 {api?.body?.find((item: ParamsType) => item.isActive) ? (
-                  <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+                  <span className="ml-2 w-2 h-2 bg-green-500 rounded-full" />
                 ) : null}
               </TabsTrigger>
               <TabsTrigger
                 value="json"
                 className="h-7"
                 onClick={() => {
-                  form.setValue('activeBody', 'json')
+                  form.setValue("activeBody", "json");
                 }}
               >
-                JSON{' '}
-                {typeof api?.jsonBody === 'object' &&
-                Object.keys(api?.jsonBody).length ? (
-                  <span className="ml-2 h-2 w-2 rounded-full bg-green-500" />
+                JSON{" "}
+                {typeof api?.jsonBody === "object" &&
+                  Object.keys(api?.jsonBody).length ? (
+                  <span className="ml-2 w-2 h-2 bg-green-500 rounded-full" />
                 ) : null}
               </TabsTrigger>
             </TabsList>
@@ -332,7 +317,7 @@ export const InputTabs = ({
               value="json"
               className="animate__animated animate__fadeIn"
               style={{
-                height: (height as number) - (type === 'create' ? 95 : 0),
+                height: (height as number) - (type === "create" ? 95 : 0),
               }}
             >
               {isTimedOut ? (
@@ -341,7 +326,7 @@ export const InputTabs = ({
                     <Loading
                       height={
                         (height as number) -
-                        (resultRenderView === 'vertical' ? 55 : 115)
+                        (resultRenderView === "vertical" ? 55 : 115)
                       }
                     />
                   }
@@ -351,7 +336,7 @@ export const InputTabs = ({
                     result={jsonBodyData}
                     height={
                       (height as number) -
-                      (resultRenderView === 'vertical' ? 55 : 115)
+                      (resultRenderView === "vertical" ? 55 : 115)
                     }
                     readOnly={false}
                     setData={setJsonBody}
@@ -363,51 +348,42 @@ export const InputTabs = ({
             </TabsContent>
             <TabsContent
               value="form-data"
-              className="animate__animated animate__fadeIn relative overflow-auto"
+              className="overflow-auto relative animate__animated animate__fadeIn"
               style={{
                 maxHeight: height as number,
               }}
             >
               <Suspense fallback={<Loading />}>
-                <MultipleInput
-                  propertyName="formData"
-                  form={form}
-                />
+                <MultipleInput propertyName="formData" form={form} />
               </Suspense>
             </TabsContent>
             <TabsContent
               value="x-www-form-urlencoded"
-              className="animate__animated animate__fadeIn relative overflow-auto"
+              className="overflow-auto relative animate__animated animate__fadeIn"
               style={{
                 maxHeight: height as number,
               }}
             >
               <Suspense fallback={<Loading />}>
-                <MultipleInput
-                  propertyName="body"
-                  form={form}
-                />
+                <MultipleInput propertyName="body" form={form} />
               </Suspense>
             </TabsContent>
           </Tabs>
         </TabsContent>
         <TabsContent
           value="dynamicVariable"
-          className="animate__animated animate__fadeIn overflow-auto my-5"
+          className="overflow-auto my-5 animate__animated animate__fadeIn"
           style={{
             maxHeight: height as number,
           }}
         >
           <Suspense fallback={<Loading />}>
-            <MultipleInput
-              propertyName="dynamicVariables"
-              form={form}
-            />
+            <MultipleInput propertyName="dynamicVariables" form={form} />
           </Suspense>
         </TabsContent>
       </Tabs>
     </div>
-  )
-}
+  );
+};
 
-export default InputTabs
+export default InputTabs;
